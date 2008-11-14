@@ -185,6 +185,9 @@ Symbols["list"] = lambda *args: list(args)
 Symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
 Symbols["first"] = lambda x: x[0]
 Symbols["rest"] = lambda x: x[1:]
+Symbols["length"] = lambda x: len(x)
+Symbols["atom"] = lambda x: Symbols["t"] if not isinstance(x, list) else Symbols["nil"]
+Symbols["listp"] = lambda x: Symbols["t"] if isinstance(x, list) else Symbols["nil"]
 
 if __name__ == "__main__":
     import doctest

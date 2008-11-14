@@ -102,3 +102,23 @@ UndefinedSymbolError: foo
 [<a>, <a>, <s>, <d>, <f>]
 >>> eval(read("a"))
 [<a>, <a>, <s>, <d>, <f>]
+
+>>> eval(read("(length '(1 2 3))"))
+3
+>>> eval(read("(length a)"))
+5
+>>> eval(read("(length (append a a))"))
+10
+>>> eval(read("(length '(append a a))"))
+3
+>>> eval(read("(length (list a a))"))
+2
+
+>>> eval(read("(atom 'a)"))
+T
+>>> eval(read("(atom a)"))
+NIL
+>>> eval(read("(listp 'a)"))
+NIL
+>>> eval(read("(listp a)"))
+T
