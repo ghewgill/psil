@@ -19,3 +19,21 @@
 10
 >>> eval(read("my-age"))
 10
+
+>>> eval(read("9"))
+9
+>>> eval(read("10"))
+10
+>>> eval(read("my-age"))
+10
+>>> eval(read("t"))
+T
+>>> eval(read("nil"))
+NIL
+>>> eval(read("()"))
+NIL
+>>> eval(read("your-age"))
+Traceback (most recent call last):
+    ...
+UndefinedSymbolError: your-age
+

@@ -98,7 +98,7 @@ def read(s):
     >>> read("1")
     1
     >>> read("()")
-    []
+    NIL
     >>> read("a")
     <a>
     >>> read('''"test"''')
@@ -124,6 +124,8 @@ def read(s):
                 if next[0] == Token.RPAREN:
                     break
                 a.append(parse(tokens, next))
+            if len(a) == 0:
+                return Special("NIL")
             return a
         elif t == Token.STRING:
             return v
@@ -166,7 +168,15 @@ def eval(s):
     else:
         return s
 
+class Special(object):
+    def __init__(self, v):
+        self.val = v
+    def __repr__(self):
+        return self.val
+
 Symbols["+"] = lambda *args: sum(args)
+Symbols["t"] = Special("T")
+Symbols["nil"] = Special("NIL")
 
 if __name__ == "__main__":
     import doctest
