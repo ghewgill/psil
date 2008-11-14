@@ -58,3 +58,8 @@ UndefinedSymbolError: foo
 60
 >>> eval(read("(/ 15 3)"))
 5
+
+>>> eval(read("(cons 1 nil)"))
+[1]
+>>> eval(read("(cons 1 (cons 2 nil))"))
+[1, 2]
