@@ -1,0 +1,21 @@
+>>> from psil import read, eval
+
+>>> eval(read("(+ 1 2 3 4)"))
+10
+
+>>> eval(read("(set (quote my-age) 7)"))
+7
+>>> eval(read("my-age"))
+7
+>>> eval(read("(set 'my-age 8)"))
+8
+>>> eval(read("my-age"))
+8
+>>> eval(read("(setq my-age 9)"))
+9
+>>> eval(read("my-age"))
+9
+>>> eval(read("(setq my-age 10)"))
+10
+>>> eval(read("my-age"))
+10

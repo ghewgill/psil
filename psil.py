@@ -22,6 +22,9 @@ class UndefinedSymbolError(Exception):
     def __init__(self, s):
         Exception.__init__(self, s)
 
+class SetNotSymbolError(Exception):
+    pass
+
 class Token(object):
     LPAREN = object()
     RPAREN = object()
@@ -126,8 +129,12 @@ def read(s):
             return v
         elif t == Token.NUMBER:
             return v
+        elif t == Token.QUOTE:
+            return [Symbol("quote"), parse(tokens)]
         elif t == Token.SYMBOL:
             return Symbol(v)
+        else:
+            raise SyntaxError(next)
 
     return parse(tokenise(s))
 
@@ -139,9 +146,21 @@ def eval(s):
     6
     """
     if isinstance(s, list):
-        f = eval(s[0])
-        args = [eval(x) for x in s[1:]]
-        return f(*args)
+        if isinstance(s[0], Symbol) and s[0].name == "quote":
+            return s[1]
+        elif isinstance(s[0], Symbol) and s[0].name == "set":
+            sym = eval(s[1])
+            if not isinstance(sym, Symbol):
+                raise SetNotSymbolError(sym)
+            val = eval(s[2])
+            Symbols[sym.name] = val
+            return val
+        elif isinstance(s[0], Symbol) and s[0].name == "setq":
+            return eval([Symbol("set"), [Symbol("quote"), s[1]], s[2]])
+        else:
+            f = eval(s[0])
+            args = [eval(x) for x in s[1:]]
+            return f(*args)
     elif isinstance(s, Symbol):
         return s.lookup()
     else:
@@ -152,3 +171,4 @@ Symbols["+"] = lambda *args: sum(args)
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
+    doctest.testfile("psil.test")
