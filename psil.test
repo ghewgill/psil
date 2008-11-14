@@ -49,3 +49,12 @@ UndefinedSymbolError: your-age
 Traceback (most recent call last):
     ...
 UndefinedSymbolError: foo
+
+>>> eval(read("(+ 1 2)"))
+3
+>>> eval(read("(- 9 5)"))
+4
+>>> eval(read("(* 3 4 5)"))
+60
+>>> eval(read("(/ 15 3)"))
+5

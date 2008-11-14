@@ -175,6 +175,9 @@ class Special(object):
         return self.val
 
 Symbols["+"] = lambda *args: sum(args)
+Symbols["-"] = lambda x, y: x - y
+Symbols["*"] = lambda *args: reduce(lambda x, y: x * y, args)
+Symbols["/"] = lambda x, y: x / y
 Symbols["t"] = Special("T")
 Symbols["nil"] = Special("NIL")
 
