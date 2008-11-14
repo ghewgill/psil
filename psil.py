@@ -10,9 +10,15 @@
 import re
 
 RE_NUMBER = re.compile(r"[-+]?\d+(\.\d+)?(e[-+]?\d+)?", re.IGNORECASE)
-RE_SYMBOL = re.compile(r"[a-z][-a-z0-9]*", re.IGNORECASE)
+RE_SYMBOL = re.compile(r"[^ \)]+", re.IGNORECASE)
+
+Symbols = {}
 
 class SyntaxError(Exception):
+    def __init__(self, s):
+        Exception.__init__(self, s)
+
+class UndefinedSymbolError(Exception):
     def __init__(self, s):
         Exception.__init__(self, s)
 
@@ -79,6 +85,10 @@ class Symbol(object):
         self.name = name
     def __repr__(self):
         return "<%s>" % self.name
+    def lookup(self):
+        if self.name not in Symbols:
+            raise UndefinedSymbolError(self.name)
+        return Symbols[self.name]
 
 def read(s):
     """
@@ -90,10 +100,14 @@ def read(s):
     <a>
     >>> read('''"test"''')
     'test'
+    >>> read('''("test")''')
+    ['test']
     >>> read('''(a 1 "test")''')
     [<a>, 1, 'test']
     >>> read("(a (b c) d)")
     [<a>, [<b>, <c>], <d>]
+    >>> read("(+ 1 2)")
+    [<+>, 1, 2]
     """
 
     def parse(tokens, next = None):
@@ -118,7 +132,25 @@ def read(s):
     return parse(tokenise(s))
 
 def eval(s):
-    pass
+    """
+    >>> eval(read("1"))
+    1
+    >>> eval(read("(+ 1 2 3)"))
+    6
+    """
+    if isinstance(s, list):
+        f = eval(s[0])
+        args = [eval(x) for x in s[1:]]
+        return f(*args)
+    elif isinstance(s, Symbol):
+        return s.lookup()
+    else:
+        return s
+
+def p_sum(*args):
+    return sum(args)
+
+Symbols["+"] = p_sum
 
 if __name__ == "__main__":
     import doctest
