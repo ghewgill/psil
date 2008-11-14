@@ -144,3 +144,10 @@ T
 #[<game>, <is>, <up>]
 #>>> eval(read("words"))
 #[<the>, <game>, <is>, <up>]
+
+>>> eval(read("(defun square (x) (* x x))"))
+<square>
+>>> eval(read("(square 2)"))
+4
+>>> eval(read("(square 1.4142158)"))
+2.0000063289696399

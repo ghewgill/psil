@@ -140,6 +140,15 @@ def read(s):
 
     return parse(tokenise(s))
 
+class Function(object):
+    def __init__(self, params, body):
+        self.params = params
+        self.body = body
+    def __call__(self, *args):
+        for p, a in zip(self.params, args):
+            Symbols[p.name] = a
+        return eval(self.body)
+
 def eval(s):
     """
     >>> eval(read("1"))
@@ -148,7 +157,10 @@ def eval(s):
     6
     """
     if isinstance(s, list):
-        if isinstance(s[0], Symbol) and s[0].name == "quote":
+        if isinstance(s[0], Symbol) and s[0].name == "defun":
+            Symbols[s[1].name] = Function(s[2], s[3])
+            return s[1]
+        elif isinstance(s[0], Symbol) and s[0].name == "quote":
             return s[1]
         elif isinstance(s[0], Symbol) and s[0].name == "set":
             sym = eval(s[1])
