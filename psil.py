@@ -181,6 +181,8 @@ Symbols["/"] = lambda x, y: x / y
 Symbols["t"] = Special("T")
 Symbols["nil"] = Special("NIL")
 Symbols["cons"] = lambda x, y: [x] + y if isinstance(y, list) else [x]
+Symbols["list"] = lambda *args: list(args)
+Symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
 
 if __name__ == "__main__":
     import doctest

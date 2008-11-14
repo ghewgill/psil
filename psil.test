@@ -63,3 +63,14 @@ UndefinedSymbolError: foo
 [1]
 >>> eval(read("(cons 1 (cons 2 nil))"))
 [1, 2]
+
+>>> eval(read("'a"))
+<a>
+>>> eval(read("(cons 'a '(b c d))"))
+[<a>, <b>, <c>, <d>]
+>>> eval(read("(list 2 3 4)"))
+[2, 3, 4]
+>>> eval(read("(list 'a '(a s d f))"))
+[<a>, [<a>, <s>, <d>, <f>]]
+>>> eval(read("(append '(a b) '(c d))"))
+[<a>, <b>, <c>, <d>]
