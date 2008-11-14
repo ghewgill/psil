@@ -93,3 +93,12 @@ UndefinedSymbolError: foo
 [<s>, <d>, <f>]
 >>> eval(read("(first (rest a))"))
 <s>
+
+>>> eval(read("(cons 'a a)"))
+[<a>, <a>, <s>, <d>, <f>]
+>>> eval(read("a"))
+[<a>, <s>, <d>, <f>]
+>>> eval(read("(setq a (cons 'a a))"))
+[<a>, <a>, <s>, <d>, <f>]
+>>> eval(read("a"))
+[<a>, <a>, <s>, <d>, <f>]
