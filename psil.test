@@ -122,3 +122,25 @@ NIL
 NIL
 >>> eval(read("(listp a)"))
 T
+
+>>> eval(read("(setq my-age (+ my-age 1))"))
+11
+>>> eval(read("(setq a (cdr a))"))
+[<a>, <s>, <d>, <f>]
+>>> eval(read("(setq words '(a list of words))"))
+[<a>, <list>, <of>, <words>]
+>>> eval(read("(setq words (cons 'this (rest words)))"))
+[<this>, <list>, <of>, <words>]
+
+#>>> eval(read("(setf (first words) 'the)"))
+#<the>
+#>>> eval(read("words"))
+#[<the>, <list>, <of>, <words>]
+#>>> eval(read("(setf (third words) 'is)"))
+#<is>
+#>>> eval(read("words"))
+#[<the>, <list>, <is>, <words>]
+#>>> eval(read("(setf (rest words) '(game is up))"))
+#[<game>, <is>, <up>]
+#>>> eval(read("words"))
+#[<the>, <game>, <is>, <up>]
