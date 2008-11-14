@@ -37,3 +37,15 @@ Traceback (most recent call last):
     ...
 UndefinedSymbolError: your-age
 
+>>> eval(read("(+ 2 13 45)"))
+60
+>>> eval(read("(+ my-age 1)"))
+11
+>>> eval(read("(+ your-age 1)"))
+Traceback (most recent call last):
+    ...
+UndefinedSymbolError: your-age
+>>> eval(read("(foo 1 3 4)"))
+Traceback (most recent call last):
+    ...
+UndefinedSymbolError: foo
