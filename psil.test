@@ -74,3 +74,22 @@ UndefinedSymbolError: foo
 [<a>, [<a>, <s>, <d>, <f>]]
 >>> eval(read("(append '(a b) '(c d))"))
 [<a>, <b>, <c>, <d>]
+
+>>> eval(read("(first '(a s d f))"))
+<a>
+>>> eval(read("(first '((a s) d f))"))
+[<a>, <s>]
+>>> eval(read("(rest '(a s d f))"))
+[<s>, <d>, <f>]
+>>> eval(read("(rest '((a s) d f))"))
+[<d>, <f>]
+>>> eval(read("(rest '((a s) (d f)))"))
+[[<d>, <f>]]
+>>> eval(read("(setq a '(a s d f))"))
+[<a>, <s>, <d>, <f>]
+>>> eval(read("(first a)"))
+<a>
+>>> eval(read("(rest a)"))
+[<s>, <d>, <f>]
+>>> eval(read("(first (rest a))"))
+<s>
