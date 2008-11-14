@@ -147,10 +147,7 @@ def eval(s):
     else:
         return s
 
-def p_sum(*args):
-    return sum(args)
-
-Symbols["+"] = p_sum
+Symbols["+"] = lambda *args: sum(args)
 
 if __name__ == "__main__":
     import doctest
