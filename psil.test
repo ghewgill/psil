@@ -197,4 +197,12 @@ T
 >>> eval(read("y"))
 49
 
-
+>>> eval(read("""(defun absdiff (x y)
+...  (if (> x y)
+...      (- x y)
+...      (- y x)))"""))
+<absdiff>
+>>> eval(read("(absdiff 3 4)"))
+1
+>>> eval(read("(absdiff 4 3)"))
+1
