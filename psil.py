@@ -10,7 +10,7 @@
 import re
 
 RE_NUMBER = re.compile(r"[-+]?\d+(\.\d+)?(e[-+]?\d+)?", re.IGNORECASE)
-RE_SYMBOL = re.compile(r"[^ \)]+", re.IGNORECASE)
+RE_SYMBOL = re.compile(r"[^ \t\n\)]+", re.IGNORECASE)
 
 Symbols = {}
 
@@ -50,7 +50,7 @@ def tokenise(s):
     """
     i = 0
     while True:
-        while i < len(s) and s[i] == " ":
+        while i < len(s) and s[i] in " \t\n":
             i += 1
         if i >= len(s):
             break
