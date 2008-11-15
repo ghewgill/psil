@@ -142,6 +142,14 @@ class Scope(object):
         self.symbols = {}
     def add(self, name, value):
         self.symbols[name] = value
+    def set(self, name, value):
+        s = self
+        while s is not None:
+            if name in s.symbols:
+                s.symbols[name] = value
+                return
+            s = s.parent
+        Globals.symbols[name] = value
     def lookup(self, name):
         s = self
         while s is not None:
@@ -184,7 +192,7 @@ def eval(s, scope = None):
             if not isinstance(sym, Symbol):
                 raise SetNotSymbolError(sym)
             val = eval(s[2], scope)
-            scope.add(sym.name, val)
+            scope.set(sym.name, val)
             return val
         elif isinstance(s[0], Symbol) and s[0].name == "setq":
             return eval([Symbol("set"), [Symbol("quote"), s[1]], s[2]], scope)

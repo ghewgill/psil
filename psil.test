@@ -186,3 +186,15 @@ T
 <powers-of>
 >>> eval(read("(powers-of 2)"))
 16
+>>> eval(read("""(defun powers-of (x)
+...   (setq y (square x))
+...   (fourth-power x))"""))
+<powers-of>
+>>> eval(read("y"))
+27
+>>> eval(read("(powers-of 7)"))
+2401
+>>> eval(read("y"))
+49
+
+
