@@ -159,7 +159,10 @@ class Function(object):
         scope = Scope(self.scope)
         for p, a in zip(self.params, args):
             scope.add(p.name, a)
-        return eval(self.body, scope)
+        r = None
+        for b in self.body:
+            r = eval(b, scope)
+        return r
 
 def eval(s, scope = None):
     """
@@ -172,7 +175,7 @@ def eval(s, scope = None):
         scope = Globals
     if isinstance(s, list):
         if isinstance(s[0], Symbol) and s[0].name == "defun":
-            scope.add(s[1].name, Function(s[2], s[3], scope))
+            scope.add(s[1].name, Function(s[2], s[3:], scope))
             return s[1]
         elif isinstance(s[0], Symbol) and s[0].name == "quote":
             return s[1]

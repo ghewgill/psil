@@ -174,3 +174,15 @@ T
 27
 >>> eval(read("(y-plus 43)"))
 70
+
+>>> eval(read("(defun fourth-power (x) (square (square x)))"))
+<fourth-power>
+>>> eval(read("(fourth-power 2)"))
+16
+
+>>> eval(read("""(defun powers-of (x)
+...   (square x)
+...      (fourth-power x))"""))
+<powers-of>
+>>> eval(read("(powers-of 2)"))
+16
