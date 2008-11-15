@@ -178,6 +178,8 @@ def eval(s, scope = None):
     1
     >>> eval(read("(+ 1 2 3)"))
     6
+    >>> eval(read("((lambda (x) (* x x)) 3)"))
+    9
     """
     if scope is None:
         scope = Globals
@@ -186,6 +188,8 @@ def eval(s, scope = None):
             if s[0].name == "defun":
                 scope.add(s[1].name, Function(s[2], s[3:], scope))
                 return s[1]
+            if s[0].name == "lambda":
+                return Function(s[1], s[2:], scope)
             if s[0].name == "quote":
                 return s[1]
             if s[0].name == "set":
