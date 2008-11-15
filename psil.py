@@ -88,10 +88,6 @@ class Symbol(object):
         self.name = name
     def __repr__(self):
         return "<%s>" % self.name
-    def lookup(self):
-        if self.name not in Symbols:
-            raise UndefinedSymbolError(self.name)
-        return Symbols[self.name]
 
 def read(s):
     """
@@ -140,43 +136,61 @@ def read(s):
 
     return parse(tokenise(s))
 
+class Scope(object):
+    def __init__(self, parent = None):
+        self.parent = parent
+        self.symbols = {}
+    def add(self, name, value):
+        self.symbols[name] = value
+    def lookup(self, name):
+        s = self
+        while s is not None:
+            if name in s.symbols:
+                return s.symbols[name]
+            s = s.parent
+        raise UndefinedSymbolError(name)
+
 class Function(object):
-    def __init__(self, params, body):
+    def __init__(self, params, body, scope):
         self.params = params
         self.body = body
+        self.scope = scope
     def __call__(self, *args):
+        scope = Scope(self.scope)
         for p, a in zip(self.params, args):
-            Symbols[p.name] = a
-        return eval(self.body)
+            scope.add(p.name, a)
+        return eval(self.body, scope)
 
-def eval(s):
+def eval(s, scope = None):
     """
     >>> eval(read("1"))
     1
     >>> eval(read("(+ 1 2 3)"))
     6
     """
+    if scope is None:
+        scope = Globals
     if isinstance(s, list):
         if isinstance(s[0], Symbol) and s[0].name == "defun":
-            Symbols[s[1].name] = Function(s[2], s[3])
+            scope.add(s[1].name, Function(s[2], s[3], scope))
             return s[1]
         elif isinstance(s[0], Symbol) and s[0].name == "quote":
             return s[1]
         elif isinstance(s[0], Symbol) and s[0].name == "set":
-            sym = eval(s[1])
+            sym = eval(s[1], scope)
             if not isinstance(sym, Symbol):
                 raise SetNotSymbolError(sym)
-            val = eval(s[2])
-            Symbols[sym.name] = val
+            val = eval(s[2], scope)
+            scope.add(sym.name, val)
             return val
         elif isinstance(s[0], Symbol) and s[0].name == "setq":
-            return eval([Symbol("set"), [Symbol("quote"), s[1]], s[2]])
+            return eval([Symbol("set"), [Symbol("quote"), s[1]], s[2]], scope)
         else:
-            f = eval(s[0])
-            args = [eval(x) for x in s[1:]]
+            f = eval(s[0], scope)
+            args = [eval(x, scope) for x in s[1:]]
             return f(*args)
     elif isinstance(s, Symbol):
-        return s.lookup()
+        return scope.lookup(s.name)
     else:
         return s
 
@@ -186,22 +200,24 @@ class Special(object):
     def __repr__(self):
         return self.val
 
-Symbols["+"] = lambda *args: sum(args)
-Symbols["-"] = lambda x, y: x - y
-Symbols["*"] = lambda *args: reduce(lambda x, y: x * y, args)
-Symbols["/"] = lambda x, y: x / y
-Symbols["t"] = Special("T")
-Symbols["nil"] = Special("NIL")
-Symbols["cons"] = lambda x, y: [x] + y if isinstance(y, list) else [x]
-Symbols["list"] = lambda *args: list(args)
-Symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
-Symbols["first"] = lambda x: x[0]
-Symbols["rest"] = lambda x: x[1:]
-Symbols["car"] = Symbols["first"]
-Symbols["cdr"] = Symbols["rest"]
-Symbols["length"] = lambda x: len(x)
-Symbols["atom"] = lambda x: Symbols["t"] if not isinstance(x, list) else Symbols["nil"]
-Symbols["listp"] = lambda x: Symbols["t"] if isinstance(x, list) else Symbols["nil"]
+Globals = Scope()
+
+Globals.symbols["+"]      = lambda *args: sum(args)
+Globals.symbols["-"]      = lambda x, y: x - y
+Globals.symbols["*"]      = lambda *args: reduce(lambda x, y: x * y, args)
+Globals.symbols["/"]      = lambda x, y: x / y
+Globals.symbols["t"]      = Special("T")
+Globals.symbols["nil"]    = Special("NIL")
+Globals.symbols["cons"]   = lambda x, y: [x] + y if isinstance(y, list) else [x]
+Globals.symbols["list"]   = lambda *args: list(args)
+Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
+Globals.symbols["first"]  = lambda x: x[0]
+Globals.symbols["rest"]   = lambda x: x[1:]
+Globals.symbols["car"]    = Globals.symbols["first"]
+Globals.symbols["cdr"]    = Globals.symbols["rest"]
+Globals.symbols["length"] = lambda x: len(x)
+Globals.symbols["atom"]   = lambda x: Globals.symbols["t"] if not isinstance(x, list) else Globals.symbols["nil"]
+Globals.symbols["listp"]  = lambda x: Globals.symbols["t"] if isinstance(x, list) else Globals.symbols["nil"]
 
 if __name__ == "__main__":
     import doctest

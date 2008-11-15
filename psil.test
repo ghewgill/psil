@@ -151,3 +151,26 @@ T
 4
 >>> eval(read("(square 1.4142158)"))
 2.0000063289696399
+
+>>> eval(read("(setq x 3)"))
+3
+>>> eval(read("(square 345)"))
+119025
+>>> eval(read("x"))
+3
+>>> eval(read("(defun y-plus (x) (+ x y))"))
+<y-plus>
+>>> eval(read("(setq y 2)"))
+2
+>>> eval(read("(y-plus 4)"))
+6
+>>> eval(read("(setq x 5)"))
+5
+>>> eval(read("(y-plus 23)"))
+25
+>>> eval(read("x"))
+5
+>>> eval(read("(setq y 27)"))
+27
+>>> eval(read("(y-plus 43)"))
+70
