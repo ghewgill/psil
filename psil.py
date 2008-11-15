@@ -182,24 +182,24 @@ def eval(s, scope = None):
     if scope is None:
         scope = Globals
     if isinstance(s, list):
-        if isinstance(s[0], Symbol) and s[0].name == "defun":
-            scope.add(s[1].name, Function(s[2], s[3:], scope))
-            return s[1]
-        elif isinstance(s[0], Symbol) and s[0].name == "quote":
-            return s[1]
-        elif isinstance(s[0], Symbol) and s[0].name == "set":
-            sym = eval(s[1], scope)
-            if not isinstance(sym, Symbol):
-                raise SetNotSymbolError(sym)
-            val = eval(s[2], scope)
-            scope.set(sym.name, val)
-            return val
-        elif isinstance(s[0], Symbol) and s[0].name == "setq":
-            return eval([Symbol("set"), [Symbol("quote"), s[1]], s[2]], scope)
-        else:
-            f = eval(s[0], scope)
-            args = [eval(x, scope) for x in s[1:]]
-            return f(*args)
+        if isinstance(s[0], Symbol):
+            if s[0].name == "defun":
+                scope.add(s[1].name, Function(s[2], s[3:], scope))
+                return s[1]
+            if s[0].name == "quote":
+                return s[1]
+            if s[0].name == "set":
+                sym = eval(s[1], scope)
+                if not isinstance(sym, Symbol):
+                    raise SetNotSymbolError(sym)
+                val = eval(s[2], scope)
+                scope.set(sym.name, val)
+                return val
+            if s[0].name == "setq":
+                return eval([Symbol("set"), [Symbol("quote"), s[1]], s[2]], scope)
+        f = eval(s[0], scope)
+        args = [eval(x, scope) for x in s[1:]]
+        return f(*args)
     elif isinstance(s, Symbol):
         return scope.lookup(s.name)
     else:
