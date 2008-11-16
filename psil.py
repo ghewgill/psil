@@ -246,6 +246,7 @@ Globals.symbols["+"]      = lambda *args: sum(args)
 Globals.symbols["-"]      = lambda x, y: x - y
 Globals.symbols["*"]      = lambda *args: reduce(lambda x, y: x * y, args)
 Globals.symbols["/"]      = lambda x, y: x / y
+Globals.symbols["="]      = lambda x, y: Special.T if x == y else Special.NIL
 Globals.symbols[">"]      = lambda x, y: Special.T if x > y else Special.NIL
 Globals.symbols["<"]      = lambda x, y: Special.T if x < y else Special.NIL
 Globals.symbols["t"]      = Special.T
