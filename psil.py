@@ -1,9 +1,11 @@
 """PSIL: Python S-expresssion Intermediate Language
 
-#>>> read("1")
-#1
-#>>> eval(read("1"))
-#1
+>>> eval(read("1"))
+1
+>>> eval(read("'(1 2 3)"))
+[1, 2, 3]
+>>> eval(read("(map (lambda (x) (* x x)) '(1 2 3))"))
+[1, 4, 9]
 
 """
 
@@ -156,7 +158,7 @@ class Scope(object):
             if name in s.symbols:
                 return s.symbols[name]
             s = s.parent
-        raise UndefinedSymbolError(name)
+        return None
 
 class Function(object):
     def __init__(self, params, body, scope):
@@ -216,7 +218,16 @@ def eval(s, scope = None):
         args = [eval(x, scope) for x in s[1:]]
         return f(*args)
     elif isinstance(s, Symbol):
-        return scope.lookup(s.name)
+        r = scope.lookup(s.name)
+        if r is None:
+            # doctest seems to make __builtins__ a dict instead of a module
+            if isinstance(__builtins__, dict) and s.name in __builtins__:
+                r = __builtins__[s.name]
+            elif s.name in dir(__builtins__):
+                r = getattr(__builtins__, s.name)
+            else:
+                raise UndefinedSymbolError(s.name)
+        return r
     else:
         return s
 
