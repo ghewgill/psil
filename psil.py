@@ -6,6 +6,8 @@
 [1, 2, 3]
 >>> eval(read("(map (lambda (x) (* x x)) '(1 2 3))"))
 [1, 4, 9]
+>>> eval(read("(apply + '(1 2))"))
+3
 
 """
 
@@ -261,6 +263,7 @@ Globals.symbols["cdr"]    = Globals.symbols["rest"]
 Globals.symbols["length"] = lambda x: len(x)
 Globals.symbols["atom"]   = lambda x: Special.T if not isinstance(x, list) else Special.NIL
 Globals.symbols["listp"]  = lambda x: Special.T if isinstance(x, list) else Special.NIL
+Globals.symbols["apply"]  = lambda x, args: x(*args)
 
 if __name__ == "__main__":
     import doctest
