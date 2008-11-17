@@ -276,6 +276,10 @@ def _import(x):
     return mod
 Globals.symbols["import"] = _import
 
+def _print(x):
+    print x
+Globals.symbols["display"] = _print
+
 def psil(s):
     t = tokenise(s)
     while True:
