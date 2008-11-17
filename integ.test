@@ -1,0 +1,13 @@
+>>> from psil import read, eval
+>>> psil = lambda x: eval(read(x))
+
+>>> psil("(abs -5)")
+5
+>>> psil("(range 5)")
+[0, 1, 2, 3, 4]
+>>> psil("(map (lambda (x) (* x x)) '(1 2 3))")
+[1, 4, 9]
+>>> psil("(import 'os)") #doctest: +ELLIPSIS
+<module 'os' ...>
+>>> psil("(getattr os \"name\")")
+'posix'

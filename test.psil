@@ -1,0 +1,5 @@
+#!/opt/local/bin/python2.5 psil.py
+
+(import 'sys)
+
+((getattr (getattr sys "stdout") "write") "hello world")

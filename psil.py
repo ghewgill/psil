@@ -93,6 +93,34 @@ class Symbol(object):
     def __repr__(self):
         return "<%s>" % self.name
 
+def parse(tokens, next = None):
+    if next is None:
+        try:
+            next = tokens.next()
+        except StopIteration:
+            return None
+    t, v = next
+    if t == Token.LPAREN:
+        a = []
+        while True:
+            next = tokens.next()
+            if next[0] == Token.RPAREN:
+                break
+            a.append(parse(tokens, next))
+        if len(a) == 0:
+            return Special.NIL
+        return a
+    elif t == Token.STRING:
+        return v
+    elif t == Token.NUMBER:
+        return v
+    elif t == Token.QUOTE:
+        return [Symbol("quote"), parse(tokens)]
+    elif t == Token.SYMBOL:
+        return Symbol(v)
+    else:
+        raise SyntaxError(next)
+
 def read(s):
     """
     >>> read("1")
@@ -112,32 +140,6 @@ def read(s):
     >>> read("(+ 1 2)")
     [<+>, 1, 2]
     """
-
-    def parse(tokens, next = None):
-        if next is None:
-            next = tokens.next()
-        t, v = next
-        if t == Token.LPAREN:
-            a = []
-            while True:
-                next = tokens.next()
-                if next[0] == Token.RPAREN:
-                    break
-                a.append(parse(tokens, next))
-            if len(a) == 0:
-                return Special.NIL
-            return a
-        elif t == Token.STRING:
-            return v
-        elif t == Token.NUMBER:
-            return v
-        elif t == Token.QUOTE:
-            return [Symbol("quote"), parse(tokens)]
-        elif t == Token.SYMBOL:
-            return Symbol(v)
-        else:
-            raise SyntaxError(next)
-
     return parse(tokenise(s))
 
 class Scope(object):
@@ -265,7 +267,34 @@ Globals.symbols["atom"]   = lambda x: Special.T if not isinstance(x, list) else 
 Globals.symbols["listp"]  = lambda x: Special.T if isinstance(x, list) else Special.NIL
 Globals.symbols["apply"]  = lambda x, args: x(*args)
 
+def _import(x):
+    exec "import "+x.name
+    mod = locals()[x.name]
+    Globals.add(x.name, mod)
+    return mod
+Globals.symbols["import"] = _import
+
+def psil(s):
+    t = tokenise(s)
+    while True:
+        p = parse(t)
+        if p is None:
+            break
+        r = eval(p)
+    return r
+
 if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
-    doctest.testfile("psil.test")
+    import sys
+    if len(sys.argv) > 0 and sys.argv[0] == "--test":
+        import doctest
+        doctest.testmod()
+        doctest.testfile("psil.test")
+        doctest.testfile("integ.test")
+    else:
+        f = open(sys.argv[1])
+        text = f.read()
+        f.close()
+        m = re.match(r"#!.*?$", text, re.MULTILINE)
+        if m is not None:
+            text = text[m.end(0):]
+        psil(text)
