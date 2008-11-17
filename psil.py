@@ -71,6 +71,8 @@ def tokenise(s):
             j = s.index('"', i+1)
             yield (Token.STRING, s[i+1:j])
             i = j + 1
+        elif s[i] == ";":
+            i = s.index("\n", i+1)
         else:
             m = RE_NUMBER.match(s[i:])
             if m:

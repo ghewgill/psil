@@ -2,6 +2,6 @@
 
 (import 'sys)
 
-((getattr (getattr sys "stdout") "write") "hello world")
+((getattr (getattr sys "stdout") "write") "hello world") ; this is a comment
 ((.write (.stdout sys)) "hello world")
 (display "hello world")
