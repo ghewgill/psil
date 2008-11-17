@@ -293,11 +293,21 @@ def psil(s):
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) > 0 and sys.argv[0] == "--test":
+    if len(sys.argv) == 1:
+        import traceback
+        while True:
+            sys.stdout.write("> ")
+            sys.stdout.flush()
+            s = sys.stdin.readline()
+            try:
+                print psil(s)
+            except:
+                traceback.print_exc()
+    elif sys.argv[1] == "--test":
         import doctest
         doctest.testmod()
         doctest.testfile("psil.test")
-        doctest.testfile("integ.test")
+        #doctest.testfile("integ.test")
     else:
         f = open(sys.argv[1])
         text = f.read()
