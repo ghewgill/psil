@@ -218,6 +218,8 @@ def eval(s, scope = None):
                 return val
             if s[0].name == "setq":
                 return eval([Symbol("set"), [Symbol("quote"), s[1]], s[2]], scope)
+            if s[0].name.startswith("."):
+                return getattr(eval(s[1], scope), s[0].name[1:])
         f = eval(s[0], scope)
         args = [eval(x, scope) for x in s[1:]]
         return f(*args)

@@ -3,3 +3,4 @@
 (import 'sys)
 
 ((getattr (getattr sys "stdout") "write") "hello world")
+((.write (.stdout sys)) "hello world")
