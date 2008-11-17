@@ -69,7 +69,7 @@ def tokenise(s):
             i += 1
         elif s[i] == '"':
             j = s.index('"', i+1)
-            yield (Token.STRING, s[i+1:j])
+            yield (Token.STRING, __builtins__.eval(s[i:j+1]))
             i = j + 1
         elif s[i] == ";":
             i = s.index("\n", i+1)
