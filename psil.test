@@ -108,13 +108,9 @@ UndefinedSymbolError: foo
 >>> eval(read("(length (list a a))"))
 2
 
->>> eval(read("(atom 'a)"))
-T
->>> eval(read("(atom a)"))
+>>> eval(read("(list? 'a)"))
 F
->>> eval(read("(listp 'a)"))
-F
->>> eval(read("(listp a)"))
+>>> eval(read("(list? a)"))
 T
 
 >>> eval(read("(set! my-age (+ my-age 1))"))

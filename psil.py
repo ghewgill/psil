@@ -266,8 +266,7 @@ Globals.symbols["rest"]   = lambda x: x[1:]
 Globals.symbols["car"]    = Globals.symbols["first"]
 Globals.symbols["cdr"]    = Globals.symbols["rest"]
 Globals.symbols["length"] = lambda x: len(x)
-Globals.symbols["atom"]   = lambda x: Special.T if not isinstance(x, list) else Special.F
-Globals.symbols["listp"]  = lambda x: Special.T if isinstance(x, list) else Special.F
+Globals.symbols["list?"]  = lambda x: Special.T if isinstance(x, list) else Special.F
 Globals.symbols["apply"]  = lambda x, args: x(*args)
 
 def _import(x):
