@@ -33,6 +33,8 @@ class Token(object):
     LPAREN = object()
     RPAREN = object()
     QUOTE  = object()
+    QQUOTE = object()
+    COMMA  = object()
     SYMBOL = object()
     NUMBER = object()
     STRING = object()
@@ -66,6 +68,12 @@ def tokenise(s):
             i += 1
         elif s[i] == "'":
             yield (Token.QUOTE, s[i])
+            i += 1
+        elif s[i] == "`":
+            yield (Token.QQUOTE, s[i])
+            i += 1
+        elif s[i] == ",":
+            yield (Token.COMMA, s[i])
             i += 1
         elif s[i] == '"':
             j = s.index('"', i+1)
@@ -116,6 +124,10 @@ def parse(tokens, next = None):
         return v
     elif t == Token.QUOTE:
         return [Symbol("quote"), parse(tokens)]
+    elif t == Token.QQUOTE:
+        return [Symbol("quasiquote"), parse(tokens)]
+    elif t == Token.COMMA:
+        return [Symbol("unquote"), parse(tokens)]
     elif t == Token.SYMBOL:
         return Symbol(v)
     else:
@@ -211,6 +223,13 @@ def eval(s, scope = None):
                     return eval(s[3], scope)
             if s[0].name == "lambda":
                 return Function(s[1], s[2:], scope)
+            if s[0].name == "quasiquote":
+                def qq(t):
+                    if isinstance(t, list):
+                        return [eval(x[1], scope) if isinstance(x, list) and isinstance(x[0], Symbol) and x[0].name == "unquote" else qq(x) for x in t]
+                    else:
+                        return t
+                return qq(s[1])
             if s[0].name == "quote":
                 return s[1]
             if s[0].name == "set!":

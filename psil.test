@@ -1,4 +1,4 @@
->>> from psil import read, eval
+>>> from psil import read, eval, psil
 
 >>> eval(read("(+ 1 2 3 4)"))
 10
@@ -200,3 +200,12 @@ T
 1
 >>> eval(read("(absdiff 4 3)"))
 1
+
+>>> psil("(define a 1) (define b 2) (define c 3)")
+<c>
+>>> psil("`(a ,b c)")
+[<a>, 2, <c>]
+>>> psil("`(a (,b c))")
+[<a>, [2, <c>]]
+>>> psil("`(a b ,c (',(+ a b c)) (+ a b) 'c '((,a ,b)))")
+[<a>, <b>, 3, [[<quote>, 6]], [<+>, <a>, <b>], [<quote>, <c>], [<quote>, [[1, 2]]]]
