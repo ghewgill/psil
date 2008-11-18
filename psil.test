@@ -3,19 +3,11 @@
 >>> eval(read("(+ 1 2 3 4)"))
 10
 
->>> eval(read("(set (quote my-age) 7)"))
-7
->>> eval(read("my-age"))
-7
->>> eval(read("(set 'my-age 8)"))
-8
->>> eval(read("my-age"))
-8
->>> eval(read("(setq my-age 9)"))
-9
+>>> eval(read("(define my-age 9)"))
+<my-age>
 >>> eval(read("my-age"))
 9
->>> eval(read("(setq my-age 10)"))
+>>> eval(read("(set! my-age 10)"))
 10
 >>> eval(read("my-age"))
 10
@@ -85,7 +77,9 @@ UndefinedSymbolError: foo
 [<d>, <f>]
 >>> eval(read("(rest '((a s) (d f)))"))
 [[<d>, <f>]]
->>> eval(read("(setq a '(a s d f))"))
+>>> eval(read("(define a ())"))
+<a>
+>>> eval(read("(set! a '(a s d f))"))
 [<a>, <s>, <d>, <f>]
 >>> eval(read("(first a)"))
 <a>
@@ -98,7 +92,7 @@ UndefinedSymbolError: foo
 [<a>, <a>, <s>, <d>, <f>]
 >>> eval(read("a"))
 [<a>, <s>, <d>, <f>]
->>> eval(read("(setq a (cons 'a a))"))
+>>> eval(read("(set! a (cons 'a a))"))
 [<a>, <a>, <s>, <d>, <f>]
 >>> eval(read("a"))
 [<a>, <a>, <s>, <d>, <f>]
@@ -123,13 +117,15 @@ NIL
 >>> eval(read("(listp a)"))
 T
 
->>> eval(read("(setq my-age (+ my-age 1))"))
+>>> eval(read("(set! my-age (+ my-age 1))"))
 11
->>> eval(read("(setq a (cdr a))"))
+>>> eval(read("(set! a (cdr a))"))
 [<a>, <s>, <d>, <f>]
->>> eval(read("(setq words '(a list of words))"))
+>>> eval(read("(define words ())"))
+<words>
+>>> eval(read("(set! words '(a list of words))"))
 [<a>, <list>, <of>, <words>]
->>> eval(read("(setq words (cons 'this (rest words)))"))
+>>> eval(read("(set! words (cons 'this (rest words)))"))
 [<this>, <list>, <of>, <words>]
 
 #>>> eval(read("(setf (first words) 'the)"))
@@ -145,49 +141,51 @@ T
 #>>> eval(read("words"))
 #[<the>, <game>, <is>, <up>]
 
->>> eval(read("(defun square (x) (* x x))"))
+>>> eval(read("(define (square x) (* x x))"))
 <square>
 >>> eval(read("(square 2)"))
 4
 >>> eval(read("(square 1.4142158)"))
 2.0000063289696399
 
->>> eval(read("(setq x 3)"))
-3
+>>> eval(read("(define x 3)"))
+<x>
 >>> eval(read("(square 345)"))
 119025
 >>> eval(read("x"))
 3
->>> eval(read("(defun y-plus (x) (+ x y))"))
+>>> eval(read("(define (y-plus x) (+ x y))"))
 <y-plus>
->>> eval(read("(setq y 2)"))
+>>> eval(read("(define y 0)"))
+<y>
+>>> eval(read("(set! y 2)"))
 2
 >>> eval(read("(y-plus 4)"))
 6
->>> eval(read("(setq x 5)"))
+>>> eval(read("(set! x 5)"))
 5
 >>> eval(read("(y-plus 23)"))
 25
 >>> eval(read("x"))
 5
->>> eval(read("(setq y 27)"))
+>>> eval(read("(set! y 27)"))
 27
 >>> eval(read("(y-plus 43)"))
 70
 
->>> eval(read("(defun fourth-power (x) (square (square x)))"))
+>>> eval(read("(define (fourth-power x) (square (square x)))"))
 <fourth-power>
 >>> eval(read("(fourth-power 2)"))
 16
 
->>> eval(read("""(defun powers-of (x)
+>>> eval(read("""(define (powers-of x)
 ...   (square x)
 ...      (fourth-power x))"""))
 <powers-of>
 >>> eval(read("(powers-of 2)"))
 16
->>> eval(read("""(defun powers-of (x)
-...   (setq y (square x))
+>>> eval(read("""(define (powers-of x)
+...   (set! y (square x))
 ...   (fourth-power x))"""))
 <powers-of>
 >>> eval(read("y"))
@@ -197,7 +195,7 @@ T
 >>> eval(read("y"))
 49
 
->>> eval(read("""(defun absdiff (x y)
+>>> eval(read("""(define (absdiff x y)
 ...  (if (> x y)
 ...      (- x y)
 ...      (- y x)))"""))

@@ -148,7 +148,7 @@ class Scope(object):
     def __init__(self, parent = None):
         self.parent = parent
         self.symbols = {}
-    def add(self, name, value):
+    def define(self, name, value):
         self.symbols[name] = value
     def set(self, name, value):
         s = self
@@ -157,7 +157,7 @@ class Scope(object):
                 s.symbols[name] = value
                 return
             s = s.parent
-        Globals.symbols[name] = value
+        raise UndefinedSymbolError(name)
     def lookup(self, name):
         s = self
         while s is not None:
@@ -174,7 +174,7 @@ class Function(object):
     def __call__(self, *args):
         scope = Scope(self.scope)
         for p, a in zip(self.params, args):
-            scope.add(p.name, a)
+            scope.define(p.name, a)
         r = None
         for b in self.body:
             r = eval(b, scope)
@@ -188,7 +188,7 @@ def eval(s, scope = None):
     6
     >>> eval(read("((lambda (x) (* x x)) 3)"))
     9
-    >>> eval(read("(defun test (fn x y) ((if fn * +) x y))"))
+    >>> eval(read("(define (test fn x y) ((if fn * +) x y))"))
     <test>
     >>> eval(read("(test t 2 3)"))
     6
@@ -199,9 +199,13 @@ def eval(s, scope = None):
         scope = Globals
     if isinstance(s, list):
         if isinstance(s[0], Symbol):
-            if s[0].name == "defun":
-                scope.add(s[1].name, Function(s[2], s[3:], scope))
-                return s[1]
+            if s[0].name == "define":
+                if isinstance(s[1], Symbol):
+                    scope.define(s[1].name, eval(s[2]))
+                    return s[1]
+                else:
+                    scope.define(s[1][0].name, Function(s[1][1:], s[2:], scope))
+                    return s[1][0]
             if s[0].name == "if":
                 if eval(s[1], scope) != Special.NIL:
                     return eval(s[2], scope)
@@ -211,15 +215,12 @@ def eval(s, scope = None):
                 return Function(s[1], s[2:], scope)
             if s[0].name == "quote":
                 return s[1]
-            if s[0].name == "set":
-                sym = eval(s[1], scope)
-                if not isinstance(sym, Symbol):
-                    raise SetNotSymbolError(sym)
+            if s[0].name == "set!":
+                if not isinstance(s[1], Symbol):
+                    raise SetNotSymbolError(s[1])
                 val = eval(s[2], scope)
-                scope.set(sym.name, val)
+                scope.set(s[1].name, val)
                 return val
-            if s[0].name == "setq":
-                return eval([Symbol("set"), [Symbol("quote"), s[1]], s[2]], scope)
             if s[0].name.startswith("."):
                 return getattr(eval(s[1], scope), s[0].name[1:])
         f = eval(s[0], scope)
@@ -274,7 +275,7 @@ Globals.symbols["apply"]  = lambda x, args: x(*args)
 def _import(x):
     exec "import "+x.name
     mod = locals()[x.name]
-    Globals.add(x.name, mod)
+    Globals.define(x.name, mod)
     return mod
 Globals.symbols["import"] = _import
 
