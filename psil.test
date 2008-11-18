@@ -18,12 +18,12 @@
 10
 >>> eval(read("my-age"))
 10
->>> eval(read("t"))
+>>> eval(read("#t"))
 T
->>> eval(read("nil"))
-NIL
+>>> eval(read("#f"))
+F
 >>> eval(read("()"))
-NIL
+[]
 >>> eval(read("your-age"))
 Traceback (most recent call last):
     ...
@@ -51,9 +51,9 @@ UndefinedSymbolError: foo
 >>> eval(read("(/ 15 3)"))
 5
 
->>> eval(read("(cons 1 nil)"))
+>>> eval(read("(cons 1 ())"))
 [1]
->>> eval(read("(cons 1 (cons 2 nil))"))
+>>> eval(read("(cons 1 (cons 2 ()))"))
 [1, 2]
 
 >>> eval(read("'a"))
@@ -111,9 +111,9 @@ UndefinedSymbolError: foo
 >>> eval(read("(atom 'a)"))
 T
 >>> eval(read("(atom a)"))
-NIL
+F
 >>> eval(read("(listp 'a)"))
-NIL
+F
 >>> eval(read("(listp a)"))
 T
 

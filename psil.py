@@ -109,8 +109,6 @@ def parse(tokens, next = None):
             if next[0] == Token.RPAREN:
                 break
             a.append(parse(tokens, next))
-        if len(a) == 0:
-            return Special.NIL
         return a
     elif t == Token.STRING:
         return v
@@ -128,7 +126,7 @@ def read(s):
     >>> read("1")
     1
     >>> read("()")
-    NIL
+    []
     >>> read("a")
     <a>
     >>> read('''"test"''')
@@ -190,14 +188,14 @@ def eval(s, scope = None):
     9
     >>> eval(read("(define (test fn x y) ((if fn * +) x y))"))
     <test>
-    >>> eval(read("(test t 2 3)"))
+    >>> eval(read("(test #t 2 3)"))
     6
-    >>> eval(read("(test nil 2 3)"))
+    >>> eval(read("(test #f 2 3)"))
     5
     """
     if scope is None:
         scope = Globals
-    if isinstance(s, list):
+    if isinstance(s, list) and len(s) > 0:
         if isinstance(s[0], Symbol):
             if s[0].name == "define":
                 if isinstance(s[1], Symbol):
@@ -207,7 +205,7 @@ def eval(s, scope = None):
                     scope.define(s[1][0].name, Function(s[1][1:], s[2:], scope))
                     return s[1][0]
             if s[0].name == "if":
-                if eval(s[1], scope) != Special.NIL:
+                if eval(s[1], scope) != Special.F:
                     return eval(s[2], scope)
                 else:
                     return eval(s[3], scope)
@@ -247,7 +245,7 @@ class Special(object):
         return self.val
 
 Special.T = Special("T")
-Special.NIL = Special("NIL")
+Special.F = Special("F")
 
 Globals = Scope()
 
@@ -255,11 +253,11 @@ Globals.symbols["+"]      = lambda *args: sum(args)
 Globals.symbols["-"]      = lambda x, y: x - y
 Globals.symbols["*"]      = lambda *args: reduce(lambda x, y: x * y, args)
 Globals.symbols["/"]      = lambda x, y: x / y
-Globals.symbols["="]      = lambda x, y: Special.T if x == y else Special.NIL
-Globals.symbols[">"]      = lambda x, y: Special.T if x > y else Special.NIL
-Globals.symbols["<"]      = lambda x, y: Special.T if x < y else Special.NIL
-Globals.symbols["t"]      = Special.T
-Globals.symbols["nil"]    = Special.NIL
+Globals.symbols["="]      = lambda x, y: Special.T if x == y else Special.F
+Globals.symbols[">"]      = lambda x, y: Special.T if x > y else Special.F
+Globals.symbols["<"]      = lambda x, y: Special.T if x < y else Special.F
+Globals.symbols["#t"]     = Special.T
+Globals.symbols["#f"]     = Special.F
 Globals.symbols["cons"]   = lambda x, y: [x] + y if isinstance(y, list) else [x]
 Globals.symbols["list"]   = lambda *args: list(args)
 Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
@@ -268,8 +266,8 @@ Globals.symbols["rest"]   = lambda x: x[1:]
 Globals.symbols["car"]    = Globals.symbols["first"]
 Globals.symbols["cdr"]    = Globals.symbols["rest"]
 Globals.symbols["length"] = lambda x: len(x)
-Globals.symbols["atom"]   = lambda x: Special.T if not isinstance(x, list) else Special.NIL
-Globals.symbols["listp"]  = lambda x: Special.T if isinstance(x, list) else Special.NIL
+Globals.symbols["atom"]   = lambda x: Special.T if not isinstance(x, list) else Special.F
+Globals.symbols["listp"]  = lambda x: Special.T if isinstance(x, list) else Special.F
 Globals.symbols["apply"]  = lambda x, args: x(*args)
 
 def _import(x):
