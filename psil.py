@@ -178,6 +178,62 @@ class Scope(object):
                 return s.symbols[name]
             s = s.parent
         return None
+    def eval(self, s):
+        if isinstance(s, list) and len(s) > 0:
+            if isinstance(s[0], Symbol):
+                if s[0].name == "define":
+                    if isinstance(s[1], Symbol):
+                        return self.define(s[1].name, self.eval(s[2]))
+                    else:
+                        return self.define(s[1][0].name, Function(s[1][1:], s[2:], self))
+                if s[0].name == "defmacro":
+                    return self.define(s[1].name, Macro(s[2], s[3], self))
+                if s[0].name == "if":
+                    if self.eval(s[1]) != Special.F:
+                        return self.eval(s[2])
+                    else:
+                        return self.eval(s[3])
+                if s[0].name == "lambda":
+                    return Function(s[1], s[2:], self)
+                if s[0].name == "quasiquote":
+                    def qq(t):
+                        if isinstance(t, list):
+                            if isinstance(t[0], Symbol) and t[0].name == "unquote":
+                                return self.eval(t[1])
+                            else:
+                                return [qq(x) for x in t]
+                        else:
+                            return t
+                    return qq(s[1])
+                if s[0].name == "quote":
+                    return s[1]
+                if s[0].name == "set!":
+                    if not isinstance(s[1], Symbol):
+                        raise SetNotSymbolError(s[1])
+                    val = self.eval(s[2])
+                    self.set(s[1].name, val)
+                    return val
+                if s[0].name.startswith("."):
+                    return getattr(self.eval(s[1]), s[0].name[1:])
+                m = self.eval(s[0])
+                if isinstance(m, Macro):
+                    return self.eval(m.expand(*s[1:]))
+            f = self.eval(s[0])
+            args = [self.eval(x) for x in s[1:]]
+            return f(*args)
+        elif isinstance(s, Symbol):
+            r = self.lookup(s.name)
+            if r is None:
+                # doctest seems to make __builtins__ a dict instead of a module
+                if isinstance(__builtins__, dict) and s.name in __builtins__:
+                    r = __builtins__[s.name]
+                elif s.name in dir(__builtins__):
+                    r = getattr(__builtins__, s.name)
+                else:
+                    raise UndefinedSymbolError(s.name)
+            return r
+        else:
+            return s
 
 class Macro(object):
     def __init__(self, params, body, scope):
@@ -188,7 +244,7 @@ class Macro(object):
         scope = Scope(self.scope)
         for p, a in zip(self.params, args):
             scope.define(p.name, a)
-        return eval(self.body, scope)
+        return scope.eval(self.body)
 
 class Function(object):
     def __init__(self, params, body, scope):
@@ -201,10 +257,10 @@ class Function(object):
             scope.define(p.name, a)
         r = None
         for b in self.body:
-            r = eval(b, scope)
+            r = scope.eval(b)
         return r
 
-def eval(s, scope = None):
+def eval(s):
     """
     >>> eval(read("1"))
     1
@@ -219,63 +275,7 @@ def eval(s, scope = None):
     >>> eval(read("(test #f 2 3)"))
     5
     """
-    if scope is None:
-        scope = Globals
-    if isinstance(s, list) and len(s) > 0:
-        if isinstance(s[0], Symbol):
-            if s[0].name == "define":
-                if isinstance(s[1], Symbol):
-                    return scope.define(s[1].name, eval(s[2]))
-                else:
-                    return scope.define(s[1][0].name, Function(s[1][1:], s[2:], scope))
-            if s[0].name == "defmacro":
-                return scope.define(s[1].name, Macro(s[2], s[3], scope))
-            if s[0].name == "if":
-                if eval(s[1], scope) != Special.F:
-                    return eval(s[2], scope)
-                else:
-                    return eval(s[3], scope)
-            if s[0].name == "lambda":
-                return Function(s[1], s[2:], scope)
-            if s[0].name == "quasiquote":
-                def qq(t):
-                    if isinstance(t, list):
-                        if isinstance(t[0], Symbol) and t[0].name == "unquote":
-                            return eval(t[1], scope)
-                        else:
-                            return [qq(x) for x in t]
-                    else:
-                        return t
-                return qq(s[1])
-            if s[0].name == "quote":
-                return s[1]
-            if s[0].name == "set!":
-                if not isinstance(s[1], Symbol):
-                    raise SetNotSymbolError(s[1])
-                val = eval(s[2], scope)
-                scope.set(s[1].name, val)
-                return val
-            if s[0].name.startswith("."):
-                return getattr(eval(s[1], scope), s[0].name[1:])
-            m = eval(s[0], scope)
-            if isinstance(m, Macro):
-                return eval(m.expand(*s[1:]), scope)
-        f = eval(s[0], scope)
-        args = [eval(x, scope) for x in s[1:]]
-        return f(*args)
-    elif isinstance(s, Symbol):
-        r = scope.lookup(s.name)
-        if r is None:
-            # doctest seems to make __builtins__ a dict instead of a module
-            if isinstance(__builtins__, dict) and s.name in __builtins__:
-                r = __builtins__[s.name]
-            elif s.name in dir(__builtins__):
-                r = getattr(__builtins__, s.name)
-            else:
-                raise UndefinedSymbolError(s.name)
-        return r
-    else:
-        return s
+    return Globals.eval(s)
 
 class Special(object):
     def __init__(self, v):
