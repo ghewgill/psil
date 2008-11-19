@@ -268,7 +268,7 @@ def eval(s):
     6
     >>> eval(read("((lambda (x) (* x x)) 3)"))
     9
-    >>> eval(read("(define (test fn x y) ((if fn * +) x y))")) #doctest: +ELLIPSIS
+    >>> eval(read("(define (test fn x y) ((if fn * +) x y))"))
     <__main__.Function object at 0x...>
     >>> eval(read("(test #t 2 3)"))
     6
@@ -343,9 +343,9 @@ if __name__ == "__main__":
                 traceback.print_exc()
     elif sys.argv[1] == "--test":
         import doctest
-        doctest.testmod()
-        doctest.testfile("psil.test")
-        doctest.testfile("integ.test")
+        doctest.testmod(optionflags=doctest.ELLIPSIS)
+        doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
+        doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
     else:
         f = open(sys.argv[1])
         text = f.read()

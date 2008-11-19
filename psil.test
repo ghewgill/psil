@@ -137,7 +137,7 @@ T
 #>>> eval(read("words"))
 #[<the>, <game>, <is>, <up>]
 
->>> eval(read("(define (square x) (* x x))")) #doctest: +ELLIPSIS
+>>> eval(read("(define (square x) (* x x))"))
 <psil.Function object at 0x...>
 >>> eval(read("(square 2)"))
 4
@@ -150,7 +150,7 @@ T
 119025
 >>> eval(read("x"))
 3
->>> eval(read("(define (y-plus x) (+ x y))")) #doctest: +ELLIPSIS
+>>> eval(read("(define (y-plus x) (+ x y))"))
 <psil.Function object at 0x...>
 >>> eval(read("(define y 0)"))
 0
@@ -169,20 +169,20 @@ T
 >>> eval(read("(y-plus 43)"))
 70
 
->>> eval(read("(define (fourth-power x) (square (square x)))")) #doctest: +ELLIPSIS
+>>> eval(read("(define (fourth-power x) (square (square x)))"))
 <psil.Function object at 0x...>
 >>> eval(read("(fourth-power 2)"))
 16
 
 >>> eval(read("""(define (powers-of x)
 ...   (square x)
-...      (fourth-power x))""")) #doctest: +ELLIPSIS
+...      (fourth-power x))"""))
 <psil.Function object at 0x...>
 >>> eval(read("(powers-of 2)"))
 16
 >>> eval(read("""(define (powers-of x)
 ...   (set! y (square x))
-...   (fourth-power x))""")) #doctest: +ELLIPSIS
+...   (fourth-power x))"""))
 <psil.Function object at 0x...>
 >>> eval(read("y"))
 27
@@ -194,7 +194,7 @@ T
 >>> eval(read("""(define (absdiff x y)
 ...  (if (> x y)
 ...      (- x y)
-...      (- y x)))""")) #doctest: +ELLIPSIS
+...      (- y x)))"""))
 <psil.Function object at 0x...>
 >>> eval(read("(absdiff 3 4)"))
 1
@@ -212,7 +212,7 @@ T
 >>> psil("`(a b ,c (',(+ a b c)) (+ a b) 'c '((,a ,b)))")
 [<a>, <b>, 3, [[<quote>, 6]], [<+>, <a>, <b>], [<quote>, <c>], [<quote>, [[1, 2]]]]
 
->>> psil("(defmacro one! (var) `(set! ,var 1))") #doctest: +ELLIPSIS
+>>> psil("(defmacro one! (var) `(set! ,var 1))")
 <psil.Macro object at 0x...>
 >>> psil("(one! b)")
 1
@@ -223,7 +223,7 @@ T
 ... (defmacro let (vars body)
 ...   `((lambda ()
 ...      (define ,(first (first vars)) ,(first (rest (first vars))))
-...      ,body)))""") #doctest: +ELLIPSIS
+...      ,body)))""")
 <psil.Macro object at 0x...>
 >>> psil("a")
 1
