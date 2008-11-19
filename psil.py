@@ -316,6 +316,7 @@ Globals.symbols["display"] = _print
 
 def psil(s):
     t = tokenise(s)
+    r = None
     while True:
         p = parse(t)
         if p is None:
