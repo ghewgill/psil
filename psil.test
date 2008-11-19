@@ -4,7 +4,7 @@
 10
 
 >>> eval(read("(define my-age 9)"))
-<my-age>
+9
 >>> eval(read("my-age"))
 9
 >>> eval(read("(set! my-age 10)"))
@@ -78,7 +78,7 @@ UndefinedSymbolError: foo
 >>> eval(read("(rest '((a s) (d f)))"))
 [[<d>, <f>]]
 >>> eval(read("(define a ())"))
-<a>
+[]
 >>> eval(read("(set! a '(a s d f))"))
 [<a>, <s>, <d>, <f>]
 >>> eval(read("(first a)"))
@@ -118,7 +118,7 @@ T
 >>> eval(read("(set! a (cdr a))"))
 [<a>, <s>, <d>, <f>]
 >>> eval(read("(define words ())"))
-<words>
+[]
 >>> eval(read("(set! words '(a list of words))"))
 [<a>, <list>, <of>, <words>]
 >>> eval(read("(set! words (cons 'this (rest words)))"))
@@ -137,23 +137,23 @@ T
 #>>> eval(read("words"))
 #[<the>, <game>, <is>, <up>]
 
->>> eval(read("(define (square x) (* x x))"))
-<square>
+>>> eval(read("(define (square x) (* x x))")) #doctest: +ELLIPSIS
+<psil.Function object at 0x...>
 >>> eval(read("(square 2)"))
 4
 >>> eval(read("(square 1.4142158)"))
 2.0000063289696399
 
 >>> eval(read("(define x 3)"))
-<x>
+3
 >>> eval(read("(square 345)"))
 119025
 >>> eval(read("x"))
 3
->>> eval(read("(define (y-plus x) (+ x y))"))
-<y-plus>
+>>> eval(read("(define (y-plus x) (+ x y))")) #doctest: +ELLIPSIS
+<psil.Function object at 0x...>
 >>> eval(read("(define y 0)"))
-<y>
+0
 >>> eval(read("(set! y 2)"))
 2
 >>> eval(read("(y-plus 4)"))
@@ -169,21 +169,21 @@ T
 >>> eval(read("(y-plus 43)"))
 70
 
->>> eval(read("(define (fourth-power x) (square (square x)))"))
-<fourth-power>
+>>> eval(read("(define (fourth-power x) (square (square x)))")) #doctest: +ELLIPSIS
+<psil.Function object at 0x...>
 >>> eval(read("(fourth-power 2)"))
 16
 
 >>> eval(read("""(define (powers-of x)
 ...   (square x)
-...      (fourth-power x))"""))
-<powers-of>
+...      (fourth-power x))""")) #doctest: +ELLIPSIS
+<psil.Function object at 0x...>
 >>> eval(read("(powers-of 2)"))
 16
 >>> eval(read("""(define (powers-of x)
 ...   (set! y (square x))
-...   (fourth-power x))"""))
-<powers-of>
+...   (fourth-power x))""")) #doctest: +ELLIPSIS
+<psil.Function object at 0x...>
 >>> eval(read("y"))
 27
 >>> eval(read("(powers-of 7)"))
@@ -194,15 +194,15 @@ T
 >>> eval(read("""(define (absdiff x y)
 ...  (if (> x y)
 ...      (- x y)
-...      (- y x)))"""))
-<absdiff>
+...      (- y x)))""")) #doctest: +ELLIPSIS
+<psil.Function object at 0x...>
 >>> eval(read("(absdiff 3 4)"))
 1
 >>> eval(read("(absdiff 4 3)"))
 1
 
 >>> psil("(define a 1) (define b 2) (define c 3)")
-<c>
+3
 >>> psil("`(a ,b c)")
 [<a>, 2, <c>]
 >>> psil("`(a (,b c))")

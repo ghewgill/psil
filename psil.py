@@ -162,6 +162,7 @@ class Scope(object):
         self.symbols = {}
     def define(self, name, value):
         self.symbols[name] = value
+        return value
     def set(self, name, value):
         s = self
         while s is not None:
@@ -200,8 +201,8 @@ def eval(s, scope = None):
     6
     >>> eval(read("((lambda (x) (* x x)) 3)"))
     9
-    >>> eval(read("(define (test fn x y) ((if fn * +) x y))"))
-    <test>
+    >>> eval(read("(define (test fn x y) ((if fn * +) x y))")) #doctest: +ELLIPSIS
+    <__main__.Function object at 0x...>
     >>> eval(read("(test #t 2 3)"))
     6
     >>> eval(read("(test #f 2 3)"))
@@ -213,11 +214,9 @@ def eval(s, scope = None):
         if isinstance(s[0], Symbol):
             if s[0].name == "define":
                 if isinstance(s[1], Symbol):
-                    scope.define(s[1].name, eval(s[2]))
-                    return s[1]
+                    return scope.define(s[1].name, eval(s[2]))
                 else:
-                    scope.define(s[1][0].name, Function(s[1][1:], s[2:], scope))
-                    return s[1][0]
+                    return scope.define(s[1][0].name, Function(s[1][1:], s[2:], scope))
             if s[0].name == "if":
                 if eval(s[1], scope) != Special.F:
                     return eval(s[2], scope)
@@ -290,12 +289,7 @@ Globals.symbols["length"] = lambda x: len(x)
 Globals.symbols["list?"]  = lambda x: Special.T if isinstance(x, list) else Special.F
 Globals.symbols["apply"]  = lambda x, args: x(*args)
 
-def _import(x):
-    exec "import "+x.name
-    mod = locals()[x.name]
-    Globals.define(x.name, mod)
-    return mod
-Globals.symbols["import"] = _import
+Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 
 def _print(x):
     print x
