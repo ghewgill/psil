@@ -211,3 +211,10 @@ T
 [<a>, [2, <c>]]
 >>> psil("`(a b ,c (',(+ a b c)) (+ a b) 'c '((,a ,b)))")
 [<a>, <b>, 3, [[<quote>, 6]], [<+>, <a>, <b>], [<quote>, <c>], [<quote>, [[1, 2]]]]
+
+>>> psil("(defmacro one! (var) `(set! ,var 1))") #doctest: +ELLIPSIS
+<psil.Macro object at 0x...>
+>>> psil("(one! b)")
+1
+>>> psil("b")
+1

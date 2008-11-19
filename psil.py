@@ -179,6 +179,17 @@ class Scope(object):
             s = s.parent
         return None
 
+class Macro(object):
+    def __init__(self, params, body, scope):
+        self.params = params
+        self.body = body
+        self.scope = scope
+    def expand(self, *args):
+        scope = Scope(self.scope)
+        for p, a in zip(self.params, args):
+            scope.define(p.name, a)
+        return eval(self.body, scope)
+
 class Function(object):
     def __init__(self, params, body, scope):
         self.params = params
@@ -217,6 +228,8 @@ def eval(s, scope = None):
                     return scope.define(s[1].name, eval(s[2]))
                 else:
                     return scope.define(s[1][0].name, Function(s[1][1:], s[2:], scope))
+            if s[0].name == "defmacro":
+                return scope.define(s[1].name, Macro(s[2], s[3], scope))
             if s[0].name == "if":
                 if eval(s[1], scope) != Special.F:
                     return eval(s[2], scope)
@@ -244,6 +257,9 @@ def eval(s, scope = None):
                 return val
             if s[0].name.startswith("."):
                 return getattr(eval(s[1], scope), s[0].name[1:])
+            m = eval(s[0], scope)
+            if isinstance(m, Macro):
+                return eval(m.expand(*s[1:]), scope)
         f = eval(s[0], scope)
         args = [eval(x, scope) for x in s[1:]]
         return f(*args)
