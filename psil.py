@@ -16,6 +16,8 @@ import re
 RE_NUMBER = re.compile(r"[-+]?\d+(\.\d+)?(e[-+]?\d+)?", re.IGNORECASE)
 RE_SYMBOL = re.compile(r"[^ \t\n\)]+", re.IGNORECASE)
 
+peval = eval
+
 Symbols = {}
 
 class SyntaxError(Exception):
@@ -77,7 +79,7 @@ def tokenise(s):
             i += 1
         elif s[i] == '"':
             j = s.index('"', i+1)
-            yield (Token.STRING, __builtins__.eval(s[i:j+1]))
+            yield (Token.STRING, peval(s[i:j+1]))
             i = j + 1
         elif s[i] == ";":
             i = s.index("\n", i+1)
@@ -324,7 +326,7 @@ if __name__ == "__main__":
         import doctest
         doctest.testmod()
         doctest.testfile("psil.test")
-        #doctest.testfile("integ.test")
+        doctest.testfile("integ.test")
     else:
         f = open(sys.argv[1])
         text = f.read()
