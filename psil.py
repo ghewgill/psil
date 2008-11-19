@@ -326,13 +326,18 @@ def psil(s):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) == 1:
+        Globals.symbols["quit"] = lambda: sys.exit(0)
         import traceback
+        print "PSIL interactive mode"
+        print "Use (quit) to exit"
         while True:
             sys.stdout.write("> ")
             sys.stdout.flush()
             s = sys.stdin.readline()
             try:
                 print psil(s)
+            except SystemExit:
+                raise
             except:
                 traceback.print_exc()
     elif sys.argv[1] == "--test":
