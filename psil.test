@@ -218,3 +218,18 @@ T
 1
 >>> psil("b")
 1
+
+>>> psil("""
+... (defmacro let (vars body)
+...   `((lambda ()
+...      (define ,(first (first vars)) ,(first (rest (first vars))))
+...      ,body)))""") #doctest: +ELLIPSIS
+<psil.Macro object at 0x...>
+>>> psil("a")
+1
+>>> psil("((lambda () (define a 5) a))")
+5
+>>> psil("(let ((a 5)) a)")
+5
+>>> psil("a")
+1
