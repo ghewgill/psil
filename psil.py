@@ -198,7 +198,7 @@ class Scope(object):
                 if s[0].name == "quasiquote":
                     def qq(t):
                         if isinstance(t, list):
-                            if isinstance(t[0], Symbol) and t[0].name == "unquote":
+                            if len(t) > 0 and isinstance(t[0], Symbol) and t[0].name == "unquote":
                                 return self.eval(t[1])
                             else:
                                 return [qq(x) for x in t]
