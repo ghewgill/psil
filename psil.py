@@ -227,7 +227,10 @@ def eval(s, scope = None):
             if s[0].name == "quasiquote":
                 def qq(t):
                     if isinstance(t, list):
-                        return [eval(x[1], scope) if isinstance(x, list) and isinstance(x[0], Symbol) and x[0].name == "unquote" else qq(x) for x in t]
+                        if isinstance(t[0], Symbol) and t[0].name == "unquote":
+                            return eval(t[1], scope)
+                        else:
+                            return [qq(x) for x in t]
                     else:
                         return t
                 return qq(s[1])

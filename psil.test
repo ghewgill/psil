@@ -203,6 +203,8 @@ T
 
 >>> psil("(define a 1) (define b 2) (define c 3)")
 3
+>>> psil("`,a")
+1
 >>> psil("`(a ,b c)")
 [<a>, 2, <c>]
 >>> psil("`(a (,b c))")
