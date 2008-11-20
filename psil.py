@@ -108,6 +108,14 @@ class Symbol(object):
         self.name = name
     def __repr__(self):
         return "<%s>" % self.name
+    names = {}
+    @staticmethod
+    def new(name):
+        if name in Symbol.names:
+            return Symbol.names[name]
+        s = Symbol(name)
+        Symbol.names[name] = s
+        return s
 
 def parse(tokens, next = None):
     if next is None:
@@ -131,13 +139,13 @@ def parse(tokens, next = None):
     elif t == Token.NUMBER:
         return v
     elif t == Token.QUOTE:
-        return [Symbol("quote"), parse(tokens)]
+        return [Symbol.new("quote"), parse(tokens)]
     elif t == Token.QQUOTE:
-        return [Symbol("quasiquote"), parse(tokens)]
+        return [Symbol.new("quasiquote"), parse(tokens)]
     elif t == Token.COMMA:
-        return [Symbol("unquote"), parse(tokens)]
+        return [Symbol.new("unquote"), parse(tokens)]
     elif t == Token.SYMBOL:
-        return Symbol(v)
+        return Symbol.new(v)
     else:
         raise SyntaxError(next)
 
