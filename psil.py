@@ -286,6 +286,8 @@ class Macro(object):
         scope = Scope(self.scope)
         for p, a in zip(self.params, args):
             scope.define(p.name, a)
+        #import sys
+        #print >>sys.stderr, scope.eval(self.body)
         return scope.eval(self.body)
 
 class Function(object):
@@ -458,6 +460,8 @@ Globals.symbols["string->symbol"] = lambda x: Symbol.new(x)
 Globals.symbols["string=?"] = lambda x, y: Special.T if x == y else Special.F
 
 Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
+Globals.symbols["concat"] = lambda *args: "".join(args)
+Globals.symbols["format"] = lambda x, y: x % y
 
 def _print(x):
     print x

@@ -1,0 +1,62 @@
+#!/opt/local/bin/python2.5 psil.py
+
+;   (defmacro emit-html ((tag &rest attributes) &body body)
+;     `(begin
+;        (format t "<~(~A~)" ',tag)
+;        ,@(loop for (key value) on attributes by #'cddr
+;                when value
+;                collect (rebinding (value)
+;                          `(format t " ~(~A~)~:[=\"~A\"~;~]"
+;                                   ',key (eq ,value t) ,value)))
+;        (format t ">")
+;        ,@(loop for expr in body
+;                when (stringp expr) collect `(format t ,expr)
+;                else collect expr)
+;        ,@(when body `((format t "</~(~A~)>" ',tag)))
+;        (terpri t)))
+
+;   (emit-html (hr :align "left" :noshade t))
+;   (emit-html (p :align "left")
+;     "Part one"
+;     (emit-html (br))
+;     "Part two"
+;     (emit-html (hr :size (+ 39 3) :noshade nil))
+;     "The end")
+
+;   (defmacro define-html-tag (tag &rest attr-list)
+;     (let* ((no-body (find :no-body attr-list
+;                           :test #'string-equal))
+;            (attr-list (remove :no-body attr-list
+;                               :test #'string-equal))
+;            (attr-args (loop for attr-name in attr-list
+;                             collect (list 'quote attr-name)
+;                             collect attr-name)))
+;       (with-unique-names (body)
+;         `(defmacro ,tag ((&key ,@attr-list)
+;                          ,@(unless no-body `(&body ,body)))
+;            `(emit-html (,',tag ,,@attr-args)
+;               ,@,(unless no-body body))))))
+
+;   (define-html-tag hr no-body align noshade size)
+;   (define-html-tag br no-body clear)
+;   (define-html-tag p align)
+
+;   ;;; note argument list display in IDE:
+
+;   (p (:align "left")
+;     "Part one"
+;     (br ())
+;     "Part two"
+;     (hr (:size (+ 40 2) :noshade t))
+;     "The end")
+
+(defmacro make-html (tag body)
+  `(concat ,(format "<%s" (symbol->string (car tag)))
+           ">"
+           ,@body
+           ,(format "</%s>" (symbol->string (car tag)))))
+
+(display (make-html (hr)))
+(display (make-html (img src "http://example.com/test")))
+(display (make-html (p) "test"))
+(display (make-html (p style "margin-left: 1em") "indented"))
