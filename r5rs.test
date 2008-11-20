@@ -1,9 +1,14 @@
 >>> from psil import read, eval, psil
 
+4.1.1 Variable references
+
 >>> psil("(define x 28)")
 28
 >>> psil("x")
 28
+
+4.1.2 Literal expressions
+
 >>> psil("(quote a)")
 <a>
 >>> psil("(quote #(a b c))") # (vector) #doctest: +SKIP
@@ -37,10 +42,14 @@
 >>> psil("#t")
 #t
 
+4.1.3 Procedure calls
+
 >>> psil("(+ 3 4)")
 7
 >>> psil("((if #f + *) 3 4)")
 12
+
+4.1.4 Procedures
 
 >>> psil("(lambda (x) (+ x x))")
 <psil.Function object at 0x...>
@@ -69,6 +78,8 @@
 ...  3 4 5 6)""")
 [5, 6]
 
+4.1.5 Conditionals
+
 >>> psil("(if (> 3 2) 'yes 'no)")
 <yes>
 >>> psil("(if (> 2 3) 'yes 'no)")
@@ -79,6 +90,8 @@
 ...     (+ 3 2))""")
 1
 
+4.1.6 Assignments
+
 >>> psil("(define x 2)")
 2
 >>> psil("(+ x 1)")
@@ -87,6 +100,8 @@
 4
 >>> psil("(+ x 1)")
 5
+
+4.2.1 Conditionals
 
 >>> psil("""
 ... (cond ((> 3 2) 'greater)
@@ -139,6 +154,8 @@ consonant
 ...     (/ 3 0))""") # (macro) #doctest: +SKIP
 [<b>, <c>]
 
+4.2.2 Binding constructs
+
 >>> psil("""
 ... (let ((x 2) (y 3))
 ...   (* x y))""") # (macro) #doctest: +SKIP
@@ -171,6 +188,8 @@ consonant
 ...   (even? 88))""") # (macro) #doctest: +SKIP
 #t
 
+4.2.3 Sequencing
+
 >>> psil("(define x 0)")
 0
 >>> psil("""
@@ -182,6 +201,8 @@ consonant
 ...        (display (+ 4 1)))""") # (macro) #doctest: +SKIP
 4 plus 1 equals 
 5
+
+4.2.4 Iteration
 
 >>> psil("""
 ... (do ((vec (make-vector 5))
@@ -211,6 +232,8 @@ consonant
 ...                (cons (car numbers) neg)))))""") # (macro) #doctest: +SKIP
 ((6 1 3) (-5 -2))
 
+4.2.6 Quasiquotation
+
 >>> psil("`(list ,(+ 1 2) 4)")
 [<list>, 3, 4]
 >>> psil("(let ((name 'a)) `(list ,name ',name))")
@@ -234,3 +257,5 @@ consonant
 [<list>, 3, 4]
 >>> psil("'(quasiquote (list (unquote (+ 1 2)) 4))")
 [<quasiquote>, [<list>, [<unquote>, [<+>, 1, 2]], 4]]
+
+4.3 Macros
