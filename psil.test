@@ -23,7 +23,6 @@
 >>> eval(read("#f"))
 #f
 >>> eval(read("()"))
-[]
 >>> eval(read("your-age"))
 Traceback (most recent call last):
     ...
@@ -78,7 +77,6 @@ UndefinedSymbolError: foo
 >>> eval(read("(rest '((a s) (d f)))"))
 [[<d>, <f>]]
 >>> eval(read("(define a ())"))
-[]
 >>> eval(read("(set! a '(a s d f))"))
 [<a>, <s>, <d>, <f>]
 >>> eval(read("(first a)"))
@@ -118,7 +116,6 @@ UndefinedSymbolError: foo
 >>> eval(read("(set! a (cdr a))"))
 [<a>, <s>, <d>, <f>]
 >>> eval(read("(define words ())"))
-[]
 >>> eval(read("(set! words '(a list of words))"))
 [<a>, <list>, <of>, <words>]
 >>> eval(read("(set! words (cons 'this (rest words)))"))

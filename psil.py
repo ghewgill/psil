@@ -131,6 +131,8 @@ def parse(tokens, next = None):
             if next[0] == Token.RPAREN:
                 break
             a.append(parse(tokens, next))
+        if len(a) == 0:
+            return None
         return a
     elif t == Token.STRING:
         return v
@@ -154,7 +156,6 @@ def read(s):
     >>> read("1")
     1
     >>> read("()")
-    []
     >>> read("a")
     <a>
     >>> read('''"test"''')

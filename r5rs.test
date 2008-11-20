@@ -20,7 +20,7 @@
 <a>
 >>> psil("'#(a b c)") # (vector) #doctest: +SKIP
 #(a b c)
->>> psil("'()")
+>>> psil("'()") # (null) #doctest: +SKIP
 []
 >>> psil("'(+ 1 2)")
 [<+>, 1, 2]
