@@ -1,0 +1,67 @@
+>>> from psil import read, eval, psil
+
+>>> psil("(define x 28)")
+28
+>>> psil("x")
+28
+>>> psil("(quote a)")
+<a>
+>>> psil("(quote #(a b c))") #doctest: +SKIP
+#(a b c)
+>>> psil("(quote (+ 1 2))")
+[<+>, 1, 2]
+
+>>> psil("'a")
+<a>
+>>> psil("'#(a b c)") #doctest: +SKIP
+#(a b c)
+>>> psil("'()")
+[]
+>>> psil("'(+ 1 2)")
+[<+>, 1, 2]
+>>> psil("'(quote a)")
+[<quote>, <a>]
+>>> psil("''a")
+[<quote>, <a>]
+
+>>> psil("'\"abc\"")
+'abc'
+>>> psil("\"abc\"")
+'abc'
+>>> psil("'145932")
+145932
+>>> psil("145932")
+145932
+>>> psil("'#t")
+#t
+>>> psil("#t")
+#t
+
+>>> psil("(+ 3 4)")
+7
+>>> psil("((if #f + *) 3 4)")
+12
+
+>>> psil("(lambda (x) (+ x x))")
+<psil.Function object at 0x...>
+>>> psil("((lambda (x) (+ x x)) 4)")
+8
+
+>>> psil("""(define reverse-subtract
+...  (lambda (x y) (- y x)))""")
+<psil.Function object at 0x...>
+>>> psil("(reverse-subtract 7 10)")
+3
+
+>>> psil("""(define add4
+...  (let ((x 4))
+...    (lambda (y) (+ x y))))""")
+<psil.Function object at 0x...>
+>>> psil("(add4 6)")
+10
+
+>>> psil("((lambda x x) 3 4 5 6)")
+[3, 4, 5, 6]
+>>> psil("""((lambda (x y . z) z) #doctest: +SKIP
+... 3 4 5 6)""")
+[5, 6]
