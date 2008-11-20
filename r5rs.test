@@ -6,14 +6,14 @@
 28
 >>> psil("(quote a)")
 <a>
->>> psil("(quote #(a b c))") #doctest: +SKIP
+>>> psil("(quote #(a b c))") # (vector) #doctest: +SKIP
 #(a b c)
 >>> psil("(quote (+ 1 2))")
 [<+>, 1, 2]
 
 >>> psil("'a")
 <a>
->>> psil("'#(a b c)") #doctest: +SKIP
+>>> psil("'#(a b c)") # (vector) #doctest: +SKIP
 #(a b c)
 >>> psil("'()")
 []
@@ -47,21 +47,190 @@
 >>> psil("((lambda (x) (+ x x)) 4)")
 8
 
->>> psil("""(define reverse-subtract
-...  (lambda (x y) (- y x)))""")
+>>> psil("""
+... (define reverse-subtract
+...   (lambda (x y) (- y x)))""")
 <psil.Function object at 0x...>
 >>> psil("(reverse-subtract 7 10)")
 3
 
->>> psil("""(define add4
-...  (let ((x 4))
-...    (lambda (y) (+ x y))))""")
+>>> psil("""
+... (define add4
+...   (let ((x 4))
+...     (lambda (y) (+ x y))))""")
 <psil.Function object at 0x...>
 >>> psil("(add4 6)")
 10
 
 >>> psil("((lambda x x) 3 4 5 6)")
 [3, 4, 5, 6]
->>> psil("""((lambda (x y . z) z) #doctest: +SKIP
-... 3 4 5 6)""")
+>>> psil("""
+... ((lambda (x y . z) z) # (dot) #doctest: +SKIP
+...  3 4 5 6)""")
 [5, 6]
+
+>>> psil("(if (> 3 2) 'yes 'no)")
+<yes>
+>>> psil("(if (> 2 3) 'yes 'no)")
+<no>
+>>> psil("""
+... (if (> 3 2)
+...     (- 3 2)
+...     (+ 3 2))""")
+1
+
+>>> psil("(define x 2)")
+2
+>>> psil("(+ x 1)")
+3
+>>> psil("(set! x 4)")
+4
+>>> psil("(+ x 1)")
+5
+
+>>> psil("""
+... (cond ((> 3 2) 'greater)
+...       ((< 3 2) 'less))""") # (macro) #doctest: +SKIP
+greater
+>>> psil("""
+... (cond ((> 3 3) 'greater)
+...       ((< 3 3) 'less)
+...       (else 'equal))""") # (macro) #doctest: +SKIP
+equal
+>>> psil("""
+... (cond ((assv 'b '((a 1) (b 2))) => cadr)
+...       (else #f))""") # (macro) #doctest: +SKIP
+2
+
+>>> psil("""
+... (case (* 2 3)
+...   ((2 3 5 7) 'prime)
+...   ((1 4 6 8 9) 'composite))""") # (macro) #doctest: +SKIP
+composite
+>>> psil("""
+... (case (car '(c d))
+...   ((a) 'a)
+...   ((b) 'b))""") # (macro) #doctest: +SKIP
+unspecified
+>>> psil("""
+... (case (car '(c d))
+...   ((a e i o u) 'vowel)
+...   ((w y) 'semivowel)
+...   (else 'consonant))""") # (macro) #doctest: +SKIP
+consonant
+
+>>> psil("(and (= 2 2) (> 2 1))") # (macro) #doctest: +SKIP
+#t
+>>> psil("(and (= 2 2) (< 2 1))") # (macro) #doctest: +SKIP
+#f
+>>> psil("(and 1 2 'c '(f g))") # (macro) #doctest: +SKIP
+(f g)
+>>> psil("(and)") # (macro) #doctest: +SKIP
+#t
+
+>>> psil("(or (= 2 2) (> 2 1))") # (macro) #doctest: +SKIP
+#t
+>>> psil("(or (= 2 2) (< 2 1))") # (macro) #doctest: +SKIP
+#t
+>>> psil("(or #f #f #f)") # (macro) #doctest: +SKIP
+#f
+>>> psil("""
+... (or (memq 'b '(a b c)) 
+...     (/ 3 0))""") # (macro) #doctest: +SKIP
+[<b>, <c>]
+
+>>> psil("""
+... (let ((x 2) (y 3))
+...   (* x y))""") # (macro) #doctest: +SKIP
+6
+>>> psil("""
+... (let ((x 2) (y 3))
+...   (let ((x 7)
+...         (z (+ x y)))
+...     (* z x)))""") # (macro) #doctest: +SKIP
+35
+
+>>> psil("""
+... (let ((x 2) (y 3))
+...   (let* ((x 7)
+...          (z (+ x y)))
+...     (* z x)))""") # (macro) #doctest: +SKIP
+70
+
+>>> psil("""
+... (letrec ((even?
+...           (lambda (n)
+...             (if (zero? n)
+...                 #t
+...                 (odd? (- n 1)))))
+...          (odd?
+...           (lambda (n)
+...             (if (zero? n)
+...                 #f
+...                 (even? (- n 1))))))
+...   (even? 88))""") # (macro) #doctest: +SKIP
+#t
+
+>>> psil("(define x 0)")
+0
+>>> psil("""
+... (begin (set! x 5)
+...        (+ x 1))""") # (macro) #doctest: +SKIP
+6
+>>> psil("""
+... (begin (display "4 plus 1 equals ")
+...        (display (+ 4 1)))""") # (macro) #doctest: +SKIP
+4 plus 1 equals 
+5
+
+>>> psil("""
+... (do ((vec (make-vector 5))
+...      (i 0 (+ i 1)))
+...     ((= i 5) vec)
+...   (vector-set! vec i i))""") # (macro) #doctest: +SKIP
+#(0 1 2 3 4)
+>>> psil("""
+... (let ((x '(1 3 5 7 9)))
+...   (do ((x x (cdr x))
+...        (sum 0 (+ sum (car x))))
+...       ((null? x) sum)))""") # (macro) #doctest: +SKIP
+25
+
+>>> psil("""
+... (let loop ((numbers '(3 -2 1 6 -5))
+...            (nonneg '())
+...            (neg '()))
+...   (cond ((null? numbers) (list nonneg neg))
+...         ((>= (car numbers) 0)
+...          (loop (cdr numbers)
+...                (cons (car numbers) nonneg)
+...                neg))
+...         ((< (car numbers) 0)
+...          (loop (cdr numbers)
+...                nonneg
+...                (cons (car numbers) neg)))))""") # (macro) #doctest: +SKIP
+((6 1 3) (-5 -2))
+
+>>> psil("`(list ,(+ 1 2) 4)")
+[<list>, 3, 4]
+>>> psil("(let ((name 'a)) `(list ,name ',name))")
+[<list>, <a>, [<quote>, <a>]]
+>>> psil("`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b)") # (splice) #doctest: +SKIP
+[<a>, 3, 4, 5, 6, <b>]
+>>> psil("`(( foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons)))") # (dot) #doctest: +SKIP
+[[<foo>, 7], . <cons>]
+>>> psil("`#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8)") # (vector) #doctest: +SKIP
+#(10 5 2 4 3 8)
+
+>>> psil("`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f)")
+[<a>, [<quasiquote>, [<b>, [<unquote>, [<+>, 1, 2]], [<unquote>, [<foo>, 4, <d>]], <e>]], <f>]
+>>> psil("""
+... (let ((name1 'x)
+...       (name2 'y))
+...   `(a `(b ,,name1 ,',name2 d) e))""") # (macro) #doctest: +SKIP
+(a `(b ,x ,'y d) e)
+
+>>> psil("(quasiquote (list (unquote (+ 1 2)) 4))")
+[<list>, 3, 4]
+>>> psil("'(quasiquote (list (unquote (+ 1 2)) 4))")
+[<quasiquote>, [<list>, [<unquote>, [<+>, 1, 2]], 4]]
