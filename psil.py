@@ -202,12 +202,17 @@ class Scope(object):
                 if s[0].name == "lambda":
                     return Function(s[1], s[2:], self)
                 if s[0].name == "quasiquote":
-                    def qq(t):
+                    def qq(t, depth=1):
                         if isinstance(t, list):
-                            if len(t) > 0 and isinstance(t[0], Symbol) and t[0].name == "unquote":
-                                return self.eval(t[1])
-                            else:
-                                return [qq(x) for x in t]
+                            if len(t) > 0 and isinstance(t[0], Symbol):
+                                if t[0].name == "quasiquote":
+                                    return [t[0], qq(t[1], depth + 1)]
+                                if t[0].name == "unquote":
+                                    if depth == 1:
+                                        return self.eval(t[1])
+                                    else:
+                                        return [t[0], qq(t[1], depth - 1)]
+                            return [qq(x, depth) for x in t]
                         else:
                             return t
                     return qq(s[1])
