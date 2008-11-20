@@ -66,9 +66,9 @@
 >>> psil("""
 ... (define add4
 ...   (let ((x 4))
-...     (lambda (y) (+ x y))))""")
+...     (lambda (y) (+ x y))))""") # (macro) #doctest: +SKIP
 <psil.Function object at 0x...>
->>> psil("(add4 6)")
+>>> psil("(add4 6)") # (macro) #doctest: +SKIP
 10
 
 >>> psil("((lambda x x) 3 4 5 6)")
@@ -236,7 +236,7 @@ consonant
 
 >>> psil("`(list ,(+ 1 2) 4)")
 [<list>, 3, 4]
->>> psil("(let ((name 'a)) `(list ,name ',name))")
+>>> psil("(let ((name 'a)) `(list ,name ',name))") # (macro) #doctest: +SKIP
 [<list>, <a>, [<quote>, <a>]]
 >>> psil("`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b)") # (splice) #doctest: +SKIP
 [<a>, 3, 4, 5, 6, <b>]
@@ -259,3 +259,59 @@ consonant
 [<quasiquote>, [<list>, [<unquote>, [<+>, 1, 2]], 4]]
 
 4.3 Macros
+
+5.2.1 Top level declarations
+
+>>> psil("""
+... (define add3
+...   (lambda (x) (+ x 3)))""")
+<psil.Function object at 0x...>
+>>> psil("(add3 3)")
+6
+>>> psil("(define first car)")
+<...>
+>>> psil("(first '(1 2))")
+1
+
+5.2.2 Internal definitions
+
+>>> psil("""
+... (let ((x 5))
+...   (define foo (lambda (y) (bar x y)))
+...   (define bar (lambda (a b) (+ (* a b) a)))
+...   (foo (+ x 3)))""") # (macro) #doctest: +SKIP
+45
+
+>>> psil("""
+... (let ((x 5))
+...   (letrec ((foo (lambda (y) (bar x y)))
+...            (bar (lambda (a b) (+ (* a b) a))))
+...     (foo (+ x 3))))""") # (macro) #doctest: +SKIP
+45
+
+6.1 Equivalence predicates
+
+>>> psil("(eqv? 'a 'a)")
+#t
+>>> psil("(eqv? 'a 'b)")
+#f
+>>> psil("(eqv? 2 2)")
+#t
+>>> psil("(eqv? '() '())")
+#t
+>>> psil("(eqv? 257 257)")
+#t
+>>> psil("(eqv? 100000000 100000000)")
+#t
+>>> psil("(eqv? (cons 1 2) (cons 1 2))")
+#f
+>>> psil("""
+... (eqv? (lambda () 1)
+...       (lambda () 2))""")
+#f
+>>> psil("(eqv? #f 'nil)")
+#f
+>>> psil("""
+... (let ((p (lambda (x) x)))
+...   (eqv? p p))""") # (macro) #doctest: +SKIP
+#t
