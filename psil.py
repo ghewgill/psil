@@ -38,6 +38,7 @@ class Token(object):
     QQUOTE = object()
     COMMA  = object()
     SYMBOL = object()
+    BOOLEAN = object()
     NUMBER = object()
     STRING = object()
 
@@ -83,6 +84,9 @@ def tokenise(s):
             i = j + 1
         elif s[i] == ";":
             i = s.index("\n", i+1)
+        elif s[i] == "#":
+            yield (Token.BOOLEAN, s[i+1])
+            i += 2
         else:
             m = RE_NUMBER.match(s[i:])
             if m:
@@ -122,6 +126,8 @@ def parse(tokens, next = None):
         return a
     elif t == Token.STRING:
         return v
+    elif t == Token.BOOLEAN:
+        return Special.T if v == "t" else Special.F
     elif t == Token.NUMBER:
         return v
     elif t == Token.QUOTE:
@@ -283,8 +289,8 @@ class Special(object):
     def __repr__(self):
         return self.val
 
-Special.T = Special("T")
-Special.F = Special("F")
+Special.T = Special("#t")
+Special.F = Special("#f")
 
 Globals = Scope()
 
@@ -295,8 +301,6 @@ Globals.symbols["/"]      = lambda x, y: x / y
 Globals.symbols["="]      = lambda x, y: Special.T if x == y else Special.F
 Globals.symbols[">"]      = lambda x, y: Special.T if x > y else Special.F
 Globals.symbols["<"]      = lambda x, y: Special.T if x < y else Special.F
-Globals.symbols["#t"]     = Special.T
-Globals.symbols["#f"]     = Special.F
 Globals.symbols["cons"]   = lambda x, y: [x] + y if isinstance(y, list) else [x]
 Globals.symbols["list"]   = lambda *args: list(args)
 Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
@@ -346,6 +350,7 @@ if __name__ == "__main__":
         doctest.testmod(optionflags=doctest.ELLIPSIS)
         doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
         doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
+        doctest.testfile("r5rs.test", optionflags=doctest.ELLIPSIS)
     else:
         f = open(sys.argv[1])
         text = f.read()

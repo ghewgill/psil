@@ -19,9 +19,9 @@
 >>> eval(read("my-age"))
 10
 >>> eval(read("#t"))
-T
+#t
 >>> eval(read("#f"))
-F
+#f
 >>> eval(read("()"))
 []
 >>> eval(read("your-age"))
@@ -109,9 +109,9 @@ UndefinedSymbolError: foo
 2
 
 >>> eval(read("(list? 'a)"))
-F
+#f
 >>> eval(read("(list? a)"))
-T
+#t
 
 >>> eval(read("(set! my-age (+ my-age 1))"))
 11
