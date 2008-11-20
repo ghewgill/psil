@@ -273,11 +273,12 @@ class Function(object):
         self.scope = scope
     def __call__(self, *args):
         scope = Scope(self.scope)
-        if isinstance(self.params, list):
-            for p, a in zip(self.params, args):
-                scope.define(p.name, a)
-        else:
-            scope.define(self.params.name, list(args))
+        if self.params is not None:
+            if isinstance(self.params, list):
+                for p, a in zip(self.params, args):
+                    scope.define(p.name, a)
+            else:
+                scope.define(self.params.name, list(args))
         r = None
         for b in self.body:
             r = scope.eval(b)
