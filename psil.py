@@ -365,6 +365,26 @@ Globals.symbols["floor"]     = lambda x: math.floor(x) if not isinstance(x, int)
 Globals.symbols["ceiling"]   = lambda x: math.ceil(x) if not isinstance(x, int) else x
 Globals.symbols["truncate"]  = lambda x: math.ceil(x) if x < 0 else math.floor(x)
 Globals.symbols["round"]     = lambda x: math.floor(x + 0.5) if not isinstance(x, int) else x
+Globals.symbols["exp"]       = math.exp
+Globals.symbols["log"]       = math.log
+Globals.symbols["sin"]       = math.sin
+Globals.symbols["cos"]       = math.cos
+Globals.symbols["tan"]       = math.tan
+Globals.symbols["asin"]      = math.asin
+Globals.symbols["acos"]      = math.acos
+Globals.symbols["atan"]      = lambda *args: math.atan(args[0]) if len(args) == 1 else math.atan2(args[0], args[1])
+Globals.symbols["sqrt"]      = math.sqrt
+Globals.symbols["expt"]      = math.pow
+Globals.symbols["make-rectangular"] = lambda x, y: 0 # TODO
+Globals.symbols["make-polar"] = lambda x, y: 0 # TODO
+Globals.symbols["real-part"]  = lambda z: 0 # TODO
+Globals.symbols["imag-part"]  = lambda z: 0 # TODO
+Globals.symbols["magnitude"]  = lambda z: 0 # TODO
+Globals.symbols["angle"]      = lambda z: 0 # TODO
+Globals.symbols["exact->inexact"] = lambda x: x # TODO
+Globals.symbols["inexact->exact"] = lambda x: x # TODO
+Globals.symbols["number->string"] = lambda x, b = 10: str(x) if b == 10 else hex(x)[2:] # TODO
+Globals.symbols["string->number"] = lambda x, b = 10: int(x, b) # TODO
 
 Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 

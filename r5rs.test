@@ -519,3 +519,66 @@ unspecified
 4
 >>> psil("(round 7)")
 7
+
+>>> psil("(rationalize (inexact->exact .3) 1/10)") # (rational) #doctest: +SKIP
+1/3
+>>> psil("((rationalize .3 1/10)") # (rational) #doctest: +SKIP
+#i1/3
+
+>>> psil("(define pi 3.1415926535897931)")
+3.1415926535897931
+>>> psil("(exp 0)")
+1.0
+>>> psil("(exp 1)")
+2.7182818284590451
+>>> psil("(exp (- (* pi 1i)))") # (complex) #doctest: +SKIP
+-1.0
+>>> psil("(log 1)")
+0.0
+>>> psil("(sin (/ pi 6))")
+0.49999999999999994
+>>> psil("(cos 0)")
+1.0
+>>> psil("(tan (/ pi 4))")
+0.99999999999999989
+>>> psil("(* 2 (asin 1))")
+3.1415926535897931
+>>> psil("(acos 1)")
+0.0
+>>> psil("(* 4 (atan 1))")
+3.1415926535897931
+>>> psil("(* 4 (atan 2 2))")
+3.1415926535897931
+
+>>> psil("(sqrt 9)")
+3.0
+
+>>> psil("(expt 7 3)")
+343.0
+
+>>> psil("(make-rectangular 0 1)") # (complex) #doctest: +SKIP
+1.0i
+>>> psil("(make-polar 0 1)") # (complex) #doctest: +SKIP
+1.0
+>>> psil("(real-part 1.0i)") # (complex) #doctest: +SKIP
+0.0
+>>> psil("(imag-part 1.0i)") # (complex) #doctest: +SKIP
+1.0
+>>> psil("(magnitude 1.0+1.0i)") # (complex) #doctest: +SKIP
+1.414...
+>>> psil("(angle 1.0+1.0i)") # (complex) #doctest: +SKIP
+(/ pi 4)
+
+>>> psil("(exact->inexact 5)") # (inexact) #doctest: +SKIP
+5.0
+>>> psil("(inexact->exact 5.0)")
+5
+
+>>> psil("(number->string 123)")
+'123'
+>>> psil("(number->string 123 16)")
+'7b'
+>>> psil("""(string->number "321")""")
+321
+>>> psil("""(string->number "0x243")""") # (todo) #doctest: +SKIP
+321
