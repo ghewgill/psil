@@ -361,10 +361,10 @@ Globals.symbols["gcd"]       = lambda x, y: x if y == 0 else Globals.symbols["gc
 Globals.symbols["lcm"]       = lambda x, y: x * y # TODO
 Globals.symbols["numerator"] = lambda x: x # TODO
 Globals.symbols["denominator"] = lambda x: x # TODO
-Globals.symbols["floor"]     = lambda x: math.floor(x) if not isinstance(x, int) else x
-Globals.symbols["ceiling"]   = lambda x: math.ceil(x) if not isinstance(x, int) else x
-Globals.symbols["truncate"]  = lambda x: math.ceil(x) if x < 0 else math.floor(x)
-Globals.symbols["round"]     = lambda x: math.floor(x + 0.5) if not isinstance(x, int) else x
+Globals.symbols["floor"]     = lambda x: int(math.floor(x)) if not isinstance(x, int) else x
+Globals.symbols["ceiling"]   = lambda x: int(math.ceil(x)) if not isinstance(x, int) else x
+Globals.symbols["truncate"]  = lambda x: int(math.ceil(x)) if x < 0 else int(math.floor(x))
+Globals.symbols["round"]     = lambda x: int(math.floor(x + 0.5)) if not isinstance(x, int) else x
 Globals.symbols["exp"]       = math.exp
 Globals.symbols["log"]       = math.log
 Globals.symbols["sin"]       = math.sin
