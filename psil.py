@@ -11,6 +11,7 @@
 
 """
 
+import math
 import re
 
 RE_NUMBER = re.compile(r"[-+]?\d+(\.\d+)?(e[-+]?\d+)?", re.IGNORECASE)
@@ -91,7 +92,10 @@ def tokenise(s):
             m = RE_NUMBER.match(s[i:])
             if m:
                 if m.group(1) or m.group(2):
-                    yield (Token.NUMBER, float(m.group(0)))
+                    x = float(m.group(0))
+                    if x == math.floor(x):
+                        x = int(x)
+                    yield (Token.NUMBER, x)
                 else:
                     yield (Token.NUMBER, int(m.group(0)))
                 i += m.end(0)
@@ -312,13 +316,6 @@ Special.F = Special("#f")
 
 Globals = Scope()
 
-Globals.symbols["+"]      = lambda *args: sum(args)
-Globals.symbols["-"]      = lambda x, y: x - y
-Globals.symbols["*"]      = lambda *args: reduce(lambda x, y: x * y, args)
-Globals.symbols["/"]      = lambda x, y: x / y
-Globals.symbols["="]      = lambda x, y: Special.T if x == y else Special.F
-Globals.symbols[">"]      = lambda x, y: Special.T if x > y else Special.F
-Globals.symbols["<"]      = lambda x, y: Special.T if x < y else Special.F
 Globals.symbols["cons"]   = lambda x, y: [x] + y if isinstance(y, list) else [x]
 Globals.symbols["list"]   = lambda *args: list(args)
 Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
@@ -332,6 +329,42 @@ Globals.symbols["eq?"]    = lambda x, y: Special.T if x is y else Special.F
 Globals.symbols["equal?"] = lambda x, y: Special.T if x == y else Special.F
 Globals.symbols["list?"]  = lambda x: Special.T if isinstance(x, list) else Special.F
 Globals.symbols["apply"]  = lambda x, args: x(*args)
+
+Globals.symbols["number?"]   = lambda x: Special.T
+Globals.symbols["complex?"]  = lambda x: Special.T if isinstance(x, complex) or isinstance(x, float) or isinstance(x, int) else Special.F
+Globals.symbols["real?"]     = lambda x: Special.T if isinstance(x, float) or isinstance(x, int) else Special.F
+Globals.symbols["rational?"] = lambda x: Special.F # todo
+Globals.symbols["integer?"]  = lambda x: Special.T if isinstance(x, int) else Special.F
+Globals.symbols["exact?"]    = lambda x: Special.T if isinstance(x, int) else Special.F
+Globals.symbols["inexact?"]  = lambda x: Special.T if not isinstance(x, int) else Special.F
+Globals.symbols["="]         = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] == args[i+1] for i in range(len(args)-1)], True) else Special.F
+Globals.symbols["<"]         = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] < args[i+1] for i in range(len(args)-1)], True) else Special.F
+Globals.symbols[">"]         = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] > args[i+1] for i in range(len(args)-1)], True) else Special.F
+Globals.symbols["<="]        = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] <= args[i+1] for i in range(len(args)-1)], True) else Special.F
+Globals.symbols[">="]        = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] >= args[i+1] for i in range(len(args)-1)], True) else Special.F
+Globals.symbols["zero?"]     = lambda x: Special.T if x == 0 else Special.F
+Globals.symbols["positive?"] = lambda x: Special.T if x > 0 else Special.F
+Globals.symbols["negative?"] = lambda x: Special.T if x < 0 else Special.F
+Globals.symbols["odd?"]      = lambda x: Special.T if x & 1 else Special.F
+Globals.symbols["even?"]     = lambda x: Special.T if not (x & 1) else Special.F
+Globals.symbols["max"]       = lambda *args: max(args)
+Globals.symbols["min"]       = lambda *args: min(args)
+Globals.symbols["+"]         = lambda *args: sum(args)
+Globals.symbols["*"]         = lambda *args: reduce(lambda x, y: x * y, args, 1)
+Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else reduce(lambda x, y: x - y, args)
+Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else reduce(lambda x, y: 1.0*x / y, args)
+Globals.symbols["abs"]       = lambda x: abs(x)
+Globals.symbols["quotient"]  = lambda x, y: x // y
+Globals.symbols["modulo"]    = lambda x, y: x % y
+Globals.symbols["remainder"] = lambda x, y: x % y
+Globals.symbols["gcd"]       = lambda x, y: x if y == 0 else Globals.symbols["gcd"](y, x % abs(y))
+Globals.symbols["lcm"]       = lambda x, y: x * y # TODO
+Globals.symbols["numerator"] = lambda x: x # TODO
+Globals.symbols["denominator"] = lambda x: x # TODO
+Globals.symbols["floor"]     = lambda x: math.floor(x) if not isinstance(x, int) else x
+Globals.symbols["ceiling"]   = lambda x: math.ceil(x) if not isinstance(x, int) else x
+Globals.symbols["truncate"]  = lambda x: math.ceil(x) if x < 0 else math.floor(x)
+Globals.symbols["round"]     = lambda x: math.floor(x + 0.5) if not isinstance(x, int) else x
 
 Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 
