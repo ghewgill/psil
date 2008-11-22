@@ -348,3 +348,18 @@ unspecified
 ... (let ((p (lambda (x) x)))
 ...   (eq? p p))""") # (macro) #doctest: +SKIP
 #t
+
+>>> psil("(equal? 'a 'a)")
+#t
+>>> psil("(equal? '(a) '(a))")
+#t
+>>> psil("(equal? '(a (b) c) '(a (b) c))")
+#t
+>>> psil("""(equal? "abc" "abc")""")
+#t
+>>> psil("(equal? 2 2)")
+#t
+>>> psil("(equal? (make-vector 5 'a) (make-vector 5 'a))") # (vector) #doctest: +SKIP
+#t
+>>> psil("(equal? (lambda (x) x) (lambda (y) y))") # (unspecified) #doctest: +SKIP
+unspecified
