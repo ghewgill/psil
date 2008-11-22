@@ -386,6 +386,9 @@ Globals.symbols["inexact->exact"] = lambda x: x # TODO
 Globals.symbols["number->string"] = lambda x, b = 10: str(x) if b == 10 else hex(x)[2:] # TODO
 Globals.symbols["string->number"] = lambda x, b = 10: int(x, b) # TODO
 
+Globals.symbols["not"]      = lambda x: Special.T if x is Special.F else Special.F
+Globals.symbols["boolean?"] = lambda x: Special.T if x is Special.F or x is Special.T else Special.F
+
 Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 
 def _print(x):

@@ -582,3 +582,36 @@ unspecified
 321
 >>> psil("""(string->number "0x243")""") # (todo) #doctest: +SKIP
 321
+
+6.3 Other data types
+
+6.3.1 Booleans
+
+>>> psil("#t")
+#t
+>>> psil("#f")
+#f
+>>> psil("'#f")
+#f
+
+>>> psil("(not #t)")
+#f
+>>> psil("(not 3)")
+#f
+>>> psil("(not (list 3))")
+#f
+>>> psil("(not #f)")
+#t
+>>> psil("(not '())")
+#f
+>>> psil("(not (list))")
+#f
+>>> psil("(not 'nil)")
+#f
+
+>>> psil("(boolean? #f)")
+#t
+>>> psil("(boolean? 0)")
+#f
+>>> psil("(boolean? '())")
+#f
