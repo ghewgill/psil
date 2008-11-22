@@ -313,3 +313,38 @@ consonant
 ... (let ((p (lambda (x) x)))
 ...   (eqv? p p))""") # (macro) #doctest: +SKIP
 #t
+
+>>> psil("(eq? 'a 'a)")
+#t
+>>> psil("(eq? '(a) '(a))") # (unspecified) #doctest: +SKIP
+unspecified
+>>> psil("(eq? (list 'a) (list 'a))")
+#f
+>>> psil("""(eq? "a" "a")""") # (unspecified) #doctest: +SKIP
+unspecified
+>>> psil("""(eq? "" "")""") # (unspecified) #doctest: +SKIP
+unspecified
+>>> psil("(eq? '() '())")
+#t
+>>> psil("(eq? 2 2)") # (unspecified) #doctest: +SKIP
+unspecified
+>>> psil("(eq? #\A #\A)") # (char) #doctest: +SKIP
+unspecified
+>>> psil("(eq? car car)")
+#t
+>>> psil("""
+... (let ((n (+ 2 3)))
+...   (eq? n n))""") # (macro) #doctest: +SKIP
+unspecified
+>>> psil("""
+... (let ((x '(a)))
+...   (eq? x x))""") # (macro) #doctest: +SKIP
+#t
+>>> psil("""
+... (let ((x '#()))
+...   (eq? x x))""") # (macro) #doctest: +SKIP
+#t
+>>> psil("""
+... (let ((p (lambda (x) x)))
+...   (eq? p p))""") # (macro) #doctest: +SKIP
+#t

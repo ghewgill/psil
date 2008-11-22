@@ -328,6 +328,7 @@ Globals.symbols["car"]    = Globals.symbols["first"]
 Globals.symbols["cdr"]    = Globals.symbols["rest"]
 Globals.symbols["length"] = lambda x: len(x)
 Globals.symbols["eqv?"]   = lambda x, y: Special.T if x is y else Special.F
+Globals.symbols["eq?"]    = lambda x, y: Special.T if x is y else Special.F
 Globals.symbols["list?"]  = lambda x: Special.T if isinstance(x, list) else Special.F
 Globals.symbols["apply"]  = lambda x, args: x(*args)
 
