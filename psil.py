@@ -478,7 +478,7 @@ if __name__ == "__main__":
             sys.stdout.flush()
             s = sys.stdin.readline()
             try:
-                print psil(s)
+                rep(s)
             except SystemExit:
                 raise
             except:
