@@ -21,6 +21,7 @@ a
 >>> rep("'#(a b c)") # (vector) #doctest: +SKIP
 #(a b c)
 >>> rep("'()")
+()
 >>> rep("'(+ 1 2)")
 (+ 1 2)
 >>> rep("'(quote a)")
@@ -668,7 +669,7 @@ a
 1
 >>> rep("(car '())")
 Traceback (most recent call last):
-TypeError: 'NoneType' object is unsubscriptable
+IndexError: list index out of range
 
 >>> rep("(cdr '((a) b c d))")
 (b c d)
@@ -676,7 +677,7 @@ TypeError: 'NoneType' object is unsubscriptable
 2
 >>> rep("(cdr '())")
 Traceback (most recent call last):
-TypeError: 'NoneType' object is unsubscriptable
+IndexError: list index out of range
 
 >>> rep("(define (f) (list 'not-a-constant-list))")
 <psil.Function object at 0x...>

@@ -23,6 +23,7 @@
 >>> rep("#f")
 #f
 >>> rep("()")
+()
 >>> rep("your-age")
 Traceback (most recent call last):
     ...
@@ -77,6 +78,7 @@ a
 >>> rep("(rest '((a s) (d f)))")
 ((d f))
 >>> rep("(define a ())")
+()
 >>> rep("(set! a '(a s d f))")
 (a s d f)
 >>> rep("(first a)")
@@ -116,6 +118,7 @@ s
 >>> rep("(set! a (cdr a))")
 (a s d f)
 >>> rep("(define words ())")
+()
 >>> rep("(set! words '(a list of words))")
 (a list of words)
 >>> rep("(set! words (cons 'this (rest words)))")

@@ -19,6 +19,7 @@ RE_SYMBOL = re.compile(r"[^ \t\n\)]+", re.IGNORECASE)
 
 peval = eval
 
+Nil = []
 Symbols = {}
 
 class SyntaxError(Exception):
@@ -141,7 +142,7 @@ def parse(tokens, next = None):
                 break
             a.append(parse(tokens, next))
         if len(a) == 0:
-            return None
+            return Nil # return a common Nil object
         return a
     elif t == Token.STRING:
         return v
@@ -167,6 +168,7 @@ def read(s):
     >>> read("1")
     1
     >>> read("()")
+    []
     >>> read("a")
     <a>
     >>> read('''"test"''')
@@ -399,14 +401,19 @@ Globals.symbols["not"]      = lambda x: Special.T if x is Special.F else Special
 Globals.symbols["boolean?"] = lambda x: Special.T if x is Special.F or x is Special.T else Special.F
 
 Globals.symbols["list"]     = lambda *args: list(args)
-Globals.symbols["list?"]    = lambda x: Special.T if isinstance(x, list) or x is None else Special.F
+Globals.symbols["list?"]    = lambda x: Special.T if isinstance(x, list) else Special.F
 Globals.symbols["set-cdr!"] = lambda x: None # TODO
 Globals.symbols["pair?"]    = lambda x: Special.F # TODO
 Globals.symbols["cons"]     = lambda x, y: [x] + y if isinstance(y, list) else [x]
 def _set_car(x, y): x[0] = y
 Globals.symbols["set-car!"] = _set_car
 Globals.symbols["car"]    = lambda x: x[0]
-Globals.symbols["cdr"]    = lambda x: x[1:]
+def _cdr(x):
+    if len(x) > 0:
+        return x[1:]
+    else:
+        raise IndexError("list index out of range")
+Globals.symbols["cdr"]    = _cdr
 Globals.symbols["caar"]   = lambda x: x[0][0]
 Globals.symbols["cadr"]   = lambda x: x[1]
 Globals.symbols["cdar"]   = lambda x: x[0][1:]
@@ -421,8 +428,8 @@ Globals.symbols["caadr"]  = lambda x: x[1][0]
 #Globals.symbols["cdddr"]  = lambda x: x[0][0][0]
 Globals.symbols["caaaar"] = lambda x: x[0][0][0][0]
 #...
-Globals.symbols["null?"]  = lambda x: Special.T if x is None else Special.F
-Globals.symbols["length"] = lambda x: len(x) if x is not None else 0
+Globals.symbols["null?"]  = lambda x: Special.T if isinstance(x, list) and len(x) == 0 else Special.F
+Globals.symbols["length"] = lambda x: len(x)
 Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
 Globals.symbols["reverse"] = lambda x: list(reversed(x))
 Globals.symbols["list-tail"] = lambda x, y: x[y:]
@@ -457,8 +464,6 @@ def _print(x):
 Globals.symbols["display"] = _print
 
 def external(x):
-    if x is None:
-        return ""
     if isinstance(x, list):
         return "(" + " ".join(external(i) for i in x) + ")"
     if isinstance(x, Symbol):
