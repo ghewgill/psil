@@ -284,6 +284,7 @@ class Macro(object):
         self.scope = scope
     def expand(self, *args):
         scope = Scope(self.scope)
+        assert len(self.params) == len(args)
         for p, a in zip(self.params, args):
             scope.define(p.name, a)
         #import sys
@@ -299,6 +300,7 @@ class Function(object):
         scope = Scope(self.scope)
         if self.params is not None:
             if isinstance(self.params, list):
+                assert len(self.params) == len(args)
                 for p, a in zip(self.params, args):
                     scope.define(p.name, a)
             else:
