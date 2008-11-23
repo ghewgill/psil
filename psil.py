@@ -463,7 +463,7 @@ Globals.symbols["string=?"] = lambda x, y: Special.T if x == y else Special.F
 
 Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 Globals.symbols["concat"] = lambda *args: "".join(args)
-Globals.symbols["format"] = lambda x, y: x % y
+Globals.symbols["format"] = lambda x, *y: x % y
 
 def _print(x):
     print x
