@@ -1,5 +1,4 @@
->>> from psil import read, eval
->>> psil = lambda x: eval(read(x))
+>>> from psil import psil
 
 >>> psil("(abs -5)")
 5

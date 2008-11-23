@@ -434,6 +434,17 @@ def _print(x):
     print x
 Globals.symbols["display"] = _print
 
+def external(x):
+    if x is None:
+        return ""
+    if isinstance(x, list):
+        return "(" + " ".join(external(i) for i in x) + ")"
+    if isinstance(x, Symbol):
+        return x.name
+    if isinstance(x, str):
+        return '"' + re.sub('"', r'\"', x) + '"'
+    return str(x)
+
 def psil(s):
     t = tokenise(s)
     r = None
@@ -443,6 +454,11 @@ def psil(s):
             break
         r = eval(p)
     return r
+
+def rep(s):
+    r = psil(s)
+    if r is not None:
+        print external(r)
 
 if __name__ == "__main__":
     import sys

@@ -1,232 +1,232 @@
->>> from psil import read, eval, psil
+>>> from psil import rep
 
->>> eval(read("(+ 1 2 3 4)"))
-10
-
->>> eval(read("(define my-age 9)"))
-9
->>> eval(read("my-age"))
-9
->>> eval(read("(set! my-age 10)"))
-10
->>> eval(read("my-age"))
+>>> rep("(+ 1 2 3 4)")
 10
 
->>> eval(read("9"))
+>>> rep("(define my-age 9)")
 9
->>> eval(read("10"))
+>>> rep("my-age")
+9
+>>> rep("(set! my-age 10)")
 10
->>> eval(read("my-age"))
+>>> rep("my-age")
 10
->>> eval(read("#t"))
+
+>>> rep("9")
+9
+>>> rep("10")
+10
+>>> rep("my-age")
+10
+>>> rep("#t")
 #t
->>> eval(read("#f"))
+>>> rep("#f")
 #f
->>> eval(read("()"))
->>> eval(read("your-age"))
+>>> rep("()")
+>>> rep("your-age")
 Traceback (most recent call last):
     ...
 UndefinedSymbolError: your-age
 
->>> eval(read("(+ 2 13 45)"))
+>>> rep("(+ 2 13 45)")
 60
->>> eval(read("(+ my-age 1)"))
+>>> rep("(+ my-age 1)")
 11
->>> eval(read("(+ your-age 1)"))
+>>> rep("(+ your-age 1)")
 Traceback (most recent call last):
     ...
 UndefinedSymbolError: your-age
->>> eval(read("(foo 1 3 4)"))
+>>> rep("(foo 1 3 4)")
 Traceback (most recent call last):
     ...
 UndefinedSymbolError: foo
 
->>> eval(read("(+ 1 2)"))
+>>> rep("(+ 1 2)")
 3
->>> eval(read("(- 9 5)"))
+>>> rep("(- 9 5)")
 4
->>> eval(read("(* 3 4 5)"))
+>>> rep("(* 3 4 5)")
 60
->>> eval(read("(/ 15 3)")) # (exact) #doctest: +SKIP
+>>> rep("(/ 15 3)") # (exact) #doctest: +SKIP
 5
 
->>> eval(read("(cons 1 ())"))
-[1]
->>> eval(read("(cons 1 (cons 2 ()))"))
-[1, 2]
+>>> rep("(cons 1 ())")
+(1)
+>>> rep("(cons 1 (cons 2 ()))")
+(1 2)
 
->>> eval(read("'a"))
-<a>
->>> eval(read("(cons 'a '(b c d))"))
-[<a>, <b>, <c>, <d>]
->>> eval(read("(list 2 3 4)"))
-[2, 3, 4]
->>> eval(read("(list 'a '(a s d f))"))
-[<a>, [<a>, <s>, <d>, <f>]]
->>> eval(read("(append '(a b) '(c d))"))
-[<a>, <b>, <c>, <d>]
+>>> rep("'a")
+a
+>>> rep("(cons 'a '(b c d))")
+(a b c d)
+>>> rep("(list 2 3 4)")
+(2 3 4)
+>>> rep("(list 'a '(a s d f))")
+(a (a s d f))
+>>> rep("(append '(a b) '(c d))")
+(a b c d)
 
->>> eval(read("(first '(a s d f))"))
-<a>
->>> eval(read("(first '((a s) d f))"))
-[<a>, <s>]
->>> eval(read("(rest '(a s d f))"))
-[<s>, <d>, <f>]
->>> eval(read("(rest '((a s) d f))"))
-[<d>, <f>]
->>> eval(read("(rest '((a s) (d f)))"))
-[[<d>, <f>]]
->>> eval(read("(define a ())"))
->>> eval(read("(set! a '(a s d f))"))
-[<a>, <s>, <d>, <f>]
->>> eval(read("(first a)"))
-<a>
->>> eval(read("(rest a)"))
-[<s>, <d>, <f>]
->>> eval(read("(first (rest a))"))
-<s>
+>>> rep("(first '(a s d f))")
+a
+>>> rep("(first '((a s) d f))")
+(a s)
+>>> rep("(rest '(a s d f))")
+(s d f)
+>>> rep("(rest '((a s) d f))")
+(d f)
+>>> rep("(rest '((a s) (d f)))")
+((d f))
+>>> rep("(define a ())")
+>>> rep("(set! a '(a s d f))")
+(a s d f)
+>>> rep("(first a)")
+a
+>>> rep("(rest a)")
+(s d f)
+>>> rep("(first (rest a))")
+s
 
->>> eval(read("(cons 'a a)"))
-[<a>, <a>, <s>, <d>, <f>]
->>> eval(read("a"))
-[<a>, <s>, <d>, <f>]
->>> eval(read("(set! a (cons 'a a))"))
-[<a>, <a>, <s>, <d>, <f>]
->>> eval(read("a"))
-[<a>, <a>, <s>, <d>, <f>]
+>>> rep("(cons 'a a)")
+(a a s d f)
+>>> rep("a")
+(a s d f)
+>>> rep("(set! a (cons 'a a))")
+(a a s d f)
+>>> rep("a")
+(a a s d f)
 
->>> eval(read("(length '(1 2 3))"))
+>>> rep("(length '(1 2 3))")
 3
->>> eval(read("(length a)"))
+>>> rep("(length a)")
 5
->>> eval(read("(length (append a a))"))
+>>> rep("(length (append a a))")
 10
->>> eval(read("(length '(append a a))"))
+>>> rep("(length '(append a a))")
 3
->>> eval(read("(length (list a a))"))
+>>> rep("(length (list a a))")
 2
 
->>> eval(read("(list? 'a)"))
+>>> rep("(list? 'a)")
 #f
->>> eval(read("(list? a)"))
+>>> rep("(list? a)")
 #t
 
->>> eval(read("(set! my-age (+ my-age 1))"))
+>>> rep("(set! my-age (+ my-age 1))")
 11
->>> eval(read("(set! a (cdr a))"))
-[<a>, <s>, <d>, <f>]
->>> eval(read("(define words ())"))
->>> eval(read("(set! words '(a list of words))"))
-[<a>, <list>, <of>, <words>]
->>> eval(read("(set! words (cons 'this (rest words)))"))
-[<this>, <list>, <of>, <words>]
+>>> rep("(set! a (cdr a))")
+(a s d f)
+>>> rep("(define words ())")
+>>> rep("(set! words '(a list of words))")
+(a list of words)
+>>> rep("(set! words (cons 'this (rest words)))")
+(this list of words)
 
-#>>> eval(read("(setf (first words) 'the)"))
-#<the>
-#>>> eval(read("words"))
-#[<the>, <list>, <of>, <words>]
-#>>> eval(read("(setf (third words) 'is)"))
-#<is>
-#>>> eval(read("words"))
-#[<the>, <list>, <is>, <words>]
-#>>> eval(read("(setf (rest words) '(game is up))"))
-#[<game>, <is>, <up>]
-#>>> eval(read("words"))
-#[<the>, <game>, <is>, <up>]
+#>>> rep("(setf (first words) 'the)")
+#the
+#>>> rep("words")
+#(the list of words)
+#>>> rep("(setf (third words) 'is)")
+#is
+#>>> rep("words")
+#(the list is words)
+#>>> rep("(setf (rest words) '(game is up))")
+#(game is up)
+#>>> rep("words")
+#(the game is up)
 
->>> eval(read("(define (square x) (* x x))"))
+>>> rep("(define (square x) (* x x))")
 <psil.Function object at 0x...>
->>> eval(read("(square 2)"))
+>>> rep("(square 2)")
 4
->>> eval(read("(square 1.4142158)"))
-2.0000063289696399
+>>> rep("(square 1.4142158)")
+2.00000632897
 
->>> eval(read("(define x 3)"))
+>>> rep("(define x 3)")
 3
->>> eval(read("(square 345)"))
+>>> rep("(square 345)")
 119025
->>> eval(read("x"))
+>>> rep("x")
 3
->>> eval(read("(define (y-plus x) (+ x y))"))
+>>> rep("(define (y-plus x) (+ x y))")
 <psil.Function object at 0x...>
->>> eval(read("(define y 0)"))
+>>> rep("(define y 0)")
 0
->>> eval(read("(set! y 2)"))
+>>> rep("(set! y 2)")
 2
->>> eval(read("(y-plus 4)"))
+>>> rep("(y-plus 4)")
 6
->>> eval(read("(set! x 5)"))
+>>> rep("(set! x 5)")
 5
->>> eval(read("(y-plus 23)"))
+>>> rep("(y-plus 23)")
 25
->>> eval(read("x"))
+>>> rep("x")
 5
->>> eval(read("(set! y 27)"))
+>>> rep("(set! y 27)")
 27
->>> eval(read("(y-plus 43)"))
+>>> rep("(y-plus 43)")
 70
 
->>> eval(read("(define (fourth-power x) (square (square x)))"))
+>>> rep("(define (fourth-power x) (square (square x)))")
 <psil.Function object at 0x...>
->>> eval(read("(fourth-power 2)"))
+>>> rep("(fourth-power 2)")
 16
 
->>> eval(read("""(define (powers-of x)
+>>> rep("""(define (powers-of x)
 ...   (square x)
-...      (fourth-power x))"""))
+...      (fourth-power x))""")
 <psil.Function object at 0x...>
->>> eval(read("(powers-of 2)"))
+>>> rep("(powers-of 2)")
 16
->>> eval(read("""(define (powers-of x)
+>>> rep("""(define (powers-of x)
 ...   (set! y (square x))
-...   (fourth-power x))"""))
+...   (fourth-power x))""")
 <psil.Function object at 0x...>
->>> eval(read("y"))
+>>> rep("y")
 27
->>> eval(read("(powers-of 7)"))
+>>> rep("(powers-of 7)")
 2401
->>> eval(read("y"))
+>>> rep("y")
 49
 
->>> eval(read("""(define (absdiff x y)
+>>> rep("""(define (absdiff x y)
 ...  (if (> x y)
 ...      (- x y)
-...      (- y x)))"""))
+...      (- y x)))""")
 <psil.Function object at 0x...>
->>> eval(read("(absdiff 3 4)"))
+>>> rep("(absdiff 3 4)")
 1
->>> eval(read("(absdiff 4 3)"))
+>>> rep("(absdiff 4 3)")
 1
 
->>> psil("(define a 1) (define b 2) (define c 3)")
+>>> rep("(define a 1) (define b 2) (define c 3)")
 3
->>> psil("`,a")
+>>> rep("`,a")
 1
->>> psil("`(a ,b c)")
-[<a>, 2, <c>]
->>> psil("`(a (,b c))")
-[<a>, [2, <c>]]
->>> psil("`(a b ,c (',(+ a b c)) (+ a b) 'c '((,a ,b)))")
-[<a>, <b>, 3, [[<quote>, 6]], [<+>, <a>, <b>], [<quote>, <c>], [<quote>, [[1, 2]]]]
+>>> rep("`(a ,b c)")
+(a 2 c)
+>>> rep("`(a (,b c))")
+(a (2 c))
+>>> rep("`(a b ,c (',(+ a b c)) (+ a b) 'c '((,a ,b)))")
+(a b 3 ((quote 6)) (+ a b) (quote c) (quote ((1 2))))
 
->>> psil("(defmacro one! (var) `(set! ,var 1))")
+>>> rep("(defmacro one! (var) `(set! ,var 1))")
 <psil.Macro object at 0x...>
->>> psil("(one! b)")
+>>> rep("(one! b)")
 1
->>> psil("b")
+>>> rep("b")
 1
 
->>> psil("""
+>>> rep("""
 ... (defmacro let (vars body)
 ...   `((lambda ()
 ...      (define ,(first (first vars)) ,(first (rest (first vars))))
 ...      ,body)))""")
 <psil.Macro object at 0x...>
->>> psil("a")
+>>> rep("a")
 1
->>> psil("((lambda () (define a 5) a))")
+>>> rep("((lambda () (define a 5) a))")
 5
->>> psil("(let ((a 5)) a)")
+>>> rep("(let ((a 5)) a)")
 5
->>> psil("a")
+>>> rep("a")
 1

@@ -1,90 +1,89 @@
->>> from psil import read, eval, psil
+>>> from psil import rep
 
 4.1.1 Variable references
 
->>> psil("(define x 28)")
+>>> rep("(define x 28)")
 28
->>> psil("x")
+>>> rep("x")
 28
 
 4.1.2 Literal expressions
 
->>> psil("(quote a)")
-<a>
->>> psil("(quote #(a b c))") # (vector) #doctest: +SKIP
+>>> rep("(quote a)")
+a
+>>> rep("(quote #(a b c))") # (vector) #doctest: +SKIP
 #(a b c)
->>> psil("(quote (+ 1 2))")
-[<+>, 1, 2]
+>>> rep("(quote (+ 1 2))")
+(+ 1 2)
 
->>> psil("'a")
-<a>
->>> psil("'#(a b c)") # (vector) #doctest: +SKIP
+>>> rep("'a")
+a
+>>> rep("'#(a b c)") # (vector) #doctest: +SKIP
 #(a b c)
->>> psil("'()") # (null) #doctest: +SKIP
-[]
->>> psil("'(+ 1 2)")
-[<+>, 1, 2]
->>> psil("'(quote a)")
-[<quote>, <a>]
->>> psil("''a")
-[<quote>, <a>]
+>>> rep("'()")
+>>> rep("'(+ 1 2)")
+(+ 1 2)
+>>> rep("'(quote a)")
+(quote a)
+>>> rep("''a")
+(quote a)
 
->>> psil("'\"abc\"")
-'abc'
->>> psil("\"abc\"")
-'abc'
->>> psil("'145932")
+>>> rep("'\"abc\"")
+"abc"
+>>> rep("\"abc\"")
+"abc"
+>>> rep("'145932")
 145932
->>> psil("145932")
+>>> rep("145932")
 145932
->>> psil("'#t")
+>>> rep("'#t")
 #t
->>> psil("#t")
+>>> rep("#t")
 #t
 
 4.1.3 Procedure calls
 
->>> psil("(+ 3 4)")
+>>> rep("(+ 3 4)")
 7
->>> psil("((if #f + *) 3 4)")
+>>> rep("((if #f + *) 3 4)")
 12
 
 4.1.4 Procedures
 
->>> psil("(lambda (x) (+ x x))")
+>>> rep("(lambda (x) (+ x x))")
 <psil.Function object at 0x...>
->>> psil("((lambda (x) (+ x x)) 4)")
+>>> rep("((lambda (x) (+ x x)) 4)")
 8
 
->>> psil("""
+>>> rep("""
 ... (define reverse-subtract
 ...   (lambda (x y) (- y x)))""")
 <psil.Function object at 0x...>
->>> psil("(reverse-subtract 7 10)")
+>>> rep("(reverse-subtract 7 10)")
 3
 
->>> psil("""
+>>> rep("""
 ... (define add4
 ...   (let ((x 4))
 ...     (lambda (y) (+ x y))))""") # (macro) #doctest: +SKIP
 <psil.Function object at 0x...>
->>> psil("(add4 6)") # (macro) #doctest: +SKIP
+>>> rep("(add4 6)") # (macro) #doctest: +SKIP
 10
 
->>> psil("((lambda x x) 3 4 5 6)")
-[3, 4, 5, 6]
->>> psil("""
+>>> rep("((lambda x x) 3 4 5 6)")
+(3 4 5 6)
+>>> rep("""
 ... ((lambda (x y . z) z) # (dot) #doctest: +SKIP
 ...  3 4 5 6)""")
-[5, 6]
+(5 6)
 
 4.1.5 Conditionals
 
->>> psil("(if (> 3 2) 'yes 'no)")
-<yes>
->>> psil("(if (> 2 3) 'yes 'no)")
-<no>
->>> psil("""
+>>> rep("(if (> 3 2) 'yes 'no)")
+yes
+>>> rep("(if (> 2 3) 'yes 'no)")
+no
+>>> rep("""
 ... (if (> 3 2)
 ...     (- 3 2)
 ...     (+ 3 2))""")
@@ -92,89 +91,89 @@
 
 4.1.6 Assignments
 
->>> psil("(define x 2)")
+>>> rep("(define x 2)")
 2
->>> psil("(+ x 1)")
+>>> rep("(+ x 1)")
 3
->>> psil("(set! x 4)")
+>>> rep("(set! x 4)")
 4
->>> psil("(+ x 1)")
+>>> rep("(+ x 1)")
 5
 
 4.2.1 Conditionals
 
->>> psil("""
+>>> rep("""
 ... (cond ((> 3 2) 'greater)
 ...       ((< 3 2) 'less))""") # (macro) #doctest: +SKIP
 greater
->>> psil("""
+>>> rep("""
 ... (cond ((> 3 3) 'greater)
 ...       ((< 3 3) 'less)
 ...       (else 'equal))""") # (macro) #doctest: +SKIP
 equal
->>> psil("""
+>>> rep("""
 ... (cond ((assv 'b '((a 1) (b 2))) => cadr)
 ...       (else #f))""") # (macro) #doctest: +SKIP
 2
 
->>> psil("""
+>>> rep("""
 ... (case (* 2 3)
 ...   ((2 3 5 7) 'prime)
 ...   ((1 4 6 8 9) 'composite))""") # (macro) #doctest: +SKIP
 composite
->>> psil("""
+>>> rep("""
 ... (case (car '(c d))
 ...   ((a) 'a)
 ...   ((b) 'b))""") # (macro) #doctest: +SKIP
 unspecified
->>> psil("""
+>>> rep("""
 ... (case (car '(c d))
 ...   ((a e i o u) 'vowel)
 ...   ((w y) 'semivowel)
 ...   (else 'consonant))""") # (macro) #doctest: +SKIP
 consonant
 
->>> psil("(and (= 2 2) (> 2 1))") # (macro) #doctest: +SKIP
+>>> rep("(and (= 2 2) (> 2 1))") # (macro) #doctest: +SKIP
 #t
->>> psil("(and (= 2 2) (< 2 1))") # (macro) #doctest: +SKIP
+>>> rep("(and (= 2 2) (< 2 1))") # (macro) #doctest: +SKIP
 #f
->>> psil("(and 1 2 'c '(f g))") # (macro) #doctest: +SKIP
+>>> rep("(and 1 2 'c '(f g))") # (macro) #doctest: +SKIP
 (f g)
->>> psil("(and)") # (macro) #doctest: +SKIP
+>>> rep("(and)") # (macro) #doctest: +SKIP
 #t
 
->>> psil("(or (= 2 2) (> 2 1))") # (macro) #doctest: +SKIP
+>>> rep("(or (= 2 2) (> 2 1))") # (macro) #doctest: +SKIP
 #t
->>> psil("(or (= 2 2) (< 2 1))") # (macro) #doctest: +SKIP
+>>> rep("(or (= 2 2) (< 2 1))") # (macro) #doctest: +SKIP
 #t
->>> psil("(or #f #f #f)") # (macro) #doctest: +SKIP
+>>> rep("(or #f #f #f)") # (macro) #doctest: +SKIP
 #f
->>> psil("""
+>>> rep("""
 ... (or (memq 'b '(a b c)) 
 ...     (/ 3 0))""") # (macro) #doctest: +SKIP
-[<b>, <c>]
+(b c)
 
 4.2.2 Binding constructs
 
->>> psil("""
+>>> rep("""
 ... (let ((x 2) (y 3))
 ...   (* x y))""") # (macro) #doctest: +SKIP
 6
->>> psil("""
+>>> rep("""
 ... (let ((x 2) (y 3))
 ...   (let ((x 7)
 ...         (z (+ x y)))
 ...     (* z x)))""") # (macro) #doctest: +SKIP
 35
 
->>> psil("""
+>>> rep("""
 ... (let ((x 2) (y 3))
 ...   (let* ((x 7)
 ...          (z (+ x y)))
 ...     (* z x)))""") # (macro) #doctest: +SKIP
 70
 
->>> psil("""
+>>> rep("""
 ... (letrec ((even?
 ...           (lambda (n)
 ...             (if (zero? n)
@@ -190,13 +189,13 @@ consonant
 
 4.2.3 Sequencing
 
->>> psil("(define x 0)")
+>>> rep("(define x 0)")
 0
->>> psil("""
+>>> rep("""
 ... (begin (set! x 5)
 ...        (+ x 1))""") # (macro) #doctest: +SKIP
 6
->>> psil("""
+>>> rep("""
 ... (begin (display "4 plus 1 equals ")
 ...        (display (+ 4 1)))""") # (macro) #doctest: +SKIP
 4 plus 1 equals 
@@ -204,20 +203,20 @@ consonant
 
 4.2.4 Iteration
 
->>> psil("""
+>>> rep("""
 ... (do ((vec (make-vector 5))
 ...      (i 0 (+ i 1)))
 ...     ((= i 5) vec)
 ...   (vector-set! vec i i))""") # (macro) #doctest: +SKIP
 #(0 1 2 3 4)
->>> psil("""
+>>> rep("""
 ... (let ((x '(1 3 5 7 9)))
 ...   (do ((x x (cdr x))
 ...        (sum 0 (+ sum (car x))))
 ...       ((null? x) sum)))""") # (macro) #doctest: +SKIP
 25
 
->>> psil("""
+>>> rep("""
 ... (let loop ((numbers '(3 -2 1 6 -5))
 ...            (nonneg '())
 ...            (neg '()))
@@ -234,55 +233,55 @@ consonant
 
 4.2.6 Quasiquotation
 
->>> psil("`(list ,(+ 1 2) 4)")
-[<list>, 3, 4]
->>> psil("(let ((name 'a)) `(list ,name ',name))") # (macro) #doctest: +SKIP
-[<list>, <a>, [<quote>, <a>]]
->>> psil("`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b)") # (splice) #doctest: +SKIP
-[<a>, 3, 4, 5, 6, <b>]
->>> psil("`(( foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons)))") # (dot) #doctest: +SKIP
-[[<foo>, 7], . <cons>]
->>> psil("`#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8)") # (vector) #doctest: +SKIP
+>>> rep("`(list ,(+ 1 2) 4)")
+(list 3 4)
+>>> rep("(let ((name 'a)) `(list ,name ',name))") # (macro) #doctest: +SKIP
+(list a (quote a))
+>>> rep("`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b)") # (splice) #doctest: +SKIP
+(a 3 4 5 6 b)
+>>> rep("`(( foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons)))") # (dot) #doctest: +SKIP
+((foo 7) . cons)
+>>> rep("`#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8)") # (vector) #doctest: +SKIP
 #(10 5 2 4 3 8)
 
->>> psil("`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f)")
-[<a>, [<quasiquote>, [<b>, [<unquote>, [<+>, 1, 2]], [<unquote>, [<foo>, 4, <d>]], <e>]], <f>]
->>> psil("""
+>>> rep("`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f)")
+(a (quasiquote (b (unquote (+ 1 2)) (unquote (foo 4 d)) e)) f)
+>>> rep("""
 ... (let ((name1 'x)
 ...       (name2 'y))
 ...   `(a `(b ,,name1 ,',name2 d) e))""") # (macro) #doctest: +SKIP
 (a `(b ,x ,'y d) e)
 
->>> psil("(quasiquote (list (unquote (+ 1 2)) 4))")
-[<list>, 3, 4]
->>> psil("'(quasiquote (list (unquote (+ 1 2)) 4))")
-[<quasiquote>, [<list>, [<unquote>, [<+>, 1, 2]], 4]]
+>>> rep("(quasiquote (list (unquote (+ 1 2)) 4))")
+(list 3 4)
+>>> rep("'(quasiquote (list (unquote (+ 1 2)) 4))")
+(quasiquote (list (unquote (+ 1 2)) 4))
 
 4.3 Macros
 
 5.2.1 Top level declarations
 
->>> psil("""
+>>> rep("""
 ... (define add3
 ...   (lambda (x) (+ x 3)))""")
 <psil.Function object at 0x...>
->>> psil("(add3 3)")
+>>> rep("(add3 3)")
 6
->>> psil("(define first car)")
+>>> rep("(define first car)")
 <...>
->>> psil("(first '(1 2))")
+>>> rep("(first '(1 2))")
 1
 
 5.2.2 Internal definitions
 
->>> psil("""
+>>> rep("""
 ... (let ((x 5))
 ...   (define foo (lambda (y) (bar x y)))
 ...   (define bar (lambda (a b) (+ (* a b) a)))
 ...   (foo (+ x 3)))""") # (macro) #doctest: +SKIP
 45
 
->>> psil("""
+>>> rep("""
 ... (let ((x 5))
 ...   (letrec ((foo (lambda (y) (bar x y)))
 ...            (bar (lambda (a b) (+ (* a b) a))))
@@ -291,487 +290,487 @@ consonant
 
 6.1 Equivalence predicates
 
->>> psil("(eqv? 'a 'a)")
+>>> rep("(eqv? 'a 'a)")
 #t
->>> psil("(eqv? 'a 'b)")
+>>> rep("(eqv? 'a 'b)")
 #f
->>> psil("(eqv? 2 2)")
+>>> rep("(eqv? 2 2)")
 #t
->>> psil("(eqv? '() '())")
+>>> rep("(eqv? '() '())")
 #t
->>> psil("(eqv? 100000000 100000000)") # (intrefs) #doctest: +SKIP
+>>> rep("(eqv? 100000000 100000000)") # (intrefs) #doctest: +SKIP
 #t
->>> psil("(eqv? (cons 1 2) (cons 1 2))")
+>>> rep("(eqv? (cons 1 2) (cons 1 2))")
 #f
->>> psil("""
+>>> rep("""
 ... (eqv? (lambda () 1)
 ...       (lambda () 2))""")
 #f
->>> psil("(eqv? #f 'nil)")
+>>> rep("(eqv? #f 'nil)")
 #f
->>> psil("""
+>>> rep("""
 ... (let ((p (lambda (x) x)))
 ...   (eqv? p p))""") # (macro) #doctest: +SKIP
 #t
 
->>> psil("(eq? 'a 'a)")
+>>> rep("(eq? 'a 'a)")
 #t
->>> psil("(eq? '(a) '(a))") # (unspecified) #doctest: +SKIP
+>>> rep("(eq? '(a) '(a))") # (unspecified) #doctest: +SKIP
 unspecified
->>> psil("(eq? (list 'a) (list 'a))")
+>>> rep("(eq? (list 'a) (list 'a))")
 #f
->>> psil("""(eq? "a" "a")""") # (unspecified) #doctest: +SKIP
+>>> rep("""(eq? "a" "a")""") # (unspecified) #doctest: +SKIP
 unspecified
->>> psil("""(eq? "" "")""") # (unspecified) #doctest: +SKIP
+>>> rep("""(eq? "" "")""") # (unspecified) #doctest: +SKIP
 unspecified
->>> psil("(eq? '() '())")
+>>> rep("(eq? '() '())")
 #t
->>> psil("(eq? 2 2)") # (unspecified) #doctest: +SKIP
+>>> rep("(eq? 2 2)") # (unspecified) #doctest: +SKIP
 unspecified
->>> psil("(eq? #\A #\A)") # (char) #doctest: +SKIP
+>>> rep("(eq? #\A #\A)") # (char) #doctest: +SKIP
 unspecified
->>> psil("(eq? car car)")
+>>> rep("(eq? car car)")
 #t
->>> psil("""
+>>> rep("""
 ... (let ((n (+ 2 3)))
 ...   (eq? n n))""") # (macro) #doctest: +SKIP
 unspecified
->>> psil("""
+>>> rep("""
 ... (let ((x '(a)))
 ...   (eq? x x))""") # (macro) #doctest: +SKIP
 #t
->>> psil("""
+>>> rep("""
 ... (let ((x '#()))
 ...   (eq? x x))""") # (macro) #doctest: +SKIP
 #t
->>> psil("""
+>>> rep("""
 ... (let ((p (lambda (x) x)))
 ...   (eq? p p))""") # (macro) #doctest: +SKIP
 #t
 
->>> psil("(equal? 'a 'a)")
+>>> rep("(equal? 'a 'a)")
 #t
->>> psil("(equal? '(a) '(a))")
+>>> rep("(equal? '(a) '(a))")
 #t
->>> psil("(equal? '(a (b) c) '(a (b) c))")
+>>> rep("(equal? '(a (b) c) '(a (b) c))")
 #t
->>> psil("""(equal? "abc" "abc")""")
+>>> rep("""(equal? "abc" "abc")""")
 #t
->>> psil("(equal? 2 2)")
+>>> rep("(equal? 2 2)")
 #t
->>> psil("(equal? (make-vector 5 'a) (make-vector 5 'a))") # (vector) #doctest: +SKIP
+>>> rep("(equal? (make-vector 5 'a) (make-vector 5 'a))") # (vector) #doctest: +SKIP
 #t
->>> psil("(equal? (lambda (x) x) (lambda (y) y))") # (unspecified) #doctest: +SKIP
+>>> rep("(equal? (lambda (x) x) (lambda (y) y))") # (unspecified) #doctest: +SKIP
 unspecified
 
 6.2 Numbers
 
->>> psil("(complex? 3+4i)") # (complex) #doctest: +SKIP
+>>> rep("(complex? 3+4i)") # (complex) #doctest: +SKIP
 #t
->>> psil("(complex? 3)")
+>>> rep("(complex? 3)")
 #t
->>> psil("(real? 3)")
+>>> rep("(real? 3)")
 #t
->>> psil("(real? -2.5+0.0i)") # (complex) #doctest: +SKIP
+>>> rep("(real? -2.5+0.0i)") # (complex) #doctest: +SKIP
 #t
->>> psil("(real? #e1e10)") # (real) #doctest: +SKIP
+>>> rep("(real? #e1e10)") # (real) #doctest: +SKIP
 #t
->>> psil("(rational? 6/10)") # (rational) #doctest: +SKIP
+>>> rep("(rational? 6/10)") # (rational) #doctest: +SKIP
 #t
->>> psil("(rational? 6/3)") # (rational) #doctest: +SKIP
+>>> rep("(rational? 6/3)") # (rational) #doctest: +SKIP
 #t
->>> psil("(integer? 3+0i)") # (complex) #doctest: +SKIP
+>>> rep("(integer? 3+0i)") # (complex) #doctest: +SKIP
 #t
->>> psil("(integer? 3.0)")
+>>> rep("(integer? 3.0)")
 #t
->>> psil("(integer? 8/4)") # (rational) #doctest: +SKIP
-#t
-
->>> psil("(exact? 3)")
-#t
->>> psil("(exact? 2/3)") # (rational) #doctest: +SKIP
-#t
->>> psil("(exact? 3.3)")
-#f
->>> psil("(inexact? 2/3)") # (rational) #doctest: +SKIP
-#f
-
->>> psil("(= 1)")
-#t
->>> psil("(= 1 2)")
-#f
->>> psil("(= 3 3)")
-#t
->>> psil("(= 3 3 3)")
-#t
->>> psil("(< 1 2 3)")
-#t
->>> psil("(< 1 2 3 3)")
-#f
->>> psil("(<= 1 2 3 3)")
+>>> rep("(integer? 8/4)") # (rational) #doctest: +SKIP
 #t
 
->>> psil("(zero? -1)")
+>>> rep("(exact? 3)")
+#t
+>>> rep("(exact? 2/3)") # (rational) #doctest: +SKIP
+#t
+>>> rep("(exact? 3.3)")
 #f
->>> psil("(zero? 0)")
-#t
->>> psil("(positive? 0)")
+>>> rep("(inexact? 2/3)") # (rational) #doctest: +SKIP
 #f
->>> psil("(positive? 1)")
+
+>>> rep("(= 1)")
 #t
->>> psil("(negative? -1)")
-#t
->>> psil("(odd? -1)")
-#t
->>> psil("(even? -1)")
+>>> rep("(= 1 2)")
 #f
->>> psil("(even? 4)")
+>>> rep("(= 3 3)")
+#t
+>>> rep("(= 3 3 3)")
+#t
+>>> rep("(< 1 2 3)")
+#t
+>>> rep("(< 1 2 3 3)")
+#f
+>>> rep("(<= 1 2 3 3)")
 #t
 
->>> psil("(max 3 5 -1 2)")
+>>> rep("(zero? -1)")
+#f
+>>> rep("(zero? 0)")
+#t
+>>> rep("(positive? 0)")
+#f
+>>> rep("(positive? 1)")
+#t
+>>> rep("(negative? -1)")
+#t
+>>> rep("(odd? -1)")
+#t
+>>> rep("(even? -1)")
+#f
+>>> rep("(even? 4)")
+#t
+
+>>> rep("(max 3 5 -1 2)")
 5
->>> psil("(min 3 5 -1 2)")
+>>> rep("(min 3 5 -1 2)")
 -1
->>> psil("(max 3 4)")
+>>> rep("(max 3 4)")
 4
->>> psil("(max 3.9 4)") # (exact) #doctest: +SKIP
+>>> rep("(max 3.9 4)") # (exact) #doctest: +SKIP
 4.0
 
->>> psil("(+ 3 4) ")
+>>> rep("(+ 3 4) ")
 7
->>> psil("(+ 3)")
+>>> rep("(+ 3)")
 3
->>> psil("(+)")
+>>> rep("(+)")
 0
->>> psil("(* 4)")
+>>> rep("(* 4)")
 4
->>> psil("(*)")
+>>> rep("(*)")
 1
 
->>> psil("(- 3 4)")
+>>> rep("(- 3 4)")
 -1
->>> psil("(- 3 4 5)")
+>>> rep("(- 3 4 5)")
 -6
->>> psil("(- 3)")
+>>> rep("(- 3)")
 -3
->>> psil("(/ 3 4 5)") # (exact) #doctest: +SKIP
+>>> rep("(/ 3 4 5)") # (exact) #doctest: +SKIP
 3/20
->>> psil("(/ 3)") # (exact) #doctest: +SKIP
+>>> rep("(/ 3)") # (exact) #doctest: +SKIP
 1/3
 
->>> psil("(abs -7)")
+>>> rep("(abs -7)")
 7
 
->>> psil("(modulo 13 4)")
+>>> rep("(modulo 13 4)")
 1
->>> psil("(remainder 13 4)")
+>>> rep("(remainder 13 4)")
 1
->>> psil("(modulo -13 4)")
+>>> rep("(modulo -13 4)")
 3
->>> psil("(remainder -13 4)") # (remainder) #doctest: +SKIP
+>>> rep("(remainder -13 4)") # (remainder) #doctest: +SKIP
 -1
->>> psil("(modulo 13 -4)")
+>>> rep("(modulo 13 -4)")
 -3
->>> psil("(remainder 13 -4)") # (remainder) #doctest: +SKIP
+>>> rep("(remainder 13 -4)") # (remainder) #doctest: +SKIP
 1
->>> psil("(modulo -13 -4)")
+>>> rep("(modulo -13 -4)")
 -1
->>> psil("(remainder -13 -4)")
+>>> rep("(remainder -13 -4)")
 -1
->>> psil("(remainder -13 -4.0)") # (exact) #doctest: +SKIP
+>>> rep("(remainder -13 -4.0)") # (exact) #doctest: +SKIP
 -1.0
 
->>> psil("(gcd 32 -36)")
+>>> rep("(gcd 32 -36)")
 4
->>> psil("(gcd)") # (todo) #doctest: +SKIP
+>>> rep("(gcd)") # (todo) #doctest: +SKIP
 0
->>> psil("(lcm 32 -36)") # (todo) #doctest: +SKIP
+>>> rep("(lcm 32 -36)") # (todo) #doctest: +SKIP
 288
->>> psil("(lcm 32.0 -36)") # (todo) #doctest: +SKIP
+>>> rep("(lcm 32.0 -36)") # (todo) #doctest: +SKIP
 288.0
->>> psil("(lcm)") # (todo) #doctest: +SKIP
+>>> rep("(lcm)") # (todo) #doctest: +SKIP
 1
 
->>> psil("(numerator (/ 6 4))") # (rational) #doctest: +SKIP
+>>> rep("(numerator (/ 6 4))") # (rational) #doctest: +SKIP
 3
->>> psil("(denominator (/ 6 4))") # (rational) #doctest: +SKIP
+>>> rep("(denominator (/ 6 4))") # (rational) #doctest: +SKIP
 2
->>> psil("(denominator (exact->inexact (/ 6 4)))") # (exact) #doctest: +SKIP
+>>> rep("(denominator (exact->inexact (/ 6 4)))") # (exact) #doctest: +SKIP
 2.0
 
->>> psil("(floor -4.3)")
+>>> rep("(floor -4.3)")
 -5
->>> psil("(ceiling -4.3)")
+>>> rep("(ceiling -4.3)")
 -4
->>> psil("(truncate -4.3)")
+>>> rep("(truncate -4.3)")
 -4
->>> psil("(round -4.3)")
+>>> rep("(round -4.3)")
 -4
->>> psil("(floor 3.5)")
+>>> rep("(floor 3.5)")
 3
->>> psil("(ceiling 3.5)")
+>>> rep("(ceiling 3.5)")
 4
->>> psil("(truncate 3.5)")
+>>> rep("(truncate 3.5)")
 3
->>> psil("(round 3.5)")
+>>> rep("(round 3.5)")
 4
->>> psil("(round 7/2)") # (rational) #doctest: +SKIP
+>>> rep("(round 7/2)") # (rational) #doctest: +SKIP
 4
->>> psil("(round 7)")
+>>> rep("(round 7)")
 7
 
->>> psil("(rationalize (inexact->exact .3) 1/10)") # (rational) #doctest: +SKIP
+>>> rep("(rationalize (inexact->exact .3) 1/10)") # (rational) #doctest: +SKIP
 1/3
->>> psil("((rationalize .3 1/10)") # (rational) #doctest: +SKIP
+>>> rep("((rationalize .3 1/10)") # (rational) #doctest: +SKIP
 #i1/3
 
->>> psil("(define pi 3.1415926535897931)")
-3.1415926535897931
->>> psil("(exp 0)")
+>>> rep("(define pi 3.1415926535897931)")
+3.14159265359
+>>> rep("(exp 0)")
 1.0
->>> psil("(exp 1)")
-2.7182818284590451
->>> psil("(exp (- (* pi 1i)))") # (complex) #doctest: +SKIP
+>>> rep("(exp 1)")
+2.71828182846
+>>> rep("(exp (- (* pi 1i)))") # (complex) #doctest: +SKIP
 -1.0
->>> psil("(log 1)")
+>>> rep("(log 1)")
 0.0
->>> psil("(sin (/ pi 6))")
-0.49999999999999994
->>> psil("(cos 0)")
+>>> rep("(sin (/ pi 6))")
+0.5
+>>> rep("(cos 0)")
 1.0
->>> psil("(tan (/ pi 4))")
-0.99999999999999989
->>> psil("(* 2 (asin 1))")
-3.1415926535897931
->>> psil("(acos 1)")
+>>> rep("(tan (/ pi 4))")
+1.0
+>>> rep("(* 2 (asin 1))")
+3.14159265359
+>>> rep("(acos 1)")
 0.0
->>> psil("(* 4 (atan 1))")
-3.1415926535897931
->>> psil("(* 4 (atan 2 2))")
-3.1415926535897931
+>>> rep("(* 4 (atan 1))")
+3.14159265359
+>>> rep("(* 4 (atan 2 2))")
+3.14159265359
 
->>> psil("(sqrt 9)")
+>>> rep("(sqrt 9)")
 3.0
 
->>> psil("(expt 7 3)")
+>>> rep("(expt 7 3)")
 343.0
 
->>> psil("(make-rectangular 0 1)") # (complex) #doctest: +SKIP
+>>> rep("(make-rectangular 0 1)") # (complex) #doctest: +SKIP
 1.0i
->>> psil("(make-polar 0 1)") # (complex) #doctest: +SKIP
+>>> rep("(make-polar 0 1)") # (complex) #doctest: +SKIP
 1.0
->>> psil("(real-part 1.0i)") # (complex) #doctest: +SKIP
+>>> rep("(real-part 1.0i)") # (complex) #doctest: +SKIP
 0.0
->>> psil("(imag-part 1.0i)") # (complex) #doctest: +SKIP
+>>> rep("(imag-part 1.0i)") # (complex) #doctest: +SKIP
 1.0
->>> psil("(magnitude 1.0+1.0i)") # (complex) #doctest: +SKIP
+>>> rep("(magnitude 1.0+1.0i)") # (complex) #doctest: +SKIP
 1.414...
->>> psil("(angle 1.0+1.0i)") # (complex) #doctest: +SKIP
+>>> rep("(angle 1.0+1.0i)") # (complex) #doctest: +SKIP
 (/ pi 4)
 
->>> psil("(exact->inexact 5)") # (inexact) #doctest: +SKIP
+>>> rep("(exact->inexact 5)") # (inexact) #doctest: +SKIP
 5.0
->>> psil("(inexact->exact 5.0)")
+>>> rep("(inexact->exact 5.0)")
 5
 
->>> psil("(number->string 123)")
-'123'
->>> psil("(number->string 123 16)")
-'7b'
->>> psil("""(string->number "321")""")
+>>> rep("(number->string 123)")
+"123"
+>>> rep("(number->string 123 16)")
+"7b"
+>>> rep("""(string->number "321")""")
 321
->>> psil("""(string->number "0x243")""") # (todo) #doctest: +SKIP
+>>> rep("""(string->number "0x243")""") # (todo) #doctest: +SKIP
 321
 
 6.3 Other data types
 
 6.3.1 Booleans
 
->>> psil("#t")
+>>> rep("#t")
 #t
->>> psil("#f")
+>>> rep("#f")
 #f
->>> psil("'#f")
+>>> rep("'#f")
 #f
 
->>> psil("(not #t)")
+>>> rep("(not #t)")
 #f
->>> psil("(not 3)")
+>>> rep("(not 3)")
 #f
->>> psil("(not (list 3))")
+>>> rep("(not (list 3))")
 #f
->>> psil("(not #f)")
+>>> rep("(not #f)")
 #t
->>> psil("(not '())")
+>>> rep("(not '())")
 #f
->>> psil("(not (list))")
+>>> rep("(not (list))")
 #f
->>> psil("(not 'nil)")
+>>> rep("(not 'nil)")
 #f
 
->>> psil("(boolean? #f)")
+>>> rep("(boolean? #f)")
 #t
->>> psil("(boolean? 0)")
+>>> rep("(boolean? 0)")
 #f
->>> psil("(boolean? '())")
+>>> rep("(boolean? '())")
 #f
 
 6.3.2 Pairs and lists
 
->>> psil("(define x (list 'a 'b 'c))")
-[...
->>> psil("(define y x)")
-[...
->>> psil("y")
-[<a>, <b>, <c>]
->>> psil("(list? y)")
+>>> rep("(define x (list 'a 'b 'c))")
+(...
+>>> rep("(define y x)")
+(...
+>>> rep("y")
+(a b c)
+>>> rep("(list? y)")
 #t
->>> psil("(set-cdr! x 4)") # (pair) #doctest: +SKIP
+>>> rep("(set-cdr! x 4)") # (pair) #doctest: +SKIP
 unspecified
->>> psil("x") # (pair) #doctest: +SKIP
+>>> rep("x") # (pair) #doctest: +SKIP
 (a . 4)
->>> psil("(eqv? x y)") # (pair) #doctest: +SKIP
+>>> rep("(eqv? x y)") # (pair) #doctest: +SKIP
 #t
->>> psil("y") # (pair) #doctest: +SKIP
+>>> rep("y") # (pair) #doctest: +SKIP
 (a . 4)
->>> psil("(list? y)") # (pair) #doctest: +SKIP
+>>> rep("(list? y)") # (pair) #doctest: +SKIP
 #f
->>> psil("(set-cdr! x x)") # (pair) #doctest: +SKIP
+>>> rep("(set-cdr! x x)") # (pair) #doctest: +SKIP
 unspecified
->>> psil("(list? x)") # (pair) #doctest: +SKIP
+>>> rep("(list? x)") # (pair) #doctest: +SKIP
 #f
 
->>> psil("(pair? '(a . b))") # (pair) #doctest: +SKIP
+>>> rep("(pair? '(a . b))") # (pair) #doctest: +SKIP
 #t
->>> psil("(pair? '(a b c))") # (pair) #doctest: +SKIP
+>>> rep("(pair? '(a b c))") # (pair) #doctest: +SKIP
 #t
->>> psil("(pair? '())") # (pair) #doctest: +SKIP
+>>> rep("(pair? '())") # (pair) #doctest: +SKIP
 #f
->>> psil("(pair? '#(a b))") # (pair) #doctest: +SKIP
+>>> rep("(pair? '#(a b))") # (pair) #doctest: +SKIP
 #f
 
->>> psil("(cons 'a '())")
-[<a>]
->>> psil("(cons '(a) '(b c d))")
-[[<a>], <b>, <c>, <d>]
->>> psil("""(cons "a" '(b c))""")
-['a', <b>, <c>]
->>> psil("(cons 'a 3)") # (pair) #doctest: +SKIP
+>>> rep("(cons 'a '())")
+(a)
+>>> rep("(cons '(a) '(b c d))")
+((a) b c d)
+>>> rep("""(cons "a" '(b c))""")
+("a" b c)
+>>> rep("(cons 'a 3)") # (pair) #doctest: +SKIP
 (a . 3)
->>> psil("(cons '(a b) 'c)") # (pair) #doctest: +SKIP
+>>> rep("(cons '(a b) 'c)") # (pair) #doctest: +SKIP
 ((a b) . c)
 
->>> psil("(car '(a b c))")
-<a>
->>> psil("(car '((a) b c d))")
-[<a>]
->>> psil("(car '(1 . 2))") # (pair) #doctest: +SKIP
+>>> rep("(car '(a b c))")
+a
+>>> rep("(car '((a) b c d))")
+(a)
+>>> rep("(car '(1 . 2))") # (pair) #doctest: +SKIP
 1
->>> psil("(car '())")
+>>> rep("(car '())")
 Traceback (most recent call last):
 TypeError: 'NoneType' object is unsubscriptable
 
->>> psil("(cdr '((a) b c d))")
-[<b>, <c>, <d>]
->>> psil("(cdr '(1 . 2))") # (pair) #doctest: +SKIP
+>>> rep("(cdr '((a) b c d))")
+(b c d)
+>>> rep("(cdr '(1 . 2))") # (pair) #doctest: +SKIP
 2
->>> psil("(cdr '())")
+>>> rep("(cdr '())")
 Traceback (most recent call last):
 TypeError: 'NoneType' object is unsubscriptable
 
->>> psil("(define (f) (list 'not-a-constant-list))")
+>>> rep("(define (f) (list 'not-a-constant-list))")
 <psil.Function object at 0x...>
->>> psil("(define (g) '(constant-list))")
+>>> rep("(define (g) '(constant-list))")
 <psil.Function object at 0x...>
->>> psil("(set-car! (f) 3)") # (todo) #doctest: +SKIP
+>>> rep("(set-car! (f) 3)") # (todo) #doctest: +SKIP
 unspecified
->>> psil("(set-car! (g) 3)") # (todo) #doctest: +SKIP
+>>> rep("(set-car! (g) 3)") # (todo) #doctest: +SKIP
 error
 
->>> psil("(null? 'a)")
+>>> rep("(null? 'a)")
 #f
->>> psil("(null? '())")
+>>> rep("(null? '())")
 #t
 
->>> psil("(list? '(a b c))")
+>>> rep("(list? '(a b c))")
 #t
->>> psil("(list? '())")
+>>> rep("(list? '())")
 #t
->>> psil("(list? '(a . b))") # (pair) #doctest: +SKIP
+>>> rep("(list? '(a . b))") # (pair) #doctest: +SKIP
 #f
->>> psil("""
+>>> rep("""
 ... (let ((x (list 'a)))
 ...   (set-cdr! x x)
 ...   (list? x))""") # (macro) #doctest: +SKIP
 #f
 
->>> psil("(list 'a (+ 3 4) 'c)")
-[<a>, 7, <c>]
->>> psil("(list)")
-[]
+>>> rep("(list 'a (+ 3 4) 'c)")
+(a 7 c)
+>>> rep("(list)")
+()
 
->>> psil("(length '(a b c))")
+>>> rep("(length '(a b c))")
 3
->>> psil("(length '(a (b) (c d e)))")
+>>> rep("(length '(a (b) (c d e)))")
 3
->>> psil("(length '())")
+>>> rep("(length '())")
 0
 
->>> psil("(append '(x))")
-[<x>]
->>> psil("(append '(x) '(y))")
-[<x>, <y>]
->>> psil("(append '(a) '(b c d))")
-[<a>, <b>, <c>, <d>]
->>> psil("(append '(a (b)) '((c)))")
-[<a>, [<b>], [<c>]]
+>>> rep("(append '(x))")
+(x)
+>>> rep("(append '(x) '(y))")
+(x y)
+>>> rep("(append '(a) '(b c d))")
+(a b c d)
+>>> rep("(append '(a (b)) '((c)))")
+(a (b) (c))
 
->>> psil("(append '(a b) '(c . d))") # (pair) #doctest: +SKIP
+>>> rep("(append '(a b) '(c . d))") # (pair) #doctest: +SKIP
 (a b c . d)
->>> psil("(append '() 'a)") # (todo) #doctest: +SKIP
+>>> rep("(append '() 'a)") # (todo) #doctest: +SKIP
 a
 
->>> psil("(reverse '(a b c))")
-[<c>, <b>, <a>]
->>> psil("(reverse '(a (b c) d (e (f))))")
-[[<e>, [<f>]], <d>, [<b>, <c>], <a>]
+>>> rep("(reverse '(a b c))")
+(c b a)
+>>> rep("(reverse '(a (b c) d (e (f))))")
+((e (f)) d (b c) a)
 
->>> psil("(list-tail '(a b c) 2)")
-[<c>]
+>>> rep("(list-tail '(a b c) 2)")
+(c)
 
->>> psil("(list-ref '(a b c d) 2)")
-<c>
->>> psil("(list-ref '(a b c d) (inexact->exact (round 1.8)))")
-<c>
+>>> rep("(list-ref '(a b c d) 2)")
+c
+>>> rep("(list-ref '(a b c d) (inexact->exact (round 1.8)))")
+c
 
->>> psil("(memq 'a '(a b c))")
-[<a>, <b>, <c>]
->>> psil("(memq 'b '(a b c))")
-[<b>, <c>]
->>> psil("(memq 'a '(b c d))")
+>>> rep("(memq 'a '(a b c))")
+(a b c)
+>>> rep("(memq 'b '(a b c))")
+(b c)
+>>> rep("(memq 'a '(b c d))")
 #f
->>> psil("(memq (list 'a) '(b (a) c))")
+>>> rep("(memq (list 'a) '(b (a) c))")
 #f
->>> psil("(member (list 'a) '(b (a) c))")
-[[<a>], <c>]
->>> psil("(memq 101 '(100 101 102))") # unspecified
-[101, 102]
->>> psil("(memv 101 '(100 101 102))")
-[101, 102]
+>>> rep("(member (list 'a) '(b (a) c))")
+((a) c)
+>>> rep("(memq 101 '(100 101 102))") # unspecified
+(101 102)
+>>> rep("(memv 101 '(100 101 102))")
+(101 102)
 
->>> psil("(define e '((a 1) (b 2) (c 3)))")
-[[<a>, 1], [<b>, 2], [<c>, 3]]
->>> psil("(assq 'a e)")
-[<a>, 1]
->>> psil("(assq 'b e)")
-[<b>, 2]
->>> psil("(assq 'd e)")
+>>> rep("(define e '((a 1) (b 2) (c 3)))")
+((a 1) (b 2) (c 3))
+>>> rep("(assq 'a e)")
+(a 1)
+>>> rep("(assq 'b e)")
+(b 2)
+>>> rep("(assq 'd e)")
 #f
->>> psil("(assq (list 'a) '(((a)) ((b)) ((c))))")
+>>> rep("(assq (list 'a) '(((a)) ((b)) ((c))))")
 #f
->>> psil("(assoc (list 'a) '(((a)) ((b)) ((c))))")
-[[<a>]]
->>> psil("(assq 5 '((2 3) (5 7) (11 13)))") # unspecified
-[5, 7]
->>> psil("(assv 5 '((2 3) (5 7) (11 13)))")
-[5, 7]
+>>> rep("(assoc (list 'a) '(((a)) ((b)) ((c))))")
+((a))
+>>> rep("(assq 5 '((2 3) (5 7) (11 13)))") # unspecified
+(5 7)
+>>> rep("(assv 5 '((2 3) (5 7) (11 13)))")
+(5 7)
