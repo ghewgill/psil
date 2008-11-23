@@ -774,3 +774,36 @@ c
 (5 7)
 >>> rep("(assv 5 '((2 3) (5 7) (11 13)))")
 (5 7)
+
+6.3.3 Symbols
+
+>>> rep("(symbol? 'foo)")
+#t
+>>> rep("(symbol? (car '(a b)))")
+#t
+>>> rep("""(symbol? "bar")""")
+#f
+>>> rep("(symbol? 'nil)")
+#t
+>>> rep("(symbol? '())")
+#f
+>>> rep("(symbol? #f)")
+#f
+
+>>> rep("(symbol->string 'flying-fish)")
+"flying-fish"
+>>> rep("(symbol->string 'Martin)")
+"Martin"
+>>> rep("""(symbol->string (string->symbol "Malvina"))""")
+"Malvina"
+
+>>> rep("(eq? 'mISSISSIppi 'mississippi)") # (case) #doctest: +SKIP
+#t
+>>> rep("""(string->symbol "mISSISSIppi")""")
+mISSISSIppi
+>>> rep("""(eq? 'bitBlt (string->symbol "bitBlt"))""") # (case) #doctest: +SKIP
+#f
+>>> rep("(eq? 'JollyWog (string->symbol (symbol->string 'JollyWog)))")
+#t
+>>> rep("""(string=? "K. Harper, M.D." (symbol->string (string->symbol "K. Harper, M.D.")))""")
+#t

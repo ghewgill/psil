@@ -426,7 +426,13 @@ def _ass(obj, lst, p):
     return Special.F
 Globals.symbols["assq"]   = lambda x, y: _ass(x, y, Globals.symbols["eq?"])
 Globals.symbols["assv"]   = lambda x, y: _ass(x, y, Globals.symbols["eqv?"])
-Globals.symbols["assoc"] = lambda x, y: _ass(x, y, Globals.symbols["equal?"])
+Globals.symbols["assoc"]  = lambda x, y: _ass(x, y, Globals.symbols["equal?"])
+
+Globals.symbols["symbol?"] = lambda x: Special.T if isinstance(x, Symbol) else Special.F
+Globals.symbols["symbol->string"] = lambda x: x.name
+Globals.symbols["string->symbol"] = lambda x: Symbol.new(x)
+
+Globals.symbols["string=?"] = lambda x, y: Special.T if x == y else Special.F
 
 Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 
