@@ -38,6 +38,7 @@ class Token(object):
     QUOTE  = object()
     QQUOTE = object()
     COMMA  = object()
+    SPLICE = object()
     SYMBOL = object()
     BOOLEAN = object()
     NUMBER = object()
@@ -77,8 +78,12 @@ def tokenise(s):
             yield (Token.QQUOTE, s[i])
             i += 1
         elif s[i] == ",":
-            yield (Token.COMMA, s[i])
-            i += 1
+            if s[i+1] == "@":
+                yield (Token.SPLICE, s[i:i+2])
+                i += 2
+            else:
+                yield (Token.COMMA, s[i])
+                i += 1
         elif s[i] == '"':
             j = s.index('"', i+1)
             yield (Token.STRING, peval(s[i:j+1]))
@@ -150,6 +155,8 @@ def parse(tokens, next = None):
         return [Symbol.new("quasiquote"), parse(tokens)]
     elif t == Token.COMMA:
         return [Symbol.new("unquote"), parse(tokens)]
+    elif t == Token.SPLICE:
+        return [Symbol.new("unquote-splicing"), parse(tokens)]
     elif t == Token.SYMBOL:
         return Symbol.new(v)
     else:
@@ -225,7 +232,16 @@ class Scope(object):
                                         return self.eval(t[1])
                                     else:
                                         return [t[0], qq(t[1], depth - 1)]
-                            return [qq(x, depth) for x in t]
+                            r = []
+                            for x in t:
+                                if isinstance(x, list) and len(x) > 0 and isinstance(x[0], Symbol) and x[0].name == "unquote-splicing":
+                                    if depth == 1:
+                                        r.extend(self.eval(x[1]))
+                                    else:
+                                        return [x[0], qq(x[1], depth - 1)]
+                                else:
+                                    r.append(qq(x, depth))
+                            return r
                         else:
                             return t
                     return qq(s[1])

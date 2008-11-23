@@ -237,7 +237,7 @@ consonant
 (list 3 4)
 >>> rep("(let ((name 'a)) `(list ,name ',name))") # (macro) #doctest: +SKIP
 (list a (quote a))
->>> rep("`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b)") # (splice) #doctest: +SKIP
+>>> rep("`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b)")
 (a 3 4 5 6 b)
 >>> rep("`(( foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons)))") # (dot) #doctest: +SKIP
 ((foo 7) . cons)
