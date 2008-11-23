@@ -316,18 +316,11 @@ Special.F = Special("#f")
 
 Globals = Scope()
 
-Globals.symbols["cons"]   = lambda x, y: [x] + y if isinstance(y, list) else [x]
-Globals.symbols["list"]   = lambda *args: list(args)
-Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
 Globals.symbols["first"]  = lambda x: x[0]
 Globals.symbols["rest"]   = lambda x: x[1:]
-Globals.symbols["car"]    = Globals.symbols["first"]
-Globals.symbols["cdr"]    = Globals.symbols["rest"]
-Globals.symbols["length"] = lambda x: len(x)
 Globals.symbols["eqv?"]   = lambda x, y: Special.T if x is y else Special.F
 Globals.symbols["eq?"]    = lambda x, y: Special.T if x is y else Special.F
 Globals.symbols["equal?"] = lambda x, y: Special.T if x == y else Special.F
-Globals.symbols["list?"]  = lambda x: Special.T if isinstance(x, list) else Special.F
 Globals.symbols["apply"]  = lambda x, args: x(*args)
 
 Globals.symbols["number?"]   = lambda x: Special.T
@@ -388,6 +381,52 @@ Globals.symbols["string->number"] = lambda x, b = 10: int(x, b) # TODO
 
 Globals.symbols["not"]      = lambda x: Special.T if x is Special.F else Special.F
 Globals.symbols["boolean?"] = lambda x: Special.T if x is Special.F or x is Special.T else Special.F
+
+Globals.symbols["list"]     = lambda *args: list(args)
+Globals.symbols["list?"]    = lambda x: Special.T if isinstance(x, list) or x is None else Special.F
+Globals.symbols["set-cdr!"] = lambda x: None # TODO
+Globals.symbols["pair?"]    = lambda x: Special.F # TODO
+Globals.symbols["cons"]     = lambda x, y: [x] + y if isinstance(y, list) else [x]
+def _set_car(x, y): x[0] = y
+Globals.symbols["set-car!"] = _set_car
+Globals.symbols["car"]    = lambda x: x[0]
+Globals.symbols["cdr"]    = lambda x: x[1:]
+Globals.symbols["caar"]   = lambda x: x[0][0]
+Globals.symbols["cadr"]   = lambda x: x[1]
+Globals.symbols["cdar"]   = lambda x: x[0][1:]
+Globals.symbols["cddr"]   = lambda x: x[2:]
+Globals.symbols["caaar"]  = lambda x: x[0][0][0]
+Globals.symbols["caadr"]  = lambda x: x[1][0]
+#Globals.symbols["cadar"]  = lambda x: x[0][1][0] # TODO
+#Globals.symbols["caddr"]  = lambda x: x[0][0][0]
+#Globals.symbols["cdaar"]  = lambda x: x[0][0][0]
+#Globals.symbols["cdadr"]  = lambda x: x[0][0][0]
+#Globals.symbols["cddar"]  = lambda x: x[0][0][0]
+#Globals.symbols["cdddr"]  = lambda x: x[0][0][0]
+Globals.symbols["caaaar"] = lambda x: x[0][0][0][0]
+#...
+Globals.symbols["null?"]  = lambda x: Special.T if x is None else Special.F
+Globals.symbols["length"] = lambda x: len(x) if x is not None else 0
+Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
+Globals.symbols["reverse"] = lambda x: list(reversed(x))
+Globals.symbols["list-tail"] = lambda x, y: x[y:]
+Globals.symbols["list-ref"] = lambda x, y: x[y]
+def _mem(obj, lst, p):
+    for i, e in enumerate(lst):
+        if p(e, obj) is not Special.F:
+            return lst[i:]
+    return Special.F
+Globals.symbols["memq"]   = lambda x, y: _mem(x, y, Globals.symbols["eq?"])
+Globals.symbols["memv"]   = lambda x, y: _mem(x, y, Globals.symbols["eqv?"])
+Globals.symbols["member"] = lambda x, y: _mem(x, y, Globals.symbols["equal?"])
+def _ass(obj, lst, p):
+    for x in lst:
+        if p(x[0], obj) is not Special.F:
+            return x
+    return Special.F
+Globals.symbols["assq"]   = lambda x, y: _ass(x, y, Globals.symbols["eq?"])
+Globals.symbols["assv"]   = lambda x, y: _ass(x, y, Globals.symbols["eqv?"])
+Globals.symbols["assoc"] = lambda x, y: _ass(x, y, Globals.symbols["equal?"])
 
 Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 

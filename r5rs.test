@@ -615,3 +615,163 @@ unspecified
 #f
 >>> psil("(boolean? '())")
 #f
+
+6.3.2 Pairs and lists
+
+>>> psil("(define x (list 'a 'b 'c))")
+[...
+>>> psil("(define y x)")
+[...
+>>> psil("y")
+[<a>, <b>, <c>]
+>>> psil("(list? y)")
+#t
+>>> psil("(set-cdr! x 4)") # (pair) #doctest: +SKIP
+unspecified
+>>> psil("x") # (pair) #doctest: +SKIP
+(a . 4)
+>>> psil("(eqv? x y)") # (pair) #doctest: +SKIP
+#t
+>>> psil("y") # (pair) #doctest: +SKIP
+(a . 4)
+>>> psil("(list? y)") # (pair) #doctest: +SKIP
+#f
+>>> psil("(set-cdr! x x)") # (pair) #doctest: +SKIP
+unspecified
+>>> psil("(list? x)") # (pair) #doctest: +SKIP
+#f
+
+>>> psil("(pair? '(a . b))") # (pair) #doctest: +SKIP
+#t
+>>> psil("(pair? '(a b c))") # (pair) #doctest: +SKIP
+#t
+>>> psil("(pair? '())") # (pair) #doctest: +SKIP
+#f
+>>> psil("(pair? '#(a b))") # (pair) #doctest: +SKIP
+#f
+
+>>> psil("(cons 'a '())")
+[<a>]
+>>> psil("(cons '(a) '(b c d))")
+[[<a>], <b>, <c>, <d>]
+>>> psil("""(cons "a" '(b c))""")
+['a', <b>, <c>]
+>>> psil("(cons 'a 3)") # (pair) #doctest: +SKIP
+(a . 3)
+>>> psil("(cons '(a b) 'c)") # (pair) #doctest: +SKIP
+((a b) . c)
+
+>>> psil("(car '(a b c))")
+<a>
+>>> psil("(car '((a) b c d))")
+[<a>]
+>>> psil("(car '(1 . 2))") # (pair) #doctest: +SKIP
+1
+>>> psil("(car '())")
+Traceback (most recent call last):
+TypeError: 'NoneType' object is unsubscriptable
+
+>>> psil("(cdr '((a) b c d))")
+[<b>, <c>, <d>]
+>>> psil("(cdr '(1 . 2))") # (pair) #doctest: +SKIP
+2
+>>> psil("(cdr '())")
+Traceback (most recent call last):
+TypeError: 'NoneType' object is unsubscriptable
+
+>>> psil("(define (f) (list 'not-a-constant-list))")
+<psil.Function object at 0x...>
+>>> psil("(define (g) '(constant-list))")
+<psil.Function object at 0x...>
+>>> psil("(set-car! (f) 3)") # (todo) #doctest: +SKIP
+unspecified
+>>> psil("(set-car! (g) 3)") # (todo) #doctest: +SKIP
+error
+
+>>> psil("(null? 'a)")
+#f
+>>> psil("(null? '())")
+#t
+
+>>> psil("(list? '(a b c))")
+#t
+>>> psil("(list? '())")
+#t
+>>> psil("(list? '(a . b))") # (pair) #doctest: +SKIP
+#f
+>>> psil("""
+... (let ((x (list 'a)))
+...   (set-cdr! x x)
+...   (list? x))""") # (macro) #doctest: +SKIP
+#f
+
+>>> psil("(list 'a (+ 3 4) 'c)")
+[<a>, 7, <c>]
+>>> psil("(list)")
+[]
+
+>>> psil("(length '(a b c))")
+3
+>>> psil("(length '(a (b) (c d e)))")
+3
+>>> psil("(length '())")
+0
+
+>>> psil("(append '(x))")
+[<x>]
+>>> psil("(append '(x) '(y))")
+[<x>, <y>]
+>>> psil("(append '(a) '(b c d))")
+[<a>, <b>, <c>, <d>]
+>>> psil("(append '(a (b)) '((c)))")
+[<a>, [<b>], [<c>]]
+
+>>> psil("(append '(a b) '(c . d))") # (pair) #doctest: +SKIP
+(a b c . d)
+>>> psil("(append '() 'a)") # (todo) #doctest: +SKIP
+a
+
+>>> psil("(reverse '(a b c))")
+[<c>, <b>, <a>]
+>>> psil("(reverse '(a (b c) d (e (f))))")
+[[<e>, [<f>]], <d>, [<b>, <c>], <a>]
+
+>>> psil("(list-tail '(a b c) 2)")
+[<c>]
+
+>>> psil("(list-ref '(a b c d) 2)")
+<c>
+>>> psil("(list-ref '(a b c d) (inexact->exact (round 1.8)))")
+<c>
+
+>>> psil("(memq 'a '(a b c))")
+[<a>, <b>, <c>]
+>>> psil("(memq 'b '(a b c))")
+[<b>, <c>]
+>>> psil("(memq 'a '(b c d))")
+#f
+>>> psil("(memq (list 'a) '(b (a) c))")
+#f
+>>> psil("(member (list 'a) '(b (a) c))")
+[[<a>], <c>]
+>>> psil("(memq 101 '(100 101 102))") # unspecified
+[101, 102]
+>>> psil("(memv 101 '(100 101 102))")
+[101, 102]
+
+>>> psil("(define e '((a 1) (b 2) (c 3)))")
+[[<a>, 1], [<b>, 2], [<c>, 3]]
+>>> psil("(assq 'a e)")
+[<a>, 1]
+>>> psil("(assq 'b e)")
+[<b>, 2]
+>>> psil("(assq 'd e)")
+#f
+>>> psil("(assq (list 'a) '(((a)) ((b)) ((c))))")
+#f
+>>> psil("(assoc (list 'a) '(((a)) ((b)) ((c))))")
+[[<a>]]
+>>> psil("(assq 5 '((2 3) (5 7) (11 13)))") # unspecified
+[5, 7]
+>>> psil("(assv 5 '((2 3) (5 7) (11 13)))")
+[5, 7]
