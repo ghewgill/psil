@@ -807,3 +807,23 @@ mISSISSIppi
 #t
 >>> rep("""(string=? "K. Harper, M.D." (symbol->string (string->symbol "K. Harper, M.D.")))""")
 #t
+
+6.3.4 Characters
+
+6.3.5 Strings
+
+6.3.6 Vectors
+
+6.4 Control features
+
+6.5 Eval
+
+6.6 Input and output
+
+6.6.1 Ports
+
+6.6.2 Input
+
+6.6.3 Output
+
+6.6.4 System interface
