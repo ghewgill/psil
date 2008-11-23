@@ -52,11 +52,19 @@
 
 (defmacro make-html (tag body)
   `(concat ,(format "<%s" (symbol->string (car tag)))
-           ">"
-           ,@body
-           ,(format "</%s>" (symbol->string (car tag)))))
+           ,@(map (lambda (x)
+                          (format " %s='%s'"
+                                  (symbol->string (list-ref tag x))
+                                  (list-ref tag (+ 1 x))))
+                  (range 1 (length tag) 2))
+           ,(if (null? body)
+                " /"
+                (concat ">"
+                        (apply concat body)
+                        (format "</%s" (symbol->string (car tag)))))
+           ">"))
 
-(display (make-html (hr)))
-(display (make-html (img src "http://example.com/test")))
-(display (make-html (p) "test"))
-(display (make-html (p style "margin-left: 1em") "indented"))
+(display (make-html (hr) ()))
+(display (make-html (img src "http://example.com/test" alt "moo") ()))
+(display (make-html (p) ("test")))
+(display (make-html (p style "margin-left: 1em") ("indented" "text")))
