@@ -256,7 +256,7 @@ class Scope(object):
                     self.set(s[1].name, val)
                     return val
                 if s[0].name.startswith("."):
-                    return getattr(self.eval(s[1]), s[0].name[1:])(*[self.eval(x) for x in s[2:]])
+                    return apply(getattr(self.eval(s[1]), s[0].name[1:]), [self.eval(x) for x in s[2:]])
                 m = self.eval(s[0])
                 if isinstance(m, Macro):
                     return self.eval(m.expand(*s[1:]))
