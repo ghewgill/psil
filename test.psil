@@ -3,5 +3,10 @@
 (import 'sys)
 
 ((getattr (getattr sys "stdout") "write") "hello world\n") ; this is a comment
-((.write (.stdout sys)) "hello world\n")
+(.write (getattr sys "stdout") "hello world\n")
 (display "hello world")
+
+(import 'hashlib)
+(define h (.sha1 hashlib))
+(.update h "Hello world")
+(display (.hexdigest h))
