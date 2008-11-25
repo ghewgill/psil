@@ -68,3 +68,23 @@
 (display (make-html (img src "http://example.com/test" alt "moo") ()))
 (display (make-html (p) ("test")))
 (display (make-html (p style "margin-left: 1em") ("indented" "text")))
+
+(define (make-html-f tag body)
+  (concat (format "<%s" (symbol->string (car tag)))
+          (apply concat (map (lambda (x)
+                          (format " %s='%s'"
+                                  (symbol->string (list-ref tag x))
+                                  (list-ref tag (+ 1 x))))
+                  (range 1 (length tag) 2)))
+          (if (null? body)
+                " /"
+                (concat ">"
+                        body
+                        (format "</%s" (symbol->string (car tag)))))
+          ">"))
+
+(display (make-html-f '(hr) ()))
+(display (make-html-f '(img src "http://example.com/test" alt "moo") ()))
+(display (make-html-f '(p) (concat "test")))
+(display (make-html-f '(p style "margin-left: 1em") (concat "indented" "text")))
+(display (make-html-f `(p style ,(concat "margin-left" ": " "1em")) (concat "indented" "text")))
