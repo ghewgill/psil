@@ -262,7 +262,7 @@ class Scope(object):
                     return self.eval(apply(m, s[1:]))
             f = self.eval(s[0])
             args = [self.eval(x) for x in s[1:]]
-            return f(*args)
+            return apply(f, args)
         elif isinstance(s, Symbol):
             r = self.lookup(s.name)
             if r is None:
@@ -332,7 +332,7 @@ Globals.symbols["rest"]   = lambda x: x[1:]
 Globals.symbols["eqv?"]   = lambda x, y: Special.T if x is y else Special.F
 Globals.symbols["eq?"]    = lambda x, y: Special.T if x is y else Special.F
 Globals.symbols["equal?"] = lambda x, y: Special.T if x == y else Special.F
-Globals.symbols["apply"]  = lambda x, args: x(*args)
+Globals.symbols["apply"]  = lambda x, args: apply(x, args)
 
 Globals.symbols["number?"]   = lambda x: Special.T
 Globals.symbols["complex?"]  = lambda x: Special.T if isinstance(x, complex) or isinstance(x, float) or isinstance(x, int) else Special.F
