@@ -215,7 +215,7 @@ class Scope(object):
                     else:
                         return self.define(s[1][0].name, Function(s[1][1:], s[2:], self))
                 if s[0].name == "defmacro":
-                    return self.define(s[1].name, Macro(s[2], s[3], self))
+                    return self.define(s[1].name, Macro(s[2], [s[3]], self))
                 if s[0].name == "if":
                     if self.eval(s[1]) != Special.F:
                         return self.eval(s[2])
@@ -259,7 +259,7 @@ class Scope(object):
                     return apply(getattr(self.eval(s[1]), s[0].name[1:]), [self.eval(x) for x in s[2:]])
                 m = self.eval(s[0])
                 if isinstance(m, Macro):
-                    return self.eval(m.expand(*s[1:]))
+                    return self.eval(apply(m, s[1:]))
             f = self.eval(s[0])
             args = [self.eval(x) for x in s[1:]]
             return f(*args)
@@ -276,20 +276,6 @@ class Scope(object):
             return r
         else:
             return s
-
-class Macro(object):
-    def __init__(self, params, body, scope):
-        self.params = params
-        self.body = body
-        self.scope = scope
-    def expand(self, *args):
-        scope = Scope(self.scope)
-        assert len(self.params) == len(args)
-        for p, a in zip(self.params, args):
-            scope.define(p.name, a)
-        #import sys
-        #print >>sys.stderr, scope.eval(self.body)
-        return scope.eval(self.body)
 
 class Function(object):
     def __init__(self, params, body, scope):
@@ -309,6 +295,9 @@ class Function(object):
         for b in self.body:
             r = scope.eval(b)
         return r
+
+class Macro(Function):
+    pass
 
 def eval(s):
     """
