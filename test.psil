@@ -10,3 +10,8 @@
 (define h (.sha1 hashlib))
 (.update h "Hello world")
 (display (.hexdigest h))
+
+(define d (dict '(("a" "b") ("c" "d"))))
+(display d)
+(display (len d))
+(display (.items d))
