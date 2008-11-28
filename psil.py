@@ -127,6 +127,17 @@ class Symbol(object):
         Symbol.names[name] = s
         return s
 
+Symbol.quote            = Symbol.new("quote")
+Symbol.quasiquote       = Symbol.new("quasiquote")
+Symbol.unquote          = Symbol.new("unquote")
+Symbol.unquote_splicing = Symbol.new("unquote-splicing")
+
+Symbol.define           = Symbol.new("define")
+Symbol.defmacro         = Symbol.new("defmacro")
+Symbol.if_              = Symbol.new("if")
+Symbol.lambda_          = Symbol.new("lambda")
+Symbol.set              = Symbol.new("set!")
+
 def parse(tokens, next = None):
     if next is None:
         try:
@@ -151,13 +162,13 @@ def parse(tokens, next = None):
     elif t == Token.NUMBER:
         return v
     elif t == Token.QUOTE:
-        return [Symbol.new("quote"), parse(tokens)]
+        return [Symbol.quote, parse(tokens)]
     elif t == Token.QQUOTE:
-        return [Symbol.new("quasiquote"), parse(tokens)]
+        return [Symbol.quasiquote, parse(tokens)]
     elif t == Token.COMMA:
-        return [Symbol.new("unquote"), parse(tokens)]
+        return [Symbol.unquote, parse(tokens)]
     elif t == Token.SPLICE:
-        return [Symbol.new("unquote-splicing"), parse(tokens)]
+        return [Symbol.unquote_splicing, parse(tokens)]
     elif t == Token.SYMBOL:
         return Symbol.new(v)
     else:
@@ -209,34 +220,34 @@ class Scope(object):
     def eval(self, s):
         if isinstance(s, list) and len(s) > 0:
             if isinstance(s[0], Symbol):
-                if s[0].name == "define":
+                if s[0] is Symbol.define:
                     if isinstance(s[1], Symbol):
                         return self.define(s[1].name, self.eval(s[2]))
                     else:
                         return self.define(s[1][0].name, Function(s[1][1:], s[2:], self))
-                if s[0].name == "defmacro":
+                if s[0] is Symbol.defmacro:
                     return self.define(s[1].name, Macro(s[2], [s[3]], self))
-                if s[0].name == "if":
+                if s[0] is Symbol.if_:
                     if self.eval(s[1]) != Special.F:
                         return self.eval(s[2])
                     else:
                         return self.eval(s[3])
-                if s[0].name == "lambda":
+                if s[0] is Symbol.lambda_:
                     return Function(s[1], s[2:], self)
-                if s[0].name == "quasiquote":
+                if s[0] is Symbol.quasiquote:
                     def qq(t, depth=1):
                         if isinstance(t, list):
                             if len(t) > 0 and isinstance(t[0], Symbol):
-                                if t[0].name == "quasiquote":
+                                if t[0] is Symbol.quasiquote:
                                     return [t[0], qq(t[1], depth + 1)]
-                                if t[0].name == "unquote":
+                                if t[0] is Symbol.unquote:
                                     if depth == 1:
                                         return self.eval(t[1])
                                     else:
                                         return [t[0], qq(t[1], depth - 1)]
                             r = []
                             for x in t:
-                                if isinstance(x, list) and len(x) > 0 and isinstance(x[0], Symbol) and x[0].name == "unquote-splicing":
+                                if isinstance(x, list) and len(x) > 0 and isinstance(x[0], Symbol) and x[0] is Symbol.unquote_splicing:
                                     if depth == 1:
                                         r.extend(self.eval(x[1]))
                                     else:
@@ -247,9 +258,9 @@ class Scope(object):
                         else:
                             return t
                     return qq(s[1])
-                if s[0].name == "quote":
+                if s[0] is Symbol.quote:
                     return s[1]
-                if s[0].name == "set!":
+                if s[0] is Symbol.set:
                     if not isinstance(s[1], Symbol):
                         raise SetNotSymbolError(s[1])
                     val = self.eval(s[2])
