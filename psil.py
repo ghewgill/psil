@@ -220,22 +220,23 @@ class Scope(object):
         return None
     def eval(self, s):
         if isinstance(s, list) and len(s) > 0:
-            if isinstance(s[0], Symbol):
-                if s[0] is Symbol.define:
+            f = s[0]
+            if isinstance(f, Symbol):
+                if f is Symbol.define:
                     if isinstance(s[1], Symbol):
                         return self.define(s[1].name, self.eval(s[2]))
                     else:
                         return self.define(s[1][0].name, Function(s[1][1:], s[2:], self))
-                if s[0] is Symbol.defmacro:
+                if f is Symbol.defmacro:
                     return self.define(s[1].name, Macro(s[2], [s[3]], self))
-                if s[0] is Symbol.if_:
+                if f is Symbol.if_:
                     if self.eval(s[1]) != Special.F:
                         return self.eval(s[2])
                     else:
                         return self.eval(s[3])
-                if s[0] is Symbol.lambda_:
+                if f is Symbol.lambda_:
                     return Function(s[1], s[2:], self)
-                if s[0] is Symbol.quasiquote:
+                if f is Symbol.quasiquote:
                     def qq(t, depth=1):
                         if isinstance(t, list):
                             if len(t) > 0 and isinstance(t[0], Symbol):
@@ -259,22 +260,21 @@ class Scope(object):
                         else:
                             return t
                     return qq(s[1])
-                if s[0] is Symbol.quote:
+                if f is Symbol.quote:
                     return s[1]
-                if s[0] is Symbol.set:
+                if f is Symbol.set:
                     if not isinstance(s[1], Symbol):
                         raise SetNotSymbolError(s[1])
                     val = self.eval(s[2])
                     self.set(s[1].name, val)
                     return val
-                if s[0].name.startswith("."):
-                    return apply(getattr(self.eval(s[1]), s[0].name[1:]), [self.eval(x) for x in s[2:]])
-                m = self.eval(s[0])
-                if isinstance(m, Macro):
-                    return self.eval(apply(m, s[1:]))
-            f = self.eval(s[0])
-            args = [self.eval(x) for x in s[1:]]
-            return apply(f, args)
+                if f.name.startswith("."):
+                    return apply(getattr(self.eval(s[1]), f.name[1:]), [self.eval(x) for x in s[2:]])
+            fn = self.eval(f)
+            if isinstance(fn, Macro):
+                return self.eval(apply(fn, s[1:]))
+            else:
+                return apply(fn, [self.eval(x) for x in s[1:]])
         elif isinstance(s, Symbol):
             r = self.lookup(s.name)
             if r is None:
