@@ -213,8 +213,9 @@ class Scope(object):
     def lookup(self, name):
         s = self
         while s is not None:
-            if name in s.symbols:
-                return s.symbols[name]
+            r = s.symbols.get(name)
+            if r is not None:
+                return r
             s = s.parent
         return None
     def eval(self, s):
