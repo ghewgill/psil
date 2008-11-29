@@ -199,6 +199,7 @@ class Scope(object):
             s = s.parent
         raise UndefinedSymbolError(name)
     def lookup(self, name):
+        # TODO: it's valid for a symbol to be None
         s = self
         while s is not None:
             r = s.symbols.get(name)
