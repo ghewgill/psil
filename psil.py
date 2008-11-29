@@ -324,7 +324,7 @@ Globals.symbols["*"]         = lambda *args: reduce(lambda x, y: x * y, args, 1)
 Globals.symbols["**"]        = lambda x, y: x ** y
 Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else reduce(lambda x, y: x / y, args)
 Globals.symbols["//"]        = lambda *args: reduce(lambda x, y: x // y, args)
-Globals.symbols["%"]         = lambda x, y: x % y
+Globals.symbols["%"]         = lambda x, y: x % tuple(y) if isinstance(y, list) else x % y
 Globals.symbols["<<"]        = lambda x, y: x << y
 Globals.symbols[">>"]        = lambda x, y: x >> y
 Globals.symbols["&"]         = lambda *args: reduce(lambda x, y: x & y, args, -1)
