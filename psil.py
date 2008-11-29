@@ -310,7 +310,7 @@ class Function(object):
                     if len(args) > len(self.params):
                         scope.define(self.rest.name, list(args[len(self.params):]))
                     else:
-                        scope.define(self.rest.name, None)
+                        scope.define(self.rest.name, [])
                 else:
                     assert len(args) <= len(self.params)
                 for p, a in zip(self.params, list(args) + [None] * (len(self.params) - len(args))):
