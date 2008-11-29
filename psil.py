@@ -420,13 +420,19 @@ if __name__ == "__main__":
     import sys
     if len(sys.argv) == 1:
         Globals.symbols["quit"] = lambda: sys.exit(0)
+        try:
+            import readline
+        except ImportError:
+            pass
         import traceback
         print "PSIL interactive mode"
         print "Use (quit) to exit"
         while True:
-            sys.stdout.write("> ")
-            sys.stdout.flush()
-            s = sys.stdin.readline()
+            try:
+                s = raw_input("> ")
+            except EOFError:
+                print
+                break
             try:
                 rep(s)
             except SystemExit:
