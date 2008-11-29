@@ -331,7 +331,11 @@ Globals.symbols["&"]         = lambda *args: reduce(lambda x, y: x & y, args, -1
 Globals.symbols["|"]         = lambda *args: reduce(lambda x, y: x | y, args, 0)
 Globals.symbols["^"]         = lambda x, y: x ^ y
 Globals.symbols["~"]         = lambda x: ~x
-def _all(p, a): return reduce(lambda x, y: x and y, [p(a[i], a[i+1]) for i in range(len(a)-1)], True)
+def _all(p, a):
+    for i in range(len(a)-1):
+        if not p(a[i], a[i+1]):
+            return False
+    return True
 Globals.symbols["<"]         = lambda *args: _all(lambda x, y: x < y, args)
 Globals.symbols[">"]         = lambda *args: _all(lambda x, y: x > y, args)
 Globals.symbols["<="]        = lambda *args: _all(lambda x, y: x <= y, args)
@@ -342,6 +346,7 @@ Globals.symbols["is"]        = lambda *args: _all(lambda x, y: x is y, args)
 Globals.symbols["is-not"]    = lambda x, y: x is not y
 Globals.symbols["in"]        = lambda x, y: x in y
 Globals.symbols["not-in"]    = lambda x, y: x not in y
+Globals.symbols["and"]       = lambda *args: _all(lambda x, y: x and y, args)
 # TODO: and, or as macros?
 Globals.symbols["not"]       = lambda x: not x
 
