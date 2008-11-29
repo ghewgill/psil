@@ -318,64 +318,49 @@ def eval(s):
 
 Globals = Scope()
 
-Globals.symbols["first"]  = lambda x: x[0]
-Globals.symbols["rest"]   = lambda x: x[1:]
-Globals.symbols["eqv?"]   = lambda x, y: x is y
-Globals.symbols["eq?"]    = lambda x, y: x is y
-Globals.symbols["equal?"] = lambda x, y: x == y
-Globals.symbols["apply"]  = lambda x, args: apply(x, args)
-
-Globals.symbols["number?"]   = lambda x: True
-Globals.symbols["complex?"]  = lambda x: isinstance(x, complex) or isinstance(x, float) or isinstance(x, int)
-Globals.symbols["real?"]     = lambda x: isinstance(x, float) or isinstance(x, int)
-Globals.symbols["rational?"] = lambda x: False # todo
-Globals.symbols["integer?"]  = lambda x: isinstance(x, int)
-Globals.symbols["exact?"]    = lambda x: isinstance(x, int)
-Globals.symbols["inexact?"]  = lambda x: not isinstance(x, int)
-Globals.symbols["="]         = lambda *args: reduce(lambda x, y: x and y, [args[i] == args[i+1] for i in range(len(args)-1)], True)
-Globals.symbols["<"]         = lambda *args: reduce(lambda x, y: x and y, [args[i] < args[i+1] for i in range(len(args)-1)], True)
-Globals.symbols[">"]         = lambda *args: reduce(lambda x, y: x and y, [args[i] > args[i+1] for i in range(len(args)-1)], True)
-Globals.symbols["<="]        = lambda *args: reduce(lambda x, y: x and y, [args[i] <= args[i+1] for i in range(len(args)-1)], True)
-Globals.symbols[">="]        = lambda *args: reduce(lambda x, y: x and y, [args[i] >= args[i+1] for i in range(len(args)-1)], True)
-Globals.symbols["zero?"]     = lambda x: x == 0
-Globals.symbols["positive?"] = lambda x: x > 0
-Globals.symbols["negative?"] = lambda x: x < 0
-Globals.symbols["odd?"]      = lambda x: x & 1
-Globals.symbols["even?"]     = lambda x: not (x & 1)
-Globals.symbols["max"]       = lambda *args: max(args)
-Globals.symbols["min"]       = lambda *args: min(args)
 Globals.symbols["+"]         = lambda *args: sum(args)
-Globals.symbols["*"]         = lambda *args: reduce(lambda x, y: x * y, args, 1)
 Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else reduce(lambda x, y: x - y, args)
-Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else reduce(lambda x, y: 1.0*x / y, args)
-Globals.symbols["abs"]       = lambda x: abs(x)
-Globals.symbols["quotient"]  = lambda x, y: x // y
-Globals.symbols["modulo"]    = lambda x, y: x % y
-Globals.symbols["remainder"] = lambda x, y: x % y
-Globals.symbols["gcd"]       = lambda x, y: x if y == 0 else Globals.symbols["gcd"](y, x % abs(y))
-Globals.symbols["lcm"]       = lambda x, y: x * y # TODO
-Globals.symbols["numerator"] = lambda x: x # TODO
-Globals.symbols["denominator"] = lambda x: x # TODO
-Globals.symbols["number->string"] = lambda x, b = 10: str(x) if b == 10 else hex(x)[2:] # TODO
-Globals.symbols["string->number"] = lambda x, b = 10: int(x, b) # TODO
+Globals.symbols["*"]         = lambda *args: reduce(lambda x, y: x * y, args, 1)
+Globals.symbols["**"]        = lambda x, y: x ** y
+Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else reduce(lambda x, y: x / y, args)
+Globals.symbols["//"]        = lambda *args: reduce(lambda x, y: x // y, args)
+Globals.symbols["%"]         = lambda x, y: x % y
+Globals.symbols["<<"]        = lambda x, y: x << y
+Globals.symbols[">>"]        = lambda x, y: x >> y
+Globals.symbols["&"]         = lambda *args: reduce(lambda x, y: x & y, args, -1)
+Globals.symbols["|"]         = lambda *args: reduce(lambda x, y: x | y, args, 0)
+Globals.symbols["^"]         = lambda x, y: x ^ y
+Globals.symbols["~"]         = lambda x: ~x
+def _all(p, a): return reduce(lambda x, y: x and y, [p(a[i], a[i+1]) for i in range(len(a)-1)], True)
+Globals.symbols["<"]         = lambda *args: _all(lambda x, y: x < y, args)
+Globals.symbols[">"]         = lambda *args: _all(lambda x, y: x > y, args)
+Globals.symbols["<="]        = lambda *args: _all(lambda x, y: x <= y, args)
+Globals.symbols[">="]        = lambda *args: _all(lambda x, y: x >= y, args)
+Globals.symbols["=="]        = lambda *args: _all(lambda x, y: x == y, args)
+Globals.symbols["!="]        = lambda x, y: x != y
+Globals.symbols["is"]        = lambda *args: _all(lambda x, y: x is y, args)
+Globals.symbols["is-not"]    = lambda x, y: x is not y
+Globals.symbols["in"]        = lambda x, y: x in y
+Globals.symbols["not-in"]    = lambda x, y: x not in y
+# TODO: and, or as macros?
+Globals.symbols["not"]       = lambda x: not x
 
-Globals.symbols["not"]      = lambda x: not x
-Globals.symbols["boolean?"] = lambda x: x == True or x == False
+def _del(x, y):
+    del x[y]
+Globals.symbols["del"]       = _del
+def _print(a):
+    print "".join(str(x) for x in a)
+Globals.symbols["print"]     = _print
+# TODO: raise
+Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 
 Globals.symbols["list"]     = lambda *args: list(args)
 Globals.symbols["list?"]    = lambda x: isinstance(x, list)
-Globals.symbols["set-cdr!"] = lambda x: None # TODO
-Globals.symbols["pair?"]    = lambda x: False # TODO
 Globals.symbols["cons"]     = lambda x, y: [x] + y if isinstance(y, list) else [x]
 def _set_car(x, y): x[0] = y
 Globals.symbols["set-car!"] = _set_car
 Globals.symbols["car"]    = lambda x: x[0]
-def _cdr(x):
-    if len(x) > 0:
-        return x[1:]
-    else:
-        raise IndexError("list index out of range")
-Globals.symbols["cdr"]    = _cdr
+Globals.symbols["cdr"]    = lambda x: x[1:]
 Globals.symbols["caar"]   = lambda x: x[0][0]
 Globals.symbols["cadr"]   = lambda x: x[1]
 Globals.symbols["cdar"]   = lambda x: x[0][1:]
@@ -391,41 +376,16 @@ Globals.symbols["caadr"]  = lambda x: x[1][0]
 Globals.symbols["caaaar"] = lambda x: x[0][0][0][0]
 #...
 Globals.symbols["null?"]  = lambda x: isinstance(x, list) and len(x) == 0
-Globals.symbols["length"] = lambda x: len(x)
 Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
 Globals.symbols["reverse"] = lambda x: list(reversed(x))
 Globals.symbols["list-tail"] = lambda x, y: x[y:]
 Globals.symbols["list-ref"] = lambda x, y: x[y]
-def _mem(obj, lst, p):
-    for i, e in enumerate(lst):
-        if p(e, obj):
-            return lst[i:]
-    return False
-Globals.symbols["memq"]   = lambda x, y: _mem(x, y, Globals.symbols["eq?"])
-Globals.symbols["memv"]   = lambda x, y: _mem(x, y, Globals.symbols["eqv?"])
-Globals.symbols["member"] = lambda x, y: _mem(x, y, Globals.symbols["equal?"])
-def _ass(obj, lst, p):
-    for x in lst:
-        if p(x[0], obj):
-            return x
-    return False
-Globals.symbols["assq"]   = lambda x, y: _ass(x, y, Globals.symbols["eq?"])
-Globals.symbols["assv"]   = lambda x, y: _ass(x, y, Globals.symbols["eqv?"])
-Globals.symbols["assoc"]  = lambda x, y: _ass(x, y, Globals.symbols["equal?"])
 
 Globals.symbols["symbol?"] = lambda x: isinstance(x, Symbol)
 Globals.symbols["symbol->string"] = lambda x: x.name
 Globals.symbols["string->symbol"] = lambda x: Symbol.new(x)
 
-Globals.symbols["string=?"] = lambda x, y: x == y
-
-Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
-Globals.symbols["concat"] = lambda *args: "".join(args)
 Globals.symbols["format"] = lambda x, *y: x % y
-
-def _print(x):
-    print x
-Globals.symbols["display"] = _print
 
 def external(x):
     if isinstance(x, list):

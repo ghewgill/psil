@@ -67,25 +67,25 @@ a
 >>> rep("(append '(a b) '(c d))")
 (a b c d)
 
->>> rep("(first '(a s d f))")
+>>> rep("(car '(a s d f))")
 a
->>> rep("(first '((a s) d f))")
+>>> rep("(car '((a s) d f))")
 (a s)
->>> rep("(rest '(a s d f))")
+>>> rep("(cdr '(a s d f))")
 (s d f)
->>> rep("(rest '((a s) d f))")
+>>> rep("(cdr '((a s) d f))")
 (d f)
->>> rep("(rest '((a s) (d f)))")
+>>> rep("(cdr '((a s) (d f)))")
 ((d f))
 >>> rep("(define a ())")
 ()
 >>> rep("(set! a '(a s d f))")
 (a s d f)
->>> rep("(first a)")
+>>> rep("(car a)")
 a
->>> rep("(rest a)")
+>>> rep("(cdr a)")
 (s d f)
->>> rep("(first (rest a))")
+>>> rep("(car (cdr a))")
 s
 
 >>> rep("(cons 'a a)")
@@ -97,15 +97,15 @@ s
 >>> rep("a")
 (a a s d f)
 
->>> rep("(length '(1 2 3))")
+>>> rep("(len '(1 2 3))")
 3
->>> rep("(length a)")
+>>> rep("(len a)")
 5
->>> rep("(length (append a a))")
+>>> rep("(len (append a a))")
 10
->>> rep("(length '(append a a))")
+>>> rep("(len '(append a a))")
 3
->>> rep("(length (list a a))")
+>>> rep("(len (list a a))")
 2
 
 >>> rep("(list? 'a)")
@@ -121,10 +121,10 @@ True
 ()
 >>> rep("(set! words '(a list of words))")
 (a list of words)
->>> rep("(set! words (cons 'this (rest words)))")
+>>> rep("(set! words (cons 'this (cdr words)))")
 (this list of words)
 
-#>>> rep("(setf (first words) 'the)")
+#>>> rep("(setf (car words) 'the)")
 #the
 #>>> rep("words")
 #(the list of words)
@@ -132,7 +132,7 @@ True
 #is
 #>>> rep("words")
 #(the list is words)
-#>>> rep("(setf (rest words) '(game is up))")
+#>>> rep("(setf (cdr words) '(game is up))")
 #(game is up)
 #>>> rep("words")
 #(the game is up)
@@ -222,7 +222,7 @@ True
 >>> rep("""
 ... (defmacro let (vars body)
 ...   `((lambda ()
-...      (define ,(first (first vars)) ,(first (rest (first vars))))
+...      (define ,(car (car vars)) ,(car (cdr (car vars))))
 ...      ,body)))""")
 <psil.Macro object at 0x...>
 >>> rep("a")
