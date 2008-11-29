@@ -4,14 +4,15 @@
 
 ((getattr (getattr sys "stdout") "write") "hello world\n") ; this is a comment
 (.write (getattr sys "stdout") "hello world\n")
-(display "hello world")
+(print "hello world")
 
 (import 'hashlib)
 (define h (.sha1 hashlib))
 (.update h "Hello world")
-(display (.hexdigest h))
+(print (.hexdigest h))
 
 (define d (dict '(("a" "b") ("c" "d"))))
-(display d)
-(display (len d))
-(display (.items d))
+(print d)
+(print (len d))
+(print (.values d))
+(print (.items d))
