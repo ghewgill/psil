@@ -245,7 +245,7 @@ class Scope(object):
                                         if depth == 1:
                                             r.extend(self.eval(x[1]))
                                         else:
-                                            return [x[0], qq(x[1], depth - 1)]
+                                            r.append([x[0], qq(x[1], depth - 1)])
                                     else:
                                         r.append(qq(x, depth))
                                 return r
