@@ -353,11 +353,12 @@ Globals.symbols["not"]       = lambda x: not x
 def _del(x, y):
     del x[y]
 Globals.symbols["del"]       = _del
-def _print(a):
+def _print(*a):
     print "".join(str(x) for x in a)
 Globals.symbols["print"]     = _print
 # TODO: raise
 Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
+Globals.symbols["include"] = lambda x: include(x)
 
 Globals.symbols["list"]     = lambda *args: list(args)
 Globals.symbols["list?"]    = lambda x: isinstance(x, list)
@@ -416,6 +417,15 @@ def rep(s):
     if r is not None:
         print external(r)
 
+def include(fn):
+    f = open(fn)
+    text = f.read()
+    f.close()
+    m = re.match(r"#!.*?$", text, re.MULTILINE)
+    if m is not None:
+        text = text[m.end(0):]
+    psil(text)
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) == 1:
@@ -445,10 +455,4 @@ if __name__ == "__main__":
         doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
         doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
     else:
-        f = open(sys.argv[1])
-        text = f.read()
-        f.close()
-        m = re.match(r"#!.*?$", text, re.MULTILINE)
-        if m is not None:
-            text = text[m.end(0):]
-        psil(text)
+        include(sys.argv[1])
