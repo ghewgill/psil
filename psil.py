@@ -279,15 +279,36 @@ class Scope(object):
 
 class Function(object):
     def __init__(self, params, body, scope):
-        self.params = params
+        self.params = []
+        self.fixed = 0
+        self.rest = None
+        if isinstance(params, Symbol):
+            self.rest = params
+            params = []
+        elif len(params) >= 2 and params[-2].name == ".":
+            self.rest = params[-1]
+            params = params[:-2]
+        for p in params:
+            if isinstance(p, list) and len(p) > 0 and isinstance(p[0], Symbol) and p[0].name == "o":
+                self.params.append(p[1])
+            else:
+                self.params.append(p)
+                self.fixed += 1
         self.body = body
         self.scope = scope
     def __call__(self, *args):
         scope = Scope(self.scope)
         if self.params is not None:
             if isinstance(self.params, list):
-                assert len(self.params) == len(args)
-                for p, a in zip(self.params, args):
+                assert len(args) >= self.fixed
+                if self.rest is not None:
+                    if len(args) > len(self.params):
+                        scope.define(self.rest.name, list(args[len(self.params):]))
+                    else:
+                        scope.define(self.rest.name, None)
+                else:
+                    assert len(args) <= len(self.params)
+                for p, a in zip(self.params, list(args) + [None] * (len(self.params) - len(args))):
                     scope.define(p.name, a)
             else:
                 scope.define(self.params.name, list(args))
