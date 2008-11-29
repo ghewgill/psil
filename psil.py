@@ -280,7 +280,7 @@ class Scope(object):
                 return r
             else:
                 return s
-        except UndefinedSymbolError, x:
+        except Exception, x:
             print "*", external(s)
             raise
 
