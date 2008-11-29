@@ -233,3 +233,10 @@ True
 5
 >>> rep("a")
 1
+
+>>> rep("(defmacro foo (a . b) `(list ,a ',b))")
+<psil.Macro object at 0x...>
+>>> rep("(macroexpand '(foo 1 2 3))")
+(list 1 (quote (2 3)))
+>>> rep("(foo 1 2 3)")
+(1 (2 3))

@@ -339,6 +339,8 @@ def eval(s):
 
 Globals = Scope()
 
+Globals.symbols["macroexpand"] = lambda x: apply(Globals.lookup(x[0].name), x[1:])
+
 Globals.symbols["+"]         = lambda *args: sum(args)
 Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else reduce(lambda x, y: x - y, args)
 Globals.symbols["*"]         = lambda *args: reduce(lambda x, y: x * y, args, 1)
