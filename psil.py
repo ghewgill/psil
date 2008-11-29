@@ -222,8 +222,10 @@ class Scope(object):
                     if f is Symbol.if_:
                         if self.eval(s[1]):
                             return self.eval(s[2])
-                        else:
+                        elif len(s) >= 4:
                             return self.eval(s[3])
+                        else:
+                            return None
                     if f is Symbol.lambda_:
                         return Function(s[1], s[2:], self)
                     if f is Symbol.quasiquote:
