@@ -18,10 +18,10 @@
 10
 >>> rep("my-age")
 10
->>> rep("#t")
-#t
->>> rep("#f")
-#f
+>>> rep("True")
+True
+>>> rep("False")
+False
 >>> rep("()")
 ()
 >>> rep("your-age")
@@ -109,9 +109,9 @@ s
 2
 
 >>> rep("(list? 'a)")
-#f
+False
 >>> rep("(list? a)")
-#t
+True
 
 >>> rep("(set! my-age (+ my-age 1))")
 11

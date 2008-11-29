@@ -40,7 +40,6 @@ class Token(object):
     COMMA  = object()
     SPLICE = object()
     SYMBOL = object()
-    BOOLEAN = object()
     NUMBER = object()
     STRING = object()
 
@@ -90,9 +89,6 @@ def tokenise(s):
             i = j + 1
         elif s[i] == ";":
             i = s.index("\n", i+1)
-        elif s[i] == "#":
-            yield (Token.BOOLEAN, s[i+1])
-            i += 2
         else:
             m = RE_NUMBER.match(s[i:])
             if m:
@@ -154,8 +150,6 @@ def parse(tokens, next = None):
         return a
     elif t == Token.STRING:
         return v
-    elif t == Token.BOOLEAN:
-        return Special.T if v == "t" else Special.F
     elif t == Token.NUMBER:
         return v
     elif t == Token.QUOTE:
@@ -227,7 +221,7 @@ class Scope(object):
                 if f is Symbol.defmacro:
                     return self.define(s[1].name, Macro(s[2], [s[3]], self))
                 if f is Symbol.if_:
-                    if self.eval(s[1]) != Special.F:
+                    if self.eval(s[1]):
                         return self.eval(s[2])
                     else:
                         return self.eval(s[3])
@@ -318,48 +312,39 @@ def eval(s):
     9
     >>> eval(read("(define (test fn x y) ((if fn * +) x y))"))
     <__main__.Function object at 0x...>
-    >>> eval(read("(test #t 2 3)"))
+    >>> eval(read("(test True 2 3)"))
     6
-    >>> eval(read("(test #f 2 3)"))
+    >>> eval(read("(test False 2 3)"))
     5
     """
     return Globals.eval(s)
-
-class Special(object):
-    def __init__(self, v):
-        self.val = v
-    def __repr__(self):
-        return self.val
-
-Special.T = Special("#t")
-Special.F = Special("#f")
 
 Globals = Scope()
 
 Globals.symbols["first"]  = lambda x: x[0]
 Globals.symbols["rest"]   = lambda x: x[1:]
-Globals.symbols["eqv?"]   = lambda x, y: Special.T if x is y else Special.F
-Globals.symbols["eq?"]    = lambda x, y: Special.T if x is y else Special.F
-Globals.symbols["equal?"] = lambda x, y: Special.T if x == y else Special.F
+Globals.symbols["eqv?"]   = lambda x, y: x is y
+Globals.symbols["eq?"]    = lambda x, y: x is y
+Globals.symbols["equal?"] = lambda x, y: x == y
 Globals.symbols["apply"]  = lambda x, args: apply(x, args)
 
-Globals.symbols["number?"]   = lambda x: Special.T
-Globals.symbols["complex?"]  = lambda x: Special.T if isinstance(x, complex) or isinstance(x, float) or isinstance(x, int) else Special.F
-Globals.symbols["real?"]     = lambda x: Special.T if isinstance(x, float) or isinstance(x, int) else Special.F
-Globals.symbols["rational?"] = lambda x: Special.F # todo
-Globals.symbols["integer?"]  = lambda x: Special.T if isinstance(x, int) else Special.F
-Globals.symbols["exact?"]    = lambda x: Special.T if isinstance(x, int) else Special.F
-Globals.symbols["inexact?"]  = lambda x: Special.T if not isinstance(x, int) else Special.F
-Globals.symbols["="]         = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] == args[i+1] for i in range(len(args)-1)], True) else Special.F
-Globals.symbols["<"]         = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] < args[i+1] for i in range(len(args)-1)], True) else Special.F
-Globals.symbols[">"]         = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] > args[i+1] for i in range(len(args)-1)], True) else Special.F
-Globals.symbols["<="]        = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] <= args[i+1] for i in range(len(args)-1)], True) else Special.F
-Globals.symbols[">="]        = lambda *args: Special.T if reduce(lambda x, y: x and y, [args[i] >= args[i+1] for i in range(len(args)-1)], True) else Special.F
-Globals.symbols["zero?"]     = lambda x: Special.T if x == 0 else Special.F
-Globals.symbols["positive?"] = lambda x: Special.T if x > 0 else Special.F
-Globals.symbols["negative?"] = lambda x: Special.T if x < 0 else Special.F
-Globals.symbols["odd?"]      = lambda x: Special.T if x & 1 else Special.F
-Globals.symbols["even?"]     = lambda x: Special.T if not (x & 1) else Special.F
+Globals.symbols["number?"]   = lambda x: True
+Globals.symbols["complex?"]  = lambda x: isinstance(x, complex) or isinstance(x, float) or isinstance(x, int)
+Globals.symbols["real?"]     = lambda x: isinstance(x, float) or isinstance(x, int)
+Globals.symbols["rational?"] = lambda x: False # todo
+Globals.symbols["integer?"]  = lambda x: isinstance(x, int)
+Globals.symbols["exact?"]    = lambda x: isinstance(x, int)
+Globals.symbols["inexact?"]  = lambda x: not isinstance(x, int)
+Globals.symbols["="]         = lambda *args: reduce(lambda x, y: x and y, [args[i] == args[i+1] for i in range(len(args)-1)], True)
+Globals.symbols["<"]         = lambda *args: reduce(lambda x, y: x and y, [args[i] < args[i+1] for i in range(len(args)-1)], True)
+Globals.symbols[">"]         = lambda *args: reduce(lambda x, y: x and y, [args[i] > args[i+1] for i in range(len(args)-1)], True)
+Globals.symbols["<="]        = lambda *args: reduce(lambda x, y: x and y, [args[i] <= args[i+1] for i in range(len(args)-1)], True)
+Globals.symbols[">="]        = lambda *args: reduce(lambda x, y: x and y, [args[i] >= args[i+1] for i in range(len(args)-1)], True)
+Globals.symbols["zero?"]     = lambda x: x == 0
+Globals.symbols["positive?"] = lambda x: x > 0
+Globals.symbols["negative?"] = lambda x: x < 0
+Globals.symbols["odd?"]      = lambda x: x & 1
+Globals.symbols["even?"]     = lambda x: not (x & 1)
 Globals.symbols["max"]       = lambda *args: max(args)
 Globals.symbols["min"]       = lambda *args: min(args)
 Globals.symbols["+"]         = lambda *args: sum(args)
@@ -399,13 +384,13 @@ Globals.symbols["inexact->exact"] = lambda x: x # TODO
 Globals.symbols["number->string"] = lambda x, b = 10: str(x) if b == 10 else hex(x)[2:] # TODO
 Globals.symbols["string->number"] = lambda x, b = 10: int(x, b) # TODO
 
-Globals.symbols["not"]      = lambda x: Special.T if x is Special.F else Special.F
-Globals.symbols["boolean?"] = lambda x: Special.T if x is Special.F or x is Special.T else Special.F
+Globals.symbols["not"]      = lambda x: not x
+Globals.symbols["boolean?"] = lambda x: x == True or x == False
 
 Globals.symbols["list"]     = lambda *args: list(args)
-Globals.symbols["list?"]    = lambda x: Special.T if isinstance(x, list) else Special.F
+Globals.symbols["list?"]    = lambda x: isinstance(x, list)
 Globals.symbols["set-cdr!"] = lambda x: None # TODO
-Globals.symbols["pair?"]    = lambda x: Special.F # TODO
+Globals.symbols["pair?"]    = lambda x: False # TODO
 Globals.symbols["cons"]     = lambda x, y: [x] + y if isinstance(y, list) else [x]
 def _set_car(x, y): x[0] = y
 Globals.symbols["set-car!"] = _set_car
@@ -430,7 +415,7 @@ Globals.symbols["caadr"]  = lambda x: x[1][0]
 #Globals.symbols["cdddr"]  = lambda x: x[0][0][0]
 Globals.symbols["caaaar"] = lambda x: x[0][0][0][0]
 #...
-Globals.symbols["null?"]  = lambda x: Special.T if isinstance(x, list) and len(x) == 0 else Special.F
+Globals.symbols["null?"]  = lambda x: isinstance(x, list) and len(x) == 0
 Globals.symbols["length"] = lambda x: len(x)
 Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
 Globals.symbols["reverse"] = lambda x: list(reversed(x))
@@ -438,26 +423,26 @@ Globals.symbols["list-tail"] = lambda x, y: x[y:]
 Globals.symbols["list-ref"] = lambda x, y: x[y]
 def _mem(obj, lst, p):
     for i, e in enumerate(lst):
-        if p(e, obj) is not Special.F:
+        if p(e, obj):
             return lst[i:]
-    return Special.F
+    return False
 Globals.symbols["memq"]   = lambda x, y: _mem(x, y, Globals.symbols["eq?"])
 Globals.symbols["memv"]   = lambda x, y: _mem(x, y, Globals.symbols["eqv?"])
 Globals.symbols["member"] = lambda x, y: _mem(x, y, Globals.symbols["equal?"])
 def _ass(obj, lst, p):
     for x in lst:
-        if p(x[0], obj) is not Special.F:
+        if p(x[0], obj):
             return x
-    return Special.F
+    return False
 Globals.symbols["assq"]   = lambda x, y: _ass(x, y, Globals.symbols["eq?"])
 Globals.symbols["assv"]   = lambda x, y: _ass(x, y, Globals.symbols["eqv?"])
 Globals.symbols["assoc"]  = lambda x, y: _ass(x, y, Globals.symbols["equal?"])
 
-Globals.symbols["symbol?"] = lambda x: Special.T if isinstance(x, Symbol) else Special.F
+Globals.symbols["symbol?"] = lambda x: isinstance(x, Symbol)
 Globals.symbols["symbol->string"] = lambda x: x.name
 Globals.symbols["string->symbol"] = lambda x: Symbol.new(x)
 
-Globals.symbols["string=?"] = lambda x, y: Special.T if x == y else Special.F
+Globals.symbols["string=?"] = lambda x, y: x == y
 
 Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 Globals.symbols["concat"] = lambda *args: "".join(args)
