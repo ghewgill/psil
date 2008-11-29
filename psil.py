@@ -19,7 +19,6 @@ RE_SYMBOL = re.compile(r"[^ \t\n\)]+", re.IGNORECASE)
 
 peval = eval
 
-Nil = []
 Symbols = {}
 
 class SyntaxError(Exception):
@@ -152,8 +151,6 @@ def parse(tokens, next = None):
             if next[0] == Token.RPAREN:
                 break
             a.append(parse(tokens, next))
-        if len(a) == 0:
-            return Nil # return a common Nil object
         return a
     elif t == Token.STRING:
         return v
@@ -516,7 +513,6 @@ if __name__ == "__main__":
         doctest.testmod(optionflags=doctest.ELLIPSIS)
         doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
         doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
-        doctest.testfile("r5rs.test", optionflags=doctest.ELLIPSIS)
     else:
         f = open(sys.argv[1])
         text = f.read()
