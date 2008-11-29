@@ -184,6 +184,7 @@ def read(s):
     return parse(tokenise(s))
 
 class Scope(object):
+    NotFound = object()
     def __init__(self, parent = None):
         self.parent = parent
         self.symbols = {}
@@ -199,14 +200,13 @@ class Scope(object):
             s = s.parent
         raise UndefinedSymbolError(name)
     def lookup(self, name):
-        # TODO: it's valid for a symbol to be None
         s = self
         while s is not None:
-            r = s.symbols.get(name)
-            if r is not None:
-                return r
+            r = s.symbols.get(name, self.NotFound)
+            if r is not self.NotFound:
+                return (True, r)
             s = s.parent
-        return None
+        return (False, None)
     def eval(self, s):
         try:
             if isinstance(s, list) and len(s) > 0:
@@ -266,8 +266,8 @@ class Scope(object):
                 else:
                     return apply(fn, [self.eval(x) for x in s[1:]])
             elif isinstance(s, Symbol):
-                r = self.lookup(s.name)
-                if r is None:
+                found, r = self.lookup(s.name)
+                if not found:
                     # doctest seems to make __builtins__ a dict instead of a module
                     if isinstance(__builtins__, dict) and s.name in __builtins__:
                         r = __builtins__[s.name]
@@ -344,7 +344,7 @@ def eval(s):
 
 Globals = Scope()
 
-Globals.symbols["macroexpand"] = lambda x: apply(Globals.lookup(x[0].name), x[1:])
+Globals.symbols["macroexpand"] = lambda x: apply(Globals.lookup(x[0].name)[1], x[1:])
 
 Globals.symbols["+"]         = lambda *args: sum(args)
 Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else reduce(lambda x, y: x - y, args)
