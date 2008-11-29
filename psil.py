@@ -414,6 +414,7 @@ Globals.symbols["symbol?"] = lambda x: isinstance(x, Symbol)
 Globals.symbols["symbol->string"] = lambda x: x.name
 Globals.symbols["string->symbol"] = lambda x: Symbol.new(x)
 
+Globals.symbols["concat"] = lambda *args: "".join(str(x) for x in args)
 Globals.symbols["format"] = lambda x, *y: x % y
 
 def external(x):
