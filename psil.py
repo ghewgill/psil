@@ -207,75 +207,79 @@ class Scope(object):
             s = s.parent
         return None
     def eval(self, s):
-        if isinstance(s, list) and len(s) > 0:
-            f = s[0]
-            if isinstance(f, Symbol):
-                if f is Symbol.define:
-                    if isinstance(s[1], Symbol):
-                        return self.define(s[1].name, self.eval(s[2]))
-                    else:
-                        return self.define(s[1][0].name, Function(s[1][1:], s[2:], self))
-                if f is Symbol.defmacro:
-                    return self.define(s[1].name, Macro(s[2], [s[3]], self))
-                if f is Symbol.if_:
-                    if self.eval(s[1]):
-                        return self.eval(s[2])
-                    else:
-                        return self.eval(s[3])
-                if f is Symbol.lambda_:
-                    return Function(s[1], s[2:], self)
-                if f is Symbol.quasiquote:
-                    def qq(t, depth=1):
-                        if isinstance(t, list):
-                            if len(t) > 0 and isinstance(t[0], Symbol):
-                                if t[0] is Symbol.quasiquote:
-                                    return [t[0], qq(t[1], depth + 1)]
-                                if t[0] is Symbol.unquote:
-                                    if depth == 1:
-                                        return self.eval(t[1])
-                                    else:
-                                        return [t[0], qq(t[1], depth - 1)]
-                            r = []
-                            for x in t:
-                                if isinstance(x, list) and len(x) > 0 and isinstance(x[0], Symbol) and x[0] is Symbol.unquote_splicing:
-                                    if depth == 1:
-                                        r.extend(self.eval(x[1]))
-                                    else:
-                                        return [x[0], qq(x[1], depth - 1)]
-                                else:
-                                    r.append(qq(x, depth))
-                            return r
+        try:
+            if isinstance(s, list) and len(s) > 0:
+                f = s[0]
+                if isinstance(f, Symbol):
+                    if f is Symbol.define:
+                        if isinstance(s[1], Symbol):
+                            return self.define(s[1].name, self.eval(s[2]))
                         else:
-                            return t
-                    return qq(s[1])
-                if f is Symbol.quote:
-                    return s[1]
-                if f is Symbol.set:
-                    if not isinstance(s[1], Symbol):
-                        raise SetNotSymbolError(s[1])
-                    val = self.eval(s[2])
-                    self.set(s[1].name, val)
-                    return val
-                if f.name.startswith("."):
-                    return apply(getattr(self.eval(s[1]), f.name[1:]), [self.eval(x) for x in s[2:]])
-            fn = self.eval(f)
-            if isinstance(fn, Macro):
-                return self.eval(apply(fn, s[1:]))
-            else:
-                return apply(fn, [self.eval(x) for x in s[1:]])
-        elif isinstance(s, Symbol):
-            r = self.lookup(s.name)
-            if r is None:
-                # doctest seems to make __builtins__ a dict instead of a module
-                if isinstance(__builtins__, dict) and s.name in __builtins__:
-                    r = __builtins__[s.name]
-                elif s.name in dir(__builtins__):
-                    r = getattr(__builtins__, s.name)
+                            return self.define(s[1][0].name, Function(s[1][1:], s[2:], self))
+                    if f is Symbol.defmacro:
+                        return self.define(s[1].name, Macro(s[2], [s[3]], self))
+                    if f is Symbol.if_:
+                        if self.eval(s[1]):
+                            return self.eval(s[2])
+                        else:
+                            return self.eval(s[3])
+                    if f is Symbol.lambda_:
+                        return Function(s[1], s[2:], self)
+                    if f is Symbol.quasiquote:
+                        def qq(t, depth=1):
+                            if isinstance(t, list):
+                                if len(t) > 0 and isinstance(t[0], Symbol):
+                                    if t[0] is Symbol.quasiquote:
+                                        return [t[0], qq(t[1], depth + 1)]
+                                    if t[0] is Symbol.unquote:
+                                        if depth == 1:
+                                            return self.eval(t[1])
+                                        else:
+                                            return [t[0], qq(t[1], depth - 1)]
+                                r = []
+                                for x in t:
+                                    if isinstance(x, list) and len(x) > 0 and isinstance(x[0], Symbol) and x[0] is Symbol.unquote_splicing:
+                                        if depth == 1:
+                                            r.extend(self.eval(x[1]))
+                                        else:
+                                            return [x[0], qq(x[1], depth - 1)]
+                                    else:
+                                        r.append(qq(x, depth))
+                                return r
+                            else:
+                                return t
+                        return qq(s[1])
+                    if f is Symbol.quote:
+                        return s[1]
+                    if f is Symbol.set:
+                        if not isinstance(s[1], Symbol):
+                            raise SetNotSymbolError(s[1])
+                        val = self.eval(s[2])
+                        self.set(s[1].name, val)
+                        return val
+                    if f.name.startswith("."):
+                        return apply(getattr(self.eval(s[1]), f.name[1:]), [self.eval(x) for x in s[2:]])
+                fn = self.eval(f)
+                if isinstance(fn, Macro):
+                    return self.eval(apply(fn, s[1:]))
                 else:
-                    raise UndefinedSymbolError(s.name)
-            return r
-        else:
-            return s
+                    return apply(fn, [self.eval(x) for x in s[1:]])
+            elif isinstance(s, Symbol):
+                r = self.lookup(s.name)
+                if r is None:
+                    # doctest seems to make __builtins__ a dict instead of a module
+                    if isinstance(__builtins__, dict) and s.name in __builtins__:
+                        r = __builtins__[s.name]
+                    elif s.name in dir(__builtins__):
+                        r = getattr(__builtins__, s.name)
+                    else:
+                        raise UndefinedSymbolError(s.name)
+                return r
+            else:
+                return s
+        except UndefinedSymbolError, x:
+            print "*", external(s)
+            raise
 
 class Function(object):
     def __init__(self, params, body, scope):
