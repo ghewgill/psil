@@ -12,6 +12,7 @@
 """
 
 import re
+import sys
 
 RE_NUMBER = re.compile(r"[-+]?\d+(\.\d+)?(e[-+]?\d+)?", re.IGNORECASE)
 RE_SYMBOL = re.compile(r"[^ \t\n\)]+", re.IGNORECASE)
@@ -189,6 +190,8 @@ class Scope(object):
         self.parent = parent
         self.symbols = {}
     def define(self, name, value):
+        if name in self.symbols:
+            print >>sys.stderr, "*** warning: redefining", name
         self.symbols[name] = value
         return value
     def set(self, name, value):
@@ -458,7 +461,6 @@ def include(fn):
     psil(text)
 
 if __name__ == "__main__":
-    import sys
     if len(sys.argv) == 1:
         Globals.symbols["quit"] = lambda: sys.exit(0)
         try:
