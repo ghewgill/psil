@@ -1,25 +1,82 @@
 #!/opt/local/bin/python2.5 psil.py
 
-(defmacro make-html (tag . body)
-  `(concat ,(format "<%s" (symbol->string (car tag)))
-           ,@(map (lambda (x)
-                          `(format ,(format " %s='%%s'" (symbol->string (list-ref tag x)))
-                                   ,(list-ref tag (+ 1 x))))
-                  (range 1 (len tag) 2))
-           ,@(if (null? body)
-                '(" /")
-                `(">"
-                    ,@body
-                    ,(format "</%s" (symbol->string (car tag)))))
-           ">"))
+(import 'cgi)
+
+(define (render-html doc)
+    (concat
+        (format "<%s" (symbol->string (car doc)))
+        (apply concat
+            (map (lambda (x)
+                         (format " %s='%s'"
+                            (symbol->string (car x))
+                            (.escape cgi (cadr x) True)))
+                 (cadr doc)))
+        (if (null? (cddr doc))
+            " /"
+            (concat
+                ">"
+                (apply concat
+                    (map
+                        (lambda (x)
+                            (if (list? x)
+                                (render-html x)
+                                (.escape cgi x)))
+                        (cddr doc)))
+                (format "</%s" (symbol->string (car doc)))))
+        ">\n"))
+
+;(defmacro a (. rest)
+;    (if (null? rest)
+;        `'(a ())
+;        (if (list? (car rest))
+;            `'(a ,(car rest) ,@(cdr rest))
+;            `'(a () ,@rest))))
 
 (defmacro define-html-tag (tag)
     `(defmacro ,tag (. rest)
         (if (null? rest)
-            `(make-html (,',tag))
+            `'(,',tag ())
             (if (list? (car rest))
-                `(make-html (,',tag ,@(car rest)) ,@(cdr rest))
-                `(make-html (,',tag) ,@rest)))))
+                `(list
+                    ',',tag
+                    (list ,@(map (lambda (x)
+                                   `(list ',(list-ref (car rest) x) ,(list-ref (car rest) (+ 1 x))))
+                          (range 0 (len (car rest)) 2)))
+                    ,@(cdr rest))
+                `(list ',',tag () ,@rest)))))
+;(define-html-tag a)
+
+;(print "render direct:")
+;(print (render-html '(a ((name "bar") (id "four")) "moo")))
+;(print "macroexpand:")
+;(print (macroexpand '(a (name (concat "foo" "bar") id "four") "moo")))
+;(print "code:")
+;(print (a (name "bar" id "four") "moo"))
+;(print "render code:")
+;(print (render-html (a (name "bar" id "four") "moo")))
+
+;(.exit sys 1)
+
+;(defmacro make-html (tag . body)
+;  `(concat ,(format "<%s" (symbol->string (car tag)))
+;           ,@(map (lambda (x)
+;                          `(format ,(format " %s='%%s'" (symbol->string (list-ref tag x)))
+;                                   ,(.escape cgi (list-ref tag (+ 1 x)) True)))
+;                  (range 1 (len tag) 2))
+;           ,@(if (null? body)
+;                '(" /")
+;                `(">"
+;                    ,@body
+;                    ,(format "</%s" (symbol->string (car tag)))))
+;           ">\n"))
+
+;(defmacro define-html-tag (tag)
+;    `(defmacro ,tag (. rest)
+;        (if (null? rest)
+;            `(make-html (,',tag))
+;            (if (list? (car rest))
+;                `(make-html (,',tag ,@(car rest)) ,@(cdr rest))
+;                `(make-html (,',tag) ,@rest)))))
 
 (define-html-tag a)
 (define-html-tag abbr)
