@@ -7,7 +7,7 @@
         (format "<%s" (symbol->string (car doc)))
         (apply concat
             (map (lambda (x)
-                         (format " %s='%s'"
+                         (format " %s=\"%s\""
                             (symbol->string (car x))
                             (.escape cgi (cadr x) True)))
                  (cadr doc)))
