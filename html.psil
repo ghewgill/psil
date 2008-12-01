@@ -3,27 +3,29 @@
 (import 'cgi)
 
 (define (render-html doc)
-    (concat
-        (format "<%s" (symbol->string (car doc)))
-        (apply concat
-            (map (lambda (x)
-                         (format " %s=\"%s\""
-                            (symbol->string (car x))
-                            (.escape cgi (cadr x) True)))
-                 (cadr doc)))
-        (if (null? (cddr doc))
-            " /"
-            (concat
-                ">"
-                (apply concat
-                    (map
-                        (lambda (x)
-                            (if (list? x)
-                                (render-html x)
-                                (.escape cgi x)))
-                        (cddr doc)))
-                (format "</%s" (symbol->string (car doc)))))
-        ">\n"))
+    (if (is 'comment (car doc))
+        (concat "<!--" (car (cddr doc)) "-->")
+        (concat
+            (format "<%s" (symbol->string (car doc)))
+            (apply concat
+                (map (lambda (x)
+                             (format " %s=\"%s\""
+                                (symbol->string (car x))
+                                (.escape cgi (cadr x) True)))
+                     (cadr doc)))
+            (if (null? (cddr doc))
+                " /"
+                (concat
+                    ">"
+                    (apply concat
+                        (map
+                            (lambda (x)
+                                (if (list? x)
+                                    (render-html x)
+                                    (.escape cgi x)))
+                            (cddr doc)))
+                    (format "</%s" (symbol->string (car doc)))))
+            ">\n")))
 
 ;(defmacro a (. rest)
 ;    (if (null? rest)
@@ -155,3 +157,5 @@
 (define-html-tag tt)
 (define-html-tag ul)
 (define-html-tag var)
+
+(define-html-tag comment)
