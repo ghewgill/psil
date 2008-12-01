@@ -14,8 +14,22 @@
 import re
 import sys
 
+# adapted from http://code.activestate.com/recipes/475109/
+PY_STRING_LITERAL_RE = (r'''
+  """(?:                 # Triple-quoted can contain...
+      [^"\\]             | # a non-quote non-backslash
+      \\.                | # a backslashed character
+      "{1,2}(?!")          # one or two quotes
+    )*""" |
+  "(?:                   # Non-triple quoted can contain...
+     [^"\\]              | # a non-quote non-backslash
+     \\.                   # a backslashed character
+   )*"(?!")
+''')
+
 RE_NUMBER = re.compile(r"[-+]?\d+(\.\d+)?(e[-+]?\d+)?", re.IGNORECASE)
 RE_SYMBOL = re.compile(r"[^ \t\n\)]+", re.IGNORECASE)
+RE_STRING = re.compile(PY_STRING_LITERAL_RE, re.VERBOSE)
 
 peval = eval
 
@@ -84,9 +98,12 @@ def tokenise(s):
                 yield (Token.COMMA, s[i])
                 i += 1
         elif s[i] == '"':
-            j = s.index('"', i+1)
-            yield (Token.STRING, peval(s[i:j+1]))
-            i = j + 1
+            m = RE_STRING.match(s[i:])
+            if m:
+                yield (Token.STRING, peval(m.group(0)))
+                i += m.end(0)
+            else:
+                raise SyntaxError(s[i:])
         elif s[i] == ";":
             i = s.index("\n", i+1)
         else:
@@ -164,7 +181,7 @@ def parse(tokens, next = None):
         raise SyntaxError(next)
 
 def read(s):
-    """
+    r"""
     >>> read("1")
     1
     >>> read("()")
@@ -173,6 +190,14 @@ def read(s):
     <a>
     >>> read('''"test"''')
     'test'
+    >>> read(r'''"test\""''')
+    'test"'
+    >>> read(r'''"test\"s"''')
+    'test"s'
+    >>> read(r'''("test\"")''')
+    ['test"']
+    >>> read(r'''"test\n"''')
+    'test\n'
     >>> read('''("test")''')
     ['test']
     >>> read('''(a 1 "test")''')
