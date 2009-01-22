@@ -463,6 +463,29 @@ def _set(x, y, z):
     x[y] = z
 Globals.symbols["dict-set"] = _set
 
+Macros = """
+(defmacro begin forms
+    `((lambda ()
+        ,@forms)))
+(defmacro let letargs
+    `((lambda (,@(map car (car letargs)))
+        ,@(cdr letargs)) ,@(map cadr (car letargs))))
+(defmacro let* letargs
+    (if (car letargs)
+        `((lambda (,(caaar letargs))
+            (let* ,(cdar letargs) ,@(cdr letargs))) ,(cadr (caar letargs)))
+        `(begin ,@(cdr letargs))))
+(defmacro cond condargs
+    (if (car condargs)
+        (if (is (caar condargs) 'else)
+            `(begin ,@(cdar condargs))
+            `(if ,(caar condargs)
+                ,@(cdar condargs)
+                (cond ,@(cdr condargs))))))
+(define (caddr x) (cadr (cdr x)))
+(define (cadddr x) (caddr (cdr x)))
+"""
+
 def external(x):
     if isinstance(x, list):
         return "(" + " ".join(external(i) for i in x) + ")"
@@ -497,6 +520,7 @@ def include(fn):
     psil(text)
 
 if __name__ == "__main__":
+    psil(Macros)
     if len(sys.argv) == 1:
         Globals.symbols["quit"] = lambda: sys.exit(0)
         try:
