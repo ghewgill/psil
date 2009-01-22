@@ -394,6 +394,11 @@ def _all(p, a):
         if not p(a[i], a[i+1]):
             return False
     return True
+def _any(p, a):
+    for i in range(len(a)-1):
+        if p(a[i], a[i+1]):
+            return True
+    return False
 Globals.symbols["<"]         = lambda *args: _all(lambda x, y: x < y, args)
 Globals.symbols[">"]         = lambda *args: _all(lambda x, y: x > y, args)
 Globals.symbols["<="]        = lambda *args: _all(lambda x, y: x <= y, args)
@@ -405,6 +410,7 @@ Globals.symbols["is-not"]    = lambda x, y: x is not y
 Globals.symbols["in"]        = lambda x, y: x in y
 Globals.symbols["not-in"]    = lambda x, y: x not in y
 Globals.symbols["and"]       = lambda *args: _all(lambda x, y: x and y, args)
+Globals.symbols["or"]        = lambda *args: _any(lambda x, y: x or y, args)
 # TODO: and, or as macros?
 Globals.symbols["not"]       = lambda x: not x
 
