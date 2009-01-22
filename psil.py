@@ -457,6 +457,11 @@ Globals.symbols["string->symbol"] = lambda x: Symbol.new(x)
 
 Globals.symbols["concat"] = lambda *args: "".join(str(x) for x in args)
 Globals.symbols["format"] = lambda x, *y: x % y
+Globals.symbols["index"] = lambda x, y: x[y]
+Globals.symbols["slice"] = lambda x, y, z: x[y:z]
+def _set(x, y, z):
+    x[y] = z
+Globals.symbols["dict-set"] = _set
 
 def external(x):
     if isinstance(x, list):
