@@ -244,9 +244,9 @@ class Scope(object):
                         if isinstance(s[1], Symbol):
                             return self.define(s[1].name, self.eval(s[2]))
                         else:
-                            return self.define(s[1][0].name, Function(s[1][1:], s[2:], self))
+                            return self.define(s[1][0].name, Function(s[1][0].name, s[1][1:], s[2:], self))
                     if f is Symbol.defmacro:
-                        return self.define(s[1].name, Macro(s[2], [s[3]], self))
+                        return self.define(s[1].name, Macro(s[1].name, s[2], [s[3]], self))
                     if f is Symbol.if_:
                         if self.eval(s[1]):
                             return self.eval(s[2])
@@ -255,7 +255,7 @@ class Scope(object):
                         else:
                             return None
                     if f is Symbol.lambda_:
-                        return Function(s[1], s[2:], self)
+                        return Function("lambda", s[1], s[2:], self)
                     if f is Symbol.quasiquote:
                         def qq(t, depth=1):
                             if isinstance(t, list):
@@ -313,7 +313,8 @@ class Scope(object):
             raise
 
 class Function(object):
-    def __init__(self, params, body, scope):
+    def __init__(self, name, params, body, scope):
+        self.name = name
         self.params = []
         self.fixed = 0
         self.rest = None
@@ -331,6 +332,8 @@ class Function(object):
                 self.fixed += 1
         self.body = body
         self.scope = scope
+    def __str__(self):
+        return "<Function %s>" % self.name
     def __call__(self, *args):
         scope = Scope(self.scope)
         if self.params is not None:
