@@ -11,6 +11,7 @@
 
 """
 
+import operator
 import re
 import sys
 
@@ -413,18 +414,18 @@ Globals = Scope()
 Globals.symbols["macroexpand"] = lambda x: apply(Globals.lookup(x[0].name)[1], x[1:])
 
 Globals.symbols["+"]         = lambda *args: sum(args)
-Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else reduce(lambda x, y: x - y, args)
-Globals.symbols["*"]         = lambda *args: reduce(lambda x, y: x * y, args, 1)
-Globals.symbols["**"]        = lambda x, y: x ** y
-Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else reduce(lambda x, y: x / y, args)
-Globals.symbols["//"]        = lambda *args: reduce(lambda x, y: x // y, args)
+Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else reduce(operator.sub, args)
+Globals.symbols["*"]         = lambda *args: reduce(operator.mul, args, 1)
+Globals.symbols["**"]        = operator.pow
+Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else reduce(operator.div, args)
+Globals.symbols["//"]        = lambda *args: reduce(operator.floordiv, args)
 Globals.symbols["%"]         = lambda x, y: x % tuple(y) if isinstance(y, list) else x % y
-Globals.symbols["<<"]        = lambda x, y: x << y
-Globals.symbols[">>"]        = lambda x, y: x >> y
-Globals.symbols["&"]         = lambda *args: reduce(lambda x, y: x & y, args, -1)
-Globals.symbols["|"]         = lambda *args: reduce(lambda x, y: x | y, args, 0)
-Globals.symbols["^"]         = lambda x, y: x ^ y
-Globals.symbols["~"]         = lambda x: ~x
+Globals.symbols["<<"]        = operator.lshift
+Globals.symbols[">>"]        = operator.rshift
+Globals.symbols["&"]         = lambda *args: reduce(operator.and_, args, -1)
+Globals.symbols["|"]         = lambda *args: reduce(operator.or_, args, 0)
+Globals.symbols["^"]         = operator.xor
+Globals.symbols["~"]         = operator.invert
 def _all(p, a):
     for i in range(len(a)-1):
         if not p(a[i], a[i+1]):
@@ -435,20 +436,20 @@ def _any(p, a):
         if p(a[i], a[i+1]):
             return True
     return False
-Globals.symbols["<"]         = lambda *args: _all(lambda x, y: x < y, args)
-Globals.symbols[">"]         = lambda *args: _all(lambda x, y: x > y, args)
-Globals.symbols["<="]        = lambda *args: _all(lambda x, y: x <= y, args)
-Globals.symbols[">="]        = lambda *args: _all(lambda x, y: x >= y, args)
-Globals.symbols["=="]        = lambda *args: _all(lambda x, y: x == y, args)
-Globals.symbols["!="]        = lambda x, y: x != y
-Globals.symbols["is"]        = lambda *args: _all(lambda x, y: x is y, args)
-Globals.symbols["is-not"]    = lambda x, y: x is not y
+Globals.symbols["<"]         = lambda *args: _all(operator.lt, args)
+Globals.symbols[">"]         = lambda *args: _all(operator.gt, args)
+Globals.symbols["<="]        = lambda *args: _all(operator.le, args)
+Globals.symbols[">="]        = lambda *args: _all(operator.ge, args)
+Globals.symbols["=="]        = lambda *args: _all(operator.eq, args)
+Globals.symbols["!="]        = operator.ne
+Globals.symbols["is"]        = lambda *args: _all(operator.is_, args)
+Globals.symbols["is-not"]    = operator.is_not
 Globals.symbols["in"]        = lambda x, y: x in y
 Globals.symbols["not-in"]    = lambda x, y: x not in y
 Globals.symbols["and"]       = lambda *args: _all(lambda x, y: x and y, args)
 Globals.symbols["or"]        = lambda *args: _any(lambda x, y: x or y, args)
 # TODO: and, or as macros?
-Globals.symbols["not"]       = lambda x: not x
+Globals.symbols["not"]       = operator.not_
 
 def _del(x, y):
     del x[y]
@@ -482,7 +483,7 @@ Globals.symbols["caadr"]  = lambda x: x[1][0]
 Globals.symbols["caaaar"] = lambda x: x[0][0][0][0]
 #...
 Globals.symbols["null?"]  = lambda x: isinstance(x, list) and len(x) == 0
-Globals.symbols["append"] = lambda *args: reduce(lambda x, y: x + y, args)
+Globals.symbols["append"] = lambda *args: reduce(operator.add, args)
 Globals.symbols["reverse"] = lambda x: list(reversed(x))
 Globals.symbols["list-tail"] = lambda x, y: x[y:]
 Globals.symbols["list-ref"] = lambda x, y: x[y]
