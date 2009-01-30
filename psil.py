@@ -482,6 +482,8 @@ Macros = """
             `(if ,(caar condargs)
                 ,@(cdar condargs)
                 (cond ,@(cdr condargs))))))
+(defmacro for-each args
+    `(map ,@args))
 (define (caddr x) (cadr (cdr x)))
 (define (cadddr x) (caddr (cdr x)))
 """
