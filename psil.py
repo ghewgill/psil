@@ -46,6 +46,18 @@ class UndefinedSymbolError(Exception):
 class SetNotSymbolError(Exception):
     pass
 
+class TailCall(Exception):
+    def __init__(self, fn, args):
+        self.fn = fn
+        self.args = args
+    def apply(self):
+        if isinstance(self.fn, Function):
+            return self.fn.apply(self.args, tail=True)
+        else:
+            return apply(self.fn, self.args)
+    def __str__(self):
+        return str(self.fn) + ":" + str(self.args)
+
 class Token(object):
     LPAREN = object()
     RPAREN = object()
@@ -235,7 +247,7 @@ class Scope(object):
                 return (True, r)
             s = s.parent
         return (False, None)
-    def eval(self, s):
+    def eval(self, s, tail = False):
         try:
             if isinstance(s, list) and len(s) > 0:
                 f = s[0]
@@ -249,9 +261,9 @@ class Scope(object):
                         return self.define(s[1].name, Macro(s[1].name, s[2], [s[3]], self))
                     if f is Symbol.if_:
                         if self.eval(s[1]):
-                            return self.eval(s[2])
+                            return self.eval(s[2], tail)
                         elif len(s) >= 4:
-                            return self.eval(s[3])
+                            return self.eval(s[3], tail)
                         else:
                             return None
                     if f is Symbol.lambda_:
@@ -292,9 +304,17 @@ class Scope(object):
                         return apply(getattr(self.eval(s[1]), f.name[1:]), [self.eval(x) for x in s[2:]])
                 fn = self.eval(f)
                 if isinstance(fn, Macro):
-                    return self.eval(apply(fn, s[1:]))
-                else:
+                    m = apply(fn, s[1:])
+                    return self.eval(apply(fn, s[1:]), tail)
+                elif tail:
+                    raise TailCall(fn, [self.eval(x) for x in s[1:]])
+                elif isinstance(fn, Function):
+                    return fn.apply([self.eval(x) for x in s[1:]], tail=True)
+                elif callable(fn):
                     return apply(fn, [self.eval(x) for x in s[1:]])
+                else:
+                    print "Not callable:", fn
+                    sys.exit(1)
             elif isinstance(s, Symbol):
                 found, r = self.lookup(s.name)
                 if not found:
@@ -308,6 +328,15 @@ class Scope(object):
                 return r
             else:
                 return s
+        except TailCall, t:
+            if tail:
+                raise
+            a = t
+            while True:
+                try:
+                    return a.apply()
+                except TailCall, t:
+                    a = t
         except Exception, x:
             print "*", external(s)
             raise
@@ -335,6 +364,8 @@ class Function(object):
     def __str__(self):
         return "<Function %s>" % self.name
     def __call__(self, *args):
+        return self.apply(args, tail=False)
+    def apply(self, args, tail=True):
         scope = Scope(self.scope)
         if self.params is not None:
             if isinstance(self.params, list):
@@ -351,8 +382,10 @@ class Function(object):
             else:
                 scope.define(self.params.name, list(args))
         r = None
-        for b in self.body:
-            r = scope.eval(b)
+        if self.body:
+            for b in self.body[:-1]:
+                scope.eval(b)
+            r = scope.eval(self.body[-1], tail)
         return r
 
 class Macro(Function):
@@ -507,7 +540,10 @@ def psil(s):
         p = parse(t)
         if p is None:
             break
-        r = eval(p)
+        try:
+            r = eval(p)
+        except TailCall, x:
+            r = x.apply()
     return r
 
 def rep(s):
