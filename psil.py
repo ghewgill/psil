@@ -500,6 +500,13 @@ def _set(x, y, z):
     x[y] = z
 Globals.symbols["dict-set"] = _set
 
+def call_with_current_continuation(f):
+    import stackless
+    channel = stackless.channel()
+    stackless.tasklet(f)(channel.send)
+    return channel.receive()
+Globals.symbols["call-with-current-continuation"] = call_with_current_continuation
+
 Macros = """
 (defmacro begin forms
     `((lambda ()
