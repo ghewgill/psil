@@ -553,10 +553,14 @@ def macroexpand_r(p):
     True
     >>> macroexpand_r(read("(and a b)"))
     [<if>, <a>, [<if>, <b>, True, <False>], <False>]
+    >>> macroexpand_r(read("(lambda (and) a)"))
+    [<lambda>, [<and>], <a>]
     """
     if isinstance(p, list):
         if p and isinstance(p[0], Symbol):
-            if p[0] is Symbol.quote:
+            if p[0] is Symbol.lambda_:
+                return p[0:2] + map(macroexpand_r, p[2:])
+            elif p[0] is Symbol.quote:
                 return p
             else:
                 m = Globals.lookup(p[0].name)
