@@ -448,9 +448,6 @@ Globals.symbols["is"]        = lambda *args: _all(operator.is_, args)
 Globals.symbols["is-not"]    = operator.is_not
 Globals.symbols["in"]        = lambda x, y: x in y
 Globals.symbols["not-in"]    = lambda x, y: x not in y
-Globals.symbols["and"]       = lambda *args: _all(lambda x, y: x and y, args)
-Globals.symbols["or"]        = lambda *args: _any(lambda x, y: x or y, args)
-# TODO: and, or as macros?
 Globals.symbols["not"]       = operator.not_
 
 def _del(x, y):
@@ -517,11 +514,23 @@ Macros = """
 (defmacro let letargs
     `((lambda (,@(map car (car letargs)))
         ,@(cdr letargs)) ,@(map cadr (car letargs))))
-(defmacro let* letargs
+(defmacro let* letargs ; this is probably broken
     (if (car letargs)
         `((lambda (,(caaar letargs))
             (let* ,(cdar letargs) ,@(cdr letargs))) ,(cadr (caar letargs)))
         `(begin ,@(cdr letargs))))
+(defmacro and andargs
+    (if andargs
+        `(if ,(car andargs)
+             (and ,@(cdr andargs))
+             False)
+        True))
+(defmacro or orargs
+    (if orargs
+        `(if ,(car orargs)
+             True
+             (or ,@(cdr orargs)))
+        False))
 (defmacro cond condargs
     (if (car condargs)
         (if (is (caar condargs) 'else)
