@@ -44,6 +44,9 @@ class UndefinedSymbolError(Exception):
     def __init__(self, s):
         Exception.__init__(self, s)
 
+class NotCallableError(Exception):
+    pass
+
 class SetNotSymbolError(Exception):
     pass
 
@@ -314,8 +317,7 @@ class Scope(object):
                 elif callable(fn):
                     return apply(fn, [self.eval(x) for x in s[1:]])
                 else:
-                    print "Not callable:", fn
-                    sys.exit(1)
+                    raise NotCallableError(fn)
             elif isinstance(s, Symbol):
                 found, r = self.lookup(s.name)
                 if not found:
