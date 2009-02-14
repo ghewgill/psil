@@ -464,6 +464,7 @@ Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 Globals.symbols["include"] = lambda x: include(x)
 
 Globals.symbols["list"]     = lambda *args: list(args)
+Globals.symbols["make-list"]= lambda args: list(args)
 Globals.symbols["list?"]    = lambda x: isinstance(x, list)
 Globals.symbols["cons"]     = lambda x, y: [x] + y if isinstance(y, list) else [x]
 def _set_car(x, y): x[0] = y
