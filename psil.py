@@ -392,7 +392,8 @@ class Function(object):
         return r
 
 class Macro(Function):
-    pass
+    def __str__(self):
+        return "<Macro %s>" % self.name
 
 def eval(s):
     """

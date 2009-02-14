@@ -138,7 +138,7 @@ True
 #(the game is up)
 
 >>> rep("(define (square x) (* x x))")
-<psil.Function object at 0x...>
+<Function square>
 >>> rep("(square 2)")
 4
 >>> rep("(square 1.4142158)")
@@ -151,7 +151,7 @@ True
 >>> rep("x")
 3
 >>> rep("(define (y-plus x) (+ x y))")
-<psil.Function object at 0x...>
+<Function y-plus>
 >>> rep("(define y 0)")
 0
 >>> rep("(set! y 2)")
@@ -170,20 +170,20 @@ True
 70
 
 >>> rep("(define (fourth-power x) (square (square x)))")
-<psil.Function object at 0x...>
+<Function fourth-power>
 >>> rep("(fourth-power 2)")
 16
 
 >>> rep("""(define (powers-of x)
 ...   (square x)
 ...      (fourth-power x))""")
-<psil.Function object at 0x...>
+<Function powers-of>
 >>> rep("(powers-of 2)")
 16
 >>> rep("""(define (powers-of x)
 ...   (set! y (square x))
 ...   (fourth-power x))""")
-<psil.Function object at 0x...>
+<Function powers-of>
 >>> rep("y")
 27
 >>> rep("(powers-of 7)")
@@ -195,7 +195,7 @@ True
 ...  (if (> x y)
 ...      (- x y)
 ...      (- y x)))""")
-<psil.Function object at 0x...>
+<Function absdiff>
 >>> rep("(absdiff 3 4)")
 1
 >>> rep("(absdiff 4 3)")
@@ -213,7 +213,7 @@ True
 (a b 3 ((quote 6)) (+ a b) (quote c) (quote ((1 2))))
 
 >>> rep("(defmacro one! (var) `(set! ,var 1))")
-<psil.Macro object at 0x...>
+<Macro one!>
 >>> rep("(one! b)")
 1
 >>> rep("b")
@@ -224,7 +224,7 @@ True
 ...   `((lambda ()
 ...      (define ,(car (car vars)) ,(car (cdr (car vars))))
 ...      ,body)))""")
-<psil.Macro object at 0x...>
+<Macro let>
 >>> rep("a")
 1
 >>> rep("((lambda () (define a 5) a))")
@@ -235,7 +235,7 @@ True
 1
 
 >>> rep("(defmacro foo (a . b) `(list ,a ',b))")
-<psil.Macro object at 0x...>
+<Macro foo>
 >>> rep("(macroexpand '(foo 1 2 3))")
 (list 1 (quote (2 3)))
 >>> rep("(foo 1 2 3)")
