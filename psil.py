@@ -308,7 +308,7 @@ class Scope(object):
                         return apply(getattr(self.eval(s[1]), f.name[1:]), [self.eval(x) for x in s[2:]])
                 fn = self.eval(f)
                 if isinstance(fn, Macro):
-                    m = apply(fn, s[1:])
+                    assert False, "unexpected macro call: " + str(fn)
                     return self.eval(apply(fn, s[1:]), tail)
                 elif tail:
                     raise TailCall(fn, [self.eval(x) for x in s[1:]])
@@ -545,6 +545,30 @@ Macros = """
 (define (cadddr x) (caddr (cdr x)))
 """
 
+def macroexpand_r(p):
+    """
+    >>> macroexpand_r(read("(foo bar)"))
+    [<foo>, <bar>]
+    >>> macroexpand_r(read("(and)"))
+    True
+    >>> macroexpand_r(read("(and a b)"))
+    [<if>, <a>, [<if>, <b>, True, <False>], <False>]
+    """
+    if isinstance(p, list):
+        if p and isinstance(p[0], Symbol):
+            if p[0] is Symbol.quote:
+                return p
+            else:
+                m = Globals.lookup(p[0].name)
+                if isinstance(m[1], Macro):
+                    return macroexpand_r(apply(m[1], p[1:]))
+                else:
+                    return p[0:1] + map(macroexpand_r, p[1:])
+        else:
+            return map(macroexpand_r, p)
+    else:
+        return p
+
 def external(x):
     if isinstance(x, list):
         return "(" + " ".join(external(i) for i in x) + ")"
@@ -561,6 +585,7 @@ def psil(s):
         p = parse(t)
         if p is None:
             break
+        p = macroexpand_r(p)
         try:
             r = eval(p)
         except TailCall, x:
