@@ -532,7 +532,7 @@ Macros = """
 (defmacro or orargs
     (if orargs
         `(if ,(car orargs)
-             True
+             ,(car orargs)
              (or ,@(cdr orargs)))
         False))
 (defmacro cond condargs
