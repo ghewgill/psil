@@ -512,6 +512,9 @@ Macros = """
 (defmacro begin forms
     `((lambda ()
         ,@forms)))
+(defmacro when whenargs
+    `(if ,(car whenargs)
+        (begin ,@(cdr whenargs))))
 (defmacro let letargs
     `((lambda (,@(map car (car letargs)))
         ,@(cdr letargs)) ,@(map cadr (car letargs))))
