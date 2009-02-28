@@ -644,5 +644,7 @@ if __name__ == "__main__":
             doctest.testmod(optionflags=doctest.ELLIPSIS)
             doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
             doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
+    elif sys.argv[1] == "-e":
+        print external(psil(sys.argv[2]))
     else:
         include(sys.argv[1])
