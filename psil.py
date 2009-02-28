@@ -11,9 +11,12 @@
 
 """
 
+import compiler
 import operator
 import re
 import sys
+
+Compile = True
 
 # adapted from http://code.activestate.com/recipes/475109/
 PY_STRING_LITERAL_RE = (r'''
@@ -578,6 +581,132 @@ def macroexpand_r(p):
     else:
         return p
 
+class SourceGenerator(object):
+    def __init__(self):
+        self.source = ""
+        self.depth = 0
+    def line(self, s):
+        self.source += "    "*self.depth + s + "\n"
+    def indent(self):
+        self.depth += 1
+    def dedent(self):
+        self.depth -= 1
+    def __str__(self):
+        return self.source
+
+def build_ast(p, tail = False):
+    """
+    >>> build_ast(psil("(+ 2 3)"))
+    Add(Const(2),Const(3))
+    """
+    if isinstance(p, list):
+        if isinstance(p[0], Symbol):
+            if p[0].name == "+":
+                return compiler.ast.Add((build_ast(p[1]), build_ast(p[2])))
+            elif p[0].name == "*":
+                return compiler.ast.Mul((build_ast(p[1]), build_ast(p[2])))
+            elif p[0].name == "==":
+                return compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))])
+            elif p[0].name == "define":
+                if isinstance(p[1], list):
+                    return compiler.ast.Function(None, p[1][0].name, [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt([build_ast(x) if x is not p[-1] else compiler.ast.Return(build_ast(x)) for x in p[2:]]))
+                else:
+                    return compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
+            elif p[0].name == "if":
+                return compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3]))
+            elif p[0].name == "lambda":
+                return compiler.ast.Lambda([x.name for x in p[1]], [], 0, build_ast(p[2]))
+            elif p[0].name == "list":
+                return compiler.ast.List([build_ast(x) for x in p[1:]])
+            elif p[0].name == "print":
+                return compiler.ast.Print(build_ast(p[1]), None)
+            elif p[0].name == "quote":
+                def q(p):
+                    if isinstance(p, list):
+                        return compiler.ast.List([q(x) for x in p])
+                    else:
+                        return compiler.ast.Const(p)
+                return q(p[1])
+            elif p[0].name == "set!":
+                return compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
+            elif p[0].name.startswith("."):
+                return compiler.ast.CallFunc(compiler.ast.Getattr(build_ast(p[1]), p[0].name[1:]), [build_ast(x) for x in p[2:]])
+            else:
+                return compiler.ast.CallFunc(compiler.ast.Name(p[0].name), [build_ast(x) for x in p[1:]])
+        else:
+            return compiler.ast.CallFunc(build_ast(p[0]), [build_ast(x) for x in p[1:]])
+    elif isinstance(p, Symbol):
+        return compiler.ast.Name(p.name)
+    else:
+        return compiler.ast.Const(p)
+
+def expr(node):
+    #print "node:", node
+    if isinstance(node, compiler.ast.Add):
+        return "(%s) + (%s)" % (expr(node.left), expr(node.right))
+    elif isinstance(node, compiler.ast.CallFunc):
+        if isinstance(node.node, compiler.ast.Lambda):
+            return "(" + expr(node.node) + ")(" + ", ".join([expr(x) for x in node.args]) + ")"
+        else:
+            return expr(node.node) + "(" + ", ".join([expr(x) for x in node.args]) + ")"
+    elif isinstance(node, compiler.ast.Compare):
+        return "(" + expr(node.expr) + ")" + "".join([" " + x[0] + " (" + expr(x[1]) + ")" for x in node.ops])
+    elif isinstance(node, compiler.ast.Const):
+        return repr(node.value)
+    elif isinstance(node, compiler.ast.Getattr):
+        return expr(node.expr) + "." + node.attrname
+    elif isinstance(node, compiler.ast.If):
+        return "(" + expr(node.tests[0][1]) + ") if (" + expr(node.tests[0][0]) + ") else (" + expr(node.else_) + ")"
+    elif isinstance(node, compiler.ast.Lambda):
+        return "lambda " + ", ".join(node.argnames) + ": " + expr(node.code)
+    elif isinstance(node, compiler.ast.List):
+        return "[" + ", ".join([expr(x) for x in node.nodes]) + "]"
+    elif isinstance(node, compiler.ast.Mul):
+        return "(%s) * (%s)" % (expr(node.left), expr(node.right))
+    elif isinstance(node, compiler.ast.Name):
+        return node.name
+    else:
+        print >>sys.stderr, "expr:", node
+        sys.exit(1)
+
+def gen_source(node, source):
+    if isinstance(node, compiler.ast.Assign):
+        source.line("".join([x.name+" = " for x in node.nodes]) + expr(node.expr))
+    elif isinstance(node, compiler.ast.Function):
+        source.line("def " + node.name + "(" + ", ".join(node.argnames) + "):")
+        source.indent()
+        gen_source(node.code, source)
+        source.dedent()
+    elif isinstance(node, compiler.ast.If):
+        source.line("if " + expr(node.tests[0][0]) + ":")
+        source.indent()
+        gen_source(node.tests[0][1], source)
+        source.dedent()
+        if node.else_:
+            source.line("else:")
+            source.indent()
+            gen_source(node.else_, source)
+            source.dedent()
+    elif isinstance(node, compiler.ast.Print):
+        #print "nodes:", node.nodes
+        #self.source.line("print " + ",".join([expr(x) for x in node.nodes]))
+        source.line("print " + expr(node.nodes))
+    elif isinstance(node, compiler.ast.Return):
+        source.line("return " + expr(node.value))
+    elif isinstance(node, compiler.ast.Stmt):
+        for x in node.nodes:
+            gen_source(x, source)
+    else:
+        source.line(expr(node))
+
+def psilc(p):
+    ast = build_ast(p)
+    #print "ast:", ast
+    source = SourceGenerator()
+    gen_source(ast, source)
+    #print "source:", str(source)
+    return str(source)
+
 def external(x):
     if isinstance(x, list):
         return "(" + " ".join(external(i) for i in x) + ")"
@@ -595,10 +724,13 @@ def psil(s):
         if p is None:
             break
         p = macroexpand_r(p)
-        try:
-            r = eval(p)
-        except TailCall, x:
-            r = x.apply()
+        if Compile:
+            exec compiler.compile(psilc(p), "psil", "single")
+        else:
+            try:
+                r = eval(p)
+            except TailCall, x:
+                r = x.apply()
     return r
 
 def rep(s):
