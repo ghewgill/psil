@@ -638,8 +638,11 @@ if __name__ == "__main__":
                 traceback.print_exc()
     elif sys.argv[1] == "--test":
         import doctest
-        doctest.testmod(optionflags=doctest.ELLIPSIS)
-        doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
-        doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
+        if len(sys.argv) >= 3:
+            doctest.testfile(sys.argv[2])
+        else:
+            doctest.testmod(optionflags=doctest.ELLIPSIS)
+            doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
+            doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
     else:
         include(sys.argv[1])
