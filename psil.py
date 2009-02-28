@@ -645,14 +645,14 @@ def build_ast(p, tail = False):
 def expr(node):
     #print "node:", node
     if isinstance(node, compiler.ast.Add):
-        return "(%s) + (%s)" % (expr(node.left), expr(node.right))
+        return "(%s + %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.CallFunc):
         if isinstance(node.node, compiler.ast.Lambda):
             return "(" + expr(node.node) + ")(" + ", ".join([expr(x) for x in node.args]) + ")"
         else:
             return expr(node.node) + "(" + ", ".join([expr(x) for x in node.args]) + ")"
     elif isinstance(node, compiler.ast.Compare):
-        return "(" + expr(node.expr) + ")" + "".join([" " + x[0] + " (" + expr(x[1]) + ")" for x in node.ops])
+        return "(" + expr(node.expr) + "".join([" " + x[0] + " " + expr(x[1]) + ")" for x in node.ops])
     elif isinstance(node, compiler.ast.Const):
         return repr(node.value)
     elif isinstance(node, compiler.ast.Getattr):
@@ -664,7 +664,7 @@ def expr(node):
     elif isinstance(node, compiler.ast.List):
         return "[" + ", ".join([expr(x) for x in node.nodes]) + "]"
     elif isinstance(node, compiler.ast.Mul):
-        return "(%s) * (%s)" % (expr(node.left), expr(node.right))
+        return "(%s * %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.Name):
         return node.name
     else:
