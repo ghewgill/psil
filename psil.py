@@ -594,9 +594,12 @@ class SourceGenerator(object):
     def __str__(self):
         return self.source
 
+def pydent(s):
+    return s.replace("-", "_")
+
 def compile_define(p):
     if isinstance(p[1], list):
-        return compiler.ast.Function(None, p[1][0].name, [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt([build_ast(x) if x is not p[-1] else compiler.ast.Return(build_ast(x)) for x in p[2:]]))
+        return compiler.ast.Function(None, pydent(p[1][0].name), [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt([build_ast(x) if x is not p[-1] else compiler.ast.Return(build_ast(x)) for x in p[2:]]))
     else:
         return compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
 
