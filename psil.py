@@ -594,6 +594,33 @@ class SourceGenerator(object):
     def __str__(self):
         return self.source
 
+def compile_define(p):
+    if isinstance(p[1], list):
+        return compiler.ast.Function(None, p[1][0].name, [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt([build_ast(x) if x is not p[-1] else compiler.ast.Return(build_ast(x)) for x in p[2:]]))
+    else:
+        return compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
+
+def compile_quote(p):
+    def q(p):
+        if isinstance(p, list):
+            return compiler.ast.List([q(x) for x in p])
+        else:
+            return compiler.ast.Const(p)
+    return q(p[1])
+
+CompileFuncs = {
+    Symbol.new("+"): lambda p: compiler.ast.Add((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("*"): lambda p: compiler.ast.Mul((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("=="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
+    Symbol.new("define"): compile_define,
+    Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3])),
+    Symbol.new("lambda"): lambda p: compiler.ast.Lambda([x.name for x in p[1]], [], 0, build_ast(p[2])),
+    Symbol.new("list"): lambda p: compiler.ast.List([build_ast(x) for x in p[1:]]),
+    Symbol.new("print"): lambda p: compiler.ast.Print(build_ast(p[1]), None),
+    Symbol.new("quote"): compile_quote,
+    Symbol.new("set!"): lambda p: compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
+}
+
 def build_ast(p, tail = False):
     """
     >>> build_ast(psil("(+ 2 3)"))
@@ -601,34 +628,9 @@ def build_ast(p, tail = False):
     """
     if isinstance(p, list):
         if isinstance(p[0], Symbol):
-            if p[0].name == "+":
-                return compiler.ast.Add((build_ast(p[1]), build_ast(p[2])))
-            elif p[0].name == "*":
-                return compiler.ast.Mul((build_ast(p[1]), build_ast(p[2])))
-            elif p[0].name == "==":
-                return compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))])
-            elif p[0].name == "define":
-                if isinstance(p[1], list):
-                    return compiler.ast.Function(None, p[1][0].name, [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt([build_ast(x) if x is not p[-1] else compiler.ast.Return(build_ast(x)) for x in p[2:]]))
-                else:
-                    return compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
-            elif p[0].name == "if":
-                return compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3]))
-            elif p[0].name == "lambda":
-                return compiler.ast.Lambda([x.name for x in p[1]], [], 0, build_ast(p[2]))
-            elif p[0].name == "list":
-                return compiler.ast.List([build_ast(x) for x in p[1:]])
-            elif p[0].name == "print":
-                return compiler.ast.Print(build_ast(p[1]), None)
-            elif p[0].name == "quote":
-                def q(p):
-                    if isinstance(p, list):
-                        return compiler.ast.List([q(x) for x in p])
-                    else:
-                        return compiler.ast.Const(p)
-                return q(p[1])
-            elif p[0].name == "set!":
-                return compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
+            f = CompileFuncs.get(p[0])
+            if f:
+                return f(p)
             elif p[0].name.startswith("."):
                 return compiler.ast.CallFunc(compiler.ast.Getattr(build_ast(p[1]), p[0].name[1:]), [build_ast(x) for x in p[2:]])
             else:
