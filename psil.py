@@ -627,6 +627,12 @@ def compile_divide(p):
     else:
         return compiler.ast.Div((compile_divide(p[:-1]), build_ast(p[-1])))
 
+def compile_equals(p):
+    if len(p) == 3:
+        return compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))])
+    else:
+        return compiler.ast.CallFunc(compiler.ast.Name("=="), [build_ast(x) for x in p[1:]])
+
 def compile_lambda(p):
     if len(p) > 3:
         return compiler.ast.Lambda([pydent(x.name) for x in p[1]], [], 0, [build_ast(x) for x in p[2:]])
@@ -671,7 +677,7 @@ CompileFuncs = {
     Symbol.new(">"): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("<="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new(">="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
-    Symbol.new("=="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
+    Symbol.new("=="): compile_equals,
     Symbol.new("!="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("is"): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("is-not"): lambda p: compiler.ast.Compare(build_ast(p[1]), [("is not", build_ast(p[2]))]),
