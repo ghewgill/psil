@@ -673,6 +673,7 @@ CompileFuncs = {
     Symbol.new("**"): lambda p: compiler.ast.Power((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new(">>"): lambda p: compiler.ast.RightShift((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("<<"): lambda p: compiler.ast.LeftShift((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("^"): lambda p: compiler.ast.Bitxor([build_ast(p[1]), build_ast(p[2])]),
     Symbol.new("<"): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new(">"): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("<="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
@@ -683,6 +684,7 @@ CompileFuncs = {
     Symbol.new("is-not"): lambda p: compiler.ast.Compare(build_ast(p[1]), [("is not", build_ast(p[2]))]),
     Symbol.new("define"): compile_define,
     Symbol.new("dict-set"): lambda p: compiler.ast.Assign([compiler.ast.Subscript(build_ast(p[1]), 0, build_ast(p[2]))], build_ast(p[3])),
+    Symbol.new("caadr"): lambda p: compiler.ast.Subscript(compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(1)), 0, compiler.ast.Const(0)),
     Symbol.new("caar"): lambda p: compiler.ast.Subscript(compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(0)), 0, compiler.ast.Const(0)),
     Symbol.new("cadddr"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(3)),
     Symbol.new("caddr"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(2)),
@@ -698,11 +700,13 @@ CompileFuncs = {
     Symbol.new("index"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, build_ast(p[2])),
     Symbol.new("lambda"): compile_lambda,
     Symbol.new("list"): lambda p: compiler.ast.List([build_ast(x) for x in p[1:]]),
+    Symbol.new("not"): lambda p: compiler.ast.Not(build_ast(p[1])),
     Symbol.new("not-in"): lambda p: compiler.ast.Compare(build_ast(p[1]), [("not in", build_ast(p[2]))]),
     Symbol.new("print"): lambda p: compiler.ast.CallFunc(compiler.ast.Name("__print__"), [build_ast(p[1])]),
     Symbol.new("quote"): compile_quote,
     Symbol.new("set!"): lambda p: compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2])),
     Symbol.new("slice"): lambda p: compiler.ast.Slice(build_ast(p[1]), 0, build_ast(p[2]), build_ast(p[3])),
+    Symbol.new("string->symbol"): lambda p: compiler.ast.CallFunc(compiler.ast.Name("intern"), [build_ast(p[1])]),
 }
 
 def build_ast(p, tail = False):
@@ -729,11 +733,14 @@ def build_ast(p, tail = False):
 InlineFuncs = {
     "+": "(lambda *x: sum(x))",
     "*": "(lambda *x: reduce(operator.mul, x, 1))",
+    "==": "(lambda *x: all(map(lambda i: x[i] == x[i+1], range(len(x)-1))))",
+    "and": "(lambda *x: reduce(operator.and_, x))",
     "append": "(lambda *x: reduce(operator.add, x))",
     "cadr": "(lambda x: x[1])",
     "car": "(lambda x: x[0])",
     "concat": "(lambda *x: ''.join([str(y) for y in x]))",
     "make_list": "list",
+    "not": "(lambda x: not x)",
     "reverse": "(lambda x: list(reversed(x)))",
 }
 
@@ -745,6 +752,8 @@ def expr(node):
         return node.name
     elif isinstance(node, compiler.ast.Bitand):
         return "(" + " & ".join([expr(x) for x in node.nodes]) + ")"
+    elif isinstance(node, compiler.ast.Bitxor):
+        return "(" + " ^ ".join([expr(x) for x in node.nodes]) + ")"
     elif isinstance(node, compiler.ast.CallFunc):
         if isinstance(node.node, compiler.ast.Lambda):
             return "(" + expr(node.node) + ")(" + ", ".join([expr(x) for x in node.args]) + ")"
@@ -779,6 +788,8 @@ def expr(node):
             return f
         else:
             return node.name
+    elif isinstance(node, compiler.ast.Not):
+        return "not %s" % expr(node.expr)
     elif isinstance(node, compiler.ast.Power):
         return "(%s ** %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.RightShift):
