@@ -739,7 +739,7 @@ def expr(node):
     elif isinstance(node, compiler.ast.Power):
         return "(%s ** %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.Slice):
-        return expr(node.expr) + "[" + expr(node.lower) + ":" + expr(node.upper) + "]"
+        return expr(node.expr) + "[" + (expr(node.lower) if node.lower else "") + ":" + (expr(node.upper) if node.upper else "") + "]"
     elif isinstance(node, compiler.ast.Sub):
         return "(%s - %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.Subscript):
