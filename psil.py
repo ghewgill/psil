@@ -608,6 +608,14 @@ def compile_define(p):
     else:
         return compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
 
+def compile_divide(p):
+    if len(p) == 2:
+        return compiler.ast.Div((compiler.ast.Const(1), build_ast(p[1])))
+    elif len(p) == 3:
+        return compiler.ast.Div((build_ast(p[1]), build_ast(p[2])))
+    else:
+        return compiler.ast.Div((compile_divide(p[:-1]), build_ast(p[-1])))
+
 def compile_lambda(p):
     if len(p) > 3:
         return compiler.ast.Lambda([x.name for x in p[1]], [], 0, [build_ast(x) for x in p[2:]])
@@ -622,11 +630,19 @@ def compile_quote(p):
             return compiler.ast.Const(p)
     return q(p[1])
 
+def compile_subtract(p):
+    if len(p) == 2:
+        return compiler.ast.UnarySub(build_ast(p[1]))
+    elif len(p) == 3:
+        return compiler.ast.Sub((build_ast(p[1]), build_ast(p[2])))
+    else:
+        return compiler.ast.Sub((compile_subtract(p[:-1]), build_ast(p[-1])))
+
 CompileFuncs = {
     Symbol.new("+"): lambda p: compiler.ast.Add((build_ast(p[1]), build_ast(p[2]))),
-    Symbol.new("-"): lambda p: compiler.ast.Sub((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("-"): compile_subtract,
     Symbol.new("*"): lambda p: compiler.ast.Mul((build_ast(p[1]), build_ast(p[2]))),
-    Symbol.new("/"): lambda p: compiler.ast.Div((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("/"): compile_divide,
     Symbol.new("%"): lambda p: compiler.ast.Mod((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("&"): lambda p: compiler.ast.Bitand([build_ast(p[1]), build_ast(p[2])]),
     Symbol.new("**"): lambda p: compiler.ast.Power((build_ast(p[1]), build_ast(p[2]))),
