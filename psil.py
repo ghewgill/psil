@@ -599,6 +599,7 @@ def pydent(s):
     if s == "try": s = "try_"
     s = s.replace("-", "_")
     s = s.replace("?", "_")
+    s = s.replace(">", "_")
     return s
 
 def compile_define(p):
@@ -623,19 +624,22 @@ def compile_quote(p):
 
 CompileFuncs = {
     Symbol.new("+"): lambda p: compiler.ast.Add((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("-"): lambda p: compiler.ast.Sub((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("*"): lambda p: compiler.ast.Mul((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("/"): lambda p: compiler.ast.Div((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("%"): lambda p: compiler.ast.Mod((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("&"): lambda p: compiler.ast.Bitand([build_ast(p[1]), build_ast(p[2])]),
+    Symbol.new("**"): lambda p: compiler.ast.Power((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("=="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("define"): compile_define,
     Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3])),
     Symbol.new("import"): lambda p: compiler.ast.Import([p[1].name]),
     Symbol.new("lambda"): compile_lambda,
     Symbol.new("list"): lambda p: compiler.ast.List([build_ast(x) for x in p[1:]]),
-    Symbol.new("print"): lambda p: compiler.ast.Print(build_ast(p[1]), None),
+    Symbol.new("print"): lambda p: compiler.ast.CallFunc(compiler.ast.Name("__print__"), [build_ast(p[1])]),
     Symbol.new("quote"): compile_quote,
-    Symbol.new("set!"): lambda p: compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
+    Symbol.new("set!"): lambda p: compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2])),
+    Symbol.new("slice"): lambda p: compiler.ast.Slice(build_ast(p[1]), 0, build_ast(p[2]), build_ast(p[3])),
 }
 
 def build_ast(p, tail = False):
@@ -651,13 +655,18 @@ def build_ast(p, tail = False):
             elif p[0].name.startswith("."):
                 return compiler.ast.CallFunc(compiler.ast.Getattr(build_ast(p[1]), p[0].name[1:]), [build_ast(x) for x in p[2:]])
             else:
-                return compiler.ast.CallFunc(compiler.ast.Name(p[0].name), [build_ast(x) for x in p[1:]])
+                return compiler.ast.CallFunc(compiler.ast.Name(pydent(p[0].name)), [build_ast(x) for x in p[1:]])
         else:
             return compiler.ast.CallFunc(build_ast(p[0]), [build_ast(x) for x in p[1:]])
     elif isinstance(p, Symbol):
         return compiler.ast.Name(p.name)
     else:
         return compiler.ast.Const(p)
+
+InlineFuncs = {
+    "+": "sum",
+    "append": "lambda x: reduce(operator.add, x)",
+}
 
 def expr(node):
     #print "node:", node
@@ -692,7 +701,17 @@ def expr(node):
     elif isinstance(node, compiler.ast.Mul):
         return "(%s * %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.Name):
-        return node.name
+        f = InlineFuncs.get(node.name)
+        if f:
+            return f
+        else:
+            return node.name
+    elif isinstance(node, compiler.ast.Power):
+        return "(%s ** %s)" % (expr(node.left), expr(node.right))
+    elif isinstance(node, compiler.ast.Slice):
+        return expr(node.expr) + "[" + expr(node.lower) + ":" + expr(node.upper) + "]"
+    elif isinstance(node, compiler.ast.Sub):
+        return "(%s - %s)" % (expr(node.left), expr(node.right))
     else:
         print >>sys.stderr, "expr:", node
         sys.exit(1)
