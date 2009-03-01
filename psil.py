@@ -681,7 +681,7 @@ def build_ast(p, tail = False):
         else:
             return compiler.ast.CallFunc(build_ast(p[0]), [build_ast(x) for x in p[1:]])
     elif isinstance(p, Symbol):
-        return compiler.ast.Name(p.name)
+        return compiler.ast.Name(pydent(p.name))
     else:
         return compiler.ast.Const(p)
 
