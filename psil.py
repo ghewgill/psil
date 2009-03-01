@@ -687,7 +687,9 @@ def build_ast(p, tail = False):
 
 InlineFuncs = {
     "+": "lambda *x: sum(x)",
-    "append": "lambda x: reduce(operator.add, x)",
+    "*": "lambda *x: reduce(operator.mul, x, 1)",
+    "append": "lambda *x: reduce(operator.add, x)",
+    "reverse": "reversed",
 }
 
 def expr(node):
@@ -807,7 +809,8 @@ def psil(s, compiled = True):
     t = tokenise(s)
     r = None
     compiled &= Compile
-    source = """def __print__(a): print a
+    source = """import operator
+def __print__(a): print a
 """
     while True:
         p = parse(t)
