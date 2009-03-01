@@ -652,6 +652,7 @@ CompileFuncs = {
     Symbol.new(">="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("=="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("define"): compile_define,
+    Symbol.new("car"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(0)),
     Symbol.new("cons"): lambda p: compiler.ast.Add((compiler.ast.List([build_ast(p[1])]), build_ast(p[2]))),
     Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3]) if len(p) >= 4 else None),
     Symbol.new("import"): lambda p: compiler.ast.Import([p[1].name]),
@@ -733,6 +734,8 @@ def expr(node):
         return expr(node.expr) + "[" + expr(node.lower) + ":" + expr(node.upper) + "]"
     elif isinstance(node, compiler.ast.Sub):
         return "(%s - %s)" % (expr(node.left), expr(node.right))
+    elif isinstance(node, compiler.ast.Subscript):
+        return "%s[%s]" % (expr(node.expr), expr(node.subs))
     else:
         print >>sys.stderr, "expr:", node
         sys.exit(1)
