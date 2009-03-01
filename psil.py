@@ -784,9 +784,10 @@ def external(x):
         return '"' + re.sub('"', r'\"', x) + '"'
     return str(x)
 
-def psil(s):
+def psil(s, compiled = True):
     t = tokenise(s)
     r = None
+    compiled &= Compile
     source = """def __print__(a): print a
 """
     while True:
@@ -794,14 +795,14 @@ def psil(s):
         if p is None:
             break
         p = macroexpand_r(p)
-        if Compile:
+        if compiled:
             source += psilc(p)
         else:
             try:
                 r = eval(p)
             except TailCall, x:
                 r = x.apply()
-    if Compile:
+    if compiled:
         f = open("psil.tmp", "w")
         f.write(source)
         f.close()
@@ -824,7 +825,7 @@ def include(fn):
     psil(text)
 
 if __name__ == "__main__":
-    psil(Macros)
+    psil(Macros, compiled = False)
     if len(sys.argv) == 1:
         Globals.symbols["quit"] = lambda: sys.exit(0)
         try:
