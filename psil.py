@@ -614,7 +614,7 @@ def compile_define(p):
     if isinstance(p[1], list):
         return compiler.ast.Function(None, pydent(p[1][0].name), [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt([build_ast(x) if x is not p[-1] else compiler.ast.Return(build_ast(x)) for x in p[2:]]))
     else:
-        return compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
+        return compiler.ast.Assign([compiler.ast.AssName(pydent(p[1].name), None)], build_ast(p[2]))
 
 def compile_divide(p):
     if len(p) == 2:
@@ -626,9 +626,9 @@ def compile_divide(p):
 
 def compile_lambda(p):
     if len(p) > 3:
-        return compiler.ast.Lambda([x.name for x in p[1]], [], 0, [build_ast(x) for x in p[2:]])
+        return compiler.ast.Lambda([pydent(x.name) for x in p[1]], [], 0, [build_ast(x) for x in p[2:]])
     else:
-        return compiler.ast.Lambda([x.name for x in p[1]], [], 0, build_ast(p[2]))
+        return compiler.ast.Lambda([pydent(x.name) for x in p[1]], [], 0, build_ast(p[2]))
 
 def compile_quote(p):
     def q(p):
