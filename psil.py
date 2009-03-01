@@ -630,6 +630,14 @@ def compile_lambda(p):
     else:
         return compiler.ast.Lambda([pydent(x.name) for x in p[1]], [], 0, build_ast(p[2]))
 
+def compile_multiply(p):
+    if len(p) == 2:
+        return build_ast(p[1])
+    elif len(p) == 3:
+        return compiler.ast.Mul((build_ast(p[1]), build_ast(p[2])))
+    else:
+        return compiler.ast.Mul((compile_multiply(p[:-1]), build_ast(p[-1])))
+
 def compile_quote(p):
     def q(p):
         if isinstance(p, list):
@@ -649,7 +657,7 @@ def compile_subtract(p):
 CompileFuncs = {
     Symbol.new("+"): compile_add,
     Symbol.new("-"): compile_subtract,
-    Symbol.new("*"): lambda p: compiler.ast.Mul((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("*"): compile_multiply,
     Symbol.new("/"): compile_divide,
     Symbol.new("%"): lambda p: compiler.ast.Mod((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("&"): lambda p: compiler.ast.Bitand([build_ast(p[1]), build_ast(p[2])]),
