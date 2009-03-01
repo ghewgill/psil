@@ -739,7 +739,7 @@ def expr(node):
     elif isinstance(node, compiler.ast.If):
         return "(" + expr(node.tests[0][1]) + " if " + expr(node.tests[0][0]) + " else " + (expr(node.else_) if node.else_ else "None") + ")"
     elif isinstance(node, compiler.ast.Lambda):
-        if isinstance(node.code, list):
+        if hasattr(node, "name"):
             return node.name
         else:
             return "lambda " + ", ".join(node.argnames) + ": " + expr(node.code)
@@ -763,20 +763,29 @@ def expr(node):
         return "(%s - %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.Subscript):
         return "%s[%s]" % (expr(node.expr), expr(node.subs))
+    elif isinstance(node, compiler.ast.UnarySub):
+        return "-(%s)" % expr(node.expr)
     else:
         print >>sys.stderr, "expr:", node
         sys.exit(1)
+
+def is_statement(p):
+    return isinstance(p, compiler.ast.Assign)
 
 LambdaCounter = 0
 
 def gen_source(node, source):
     class LiftLambda(object):
         def visitLambda(self, p):
+            global LambdaCounter
             if isinstance(p.code, list):
-                global LambdaCounter
                 LambdaCounter += 1
                 p.name = "_lambda_" + str(LambdaCounter)
-                gen_source(compiler.ast.Function(None, p.name, p.argnames, p.defaults, p.flags, None, compiler.ast.Stmt(p.code[:-1] + [compiler.ast.Return(p.code[-1])])), source)
+                gen_source(compiler.ast.Function(None, p.name, p.argnames, p.defaults, p.flags, None, compiler.ast.Stmt(p.code[:-1] + [p.code[-1] if is_statement(p.code[-1]) else compiler.ast.Return(p.code[-1])])), source)
+            elif is_statement(p.code):
+                LambdaCounter += 1
+                p.name = "_lambda_" + str(LambdaCounter)
+                gen_source(compiler.ast.Function(None, p.name, p.argnames, p.defaults, p.flags, None, compiler.ast.Stmt([p.code])), source)
             else:
                 compiler.walk(p.code, self)
         def visitStmt(self, p):
