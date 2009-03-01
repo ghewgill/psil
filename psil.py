@@ -623,6 +623,7 @@ def compile_quote(p):
 CompileFuncs = {
     Symbol.new("+"): lambda p: compiler.ast.Add((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("*"): lambda p: compiler.ast.Mul((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("/"): lambda p: compiler.ast.Div((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("%"): lambda p: compiler.ast.Mod((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("&"): lambda p: compiler.ast.Bitand([build_ast(p[1]), build_ast(p[2])]),
     Symbol.new("=="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
@@ -671,6 +672,8 @@ def expr(node):
         return "(" + expr(node.expr) + "".join([" " + x[0] + " " + expr(x[1]) + ")" for x in node.ops])
     elif isinstance(node, compiler.ast.Const):
         return repr(node.value)
+    elif isinstance(node, compiler.ast.Div):
+        return "(%s / %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.Getattr):
         return expr(node.expr) + "." + node.attrname
     elif isinstance(node, compiler.ast.If):
