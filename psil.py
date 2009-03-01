@@ -481,6 +481,8 @@ Globals.symbols["cdar"]   = lambda x: x[0][1:]
 Globals.symbols["cddr"]   = lambda x: x[2:]
 Globals.symbols["caaar"]  = lambda x: x[0][0][0]
 Globals.symbols["caadr"]  = lambda x: x[1][0]
+Globals.symbols["caddr"]  = lambda x: x[2]
+Globals.symbols["cadddr"] = lambda x: x[3]
 #Globals.symbols["cadar"]  = lambda x: x[0][1][0] # TODO
 #Globals.symbols["caddr"]  = lambda x: x[0][0][0]
 #Globals.symbols["cdaar"]  = lambda x: x[0][0][0]
@@ -550,8 +552,6 @@ Macros = """
                 (cond ,@(cdr condargs))))))
 (defmacro for-each args
     `(map ,@args))
-(define (caddr x) (cadr (cdr x)))
-(define (cadddr x) (caddr (cdr x)))
 """
 
 def macroexpand_r(p):
@@ -665,9 +665,12 @@ CompileFuncs = {
     Symbol.new("define"): compile_define,
     Symbol.new("dict-set"): lambda p: compiler.ast.Assign([compiler.ast.Subscript(build_ast(p[1]), 0, build_ast(p[2]))], build_ast(p[3])),
     Symbol.new("caar"): lambda p: compiler.ast.Subscript(compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(0)), 0, compiler.ast.Const(0)),
+    Symbol.new("cadddr"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(3)),
+    Symbol.new("caddr"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(2)),
     Symbol.new("cadr"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(1)),
     Symbol.new("car"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(0)),
     Symbol.new("cdar"): lambda p: compiler.ast.Slice(compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(0)), 0, compiler.ast.Const(1), None),
+    Symbol.new("cddr"): lambda p: compiler.ast.Slice(build_ast(p[1]), 0, compiler.ast.Const(2), None),
     Symbol.new("cdr"): lambda p: compiler.ast.Slice(build_ast(p[1]), 0, compiler.ast.Const(1), None),
     Symbol.new("cons"): lambda p: compiler.ast.Add((compiler.ast.List([build_ast(p[1])]), build_ast(p[2]))),
     Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3]) if len(p) >= 4 else None),
