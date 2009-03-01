@@ -737,7 +737,7 @@ def expr(node):
     elif isinstance(node, compiler.ast.Getattr):
         return expr(node.expr) + "." + node.attrname
     elif isinstance(node, compiler.ast.If):
-        return "(" + expr(node.tests[0][1]) + ") if (" + expr(node.tests[0][0]) + ") else (" + (expr(node.else_) if node.else_ else "None") + ")"
+        return "(" + expr(node.tests[0][1]) + " if " + expr(node.tests[0][0]) + " else " + (expr(node.else_) if node.else_ else "None") + ")"
     elif isinstance(node, compiler.ast.Lambda):
         if isinstance(node.code, list):
             return node.name
