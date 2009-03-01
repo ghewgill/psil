@@ -662,6 +662,8 @@ CompileFuncs = {
     Symbol.new("%"): lambda p: compiler.ast.Mod((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("&"): lambda p: compiler.ast.Bitand([build_ast(p[1]), build_ast(p[2])]),
     Symbol.new("**"): lambda p: compiler.ast.Power((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new(">>"): lambda p: compiler.ast.RightShift((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("<<"): lambda p: compiler.ast.LeftShift((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("<"): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new(">"): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("<="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
@@ -754,6 +756,8 @@ def expr(node):
             return node.name
         else:
             return "lambda " + ", ".join(node.argnames) + ": " + expr(node.code)
+    elif isinstance(node, compiler.ast.LeftShift):
+        return "(%s << %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.List):
         return "[" + ", ".join([expr(x) for x in node.nodes]) + "]"
     elif isinstance(node, compiler.ast.Mod):
@@ -768,6 +772,8 @@ def expr(node):
             return node.name
     elif isinstance(node, compiler.ast.Power):
         return "(%s ** %s)" % (expr(node.left), expr(node.right))
+    elif isinstance(node, compiler.ast.RightShift):
+        return "(%s >> %s)" % (expr(node.left), expr(node.right))
     elif isinstance(node, compiler.ast.Slice):
         return expr(node.expr) + "[" + (expr(node.lower) if node.lower else "") + ":" + (expr(node.upper) if node.upper else "") + "]"
     elif isinstance(node, compiler.ast.Sub):
