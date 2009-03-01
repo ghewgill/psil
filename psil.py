@@ -13,6 +13,7 @@
 
 import compiler
 import operator
+import os
 import re
 import sys
 
@@ -762,18 +763,26 @@ def external(x):
 def psil(s):
     t = tokenise(s)
     r = None
+    source = """def __print__(a): print a
+"""
     while True:
         p = parse(t)
         if p is None:
             break
         p = macroexpand_r(p)
         if Compile:
-            exec compiler.compile(psilc(p), "psil", "single")
+            source += psilc(p)
         else:
             try:
                 r = eval(p)
             except TailCall, x:
                 r = x.apply()
+    if Compile:
+        f = open("psil.tmp", "w")
+        f.write(source)
+        f.close()
+        os.system(sys.executable+" psil.tmp")
+        #exec compiler.compile(source, "psil", "exec")
     return r
 
 def rep(s):
