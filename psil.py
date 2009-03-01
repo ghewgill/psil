@@ -629,6 +629,7 @@ CompileFuncs = {
     Symbol.new("=="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("define"): compile_define,
     Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3])),
+    Symbol.new("import"): lambda p: compiler.ast.Import([p[1].name]),
     Symbol.new("lambda"): compile_lambda,
     Symbol.new("list"): lambda p: compiler.ast.List([build_ast(x) for x in p[1:]]),
     Symbol.new("print"): lambda p: compiler.ast.Print(build_ast(p[1]), None),
@@ -727,6 +728,8 @@ def gen_source(node, source):
             source.indent()
             gen_source(node.else_, source)
             source.dedent()
+    elif isinstance(node, compiler.ast.Import):
+        source.line("import " + ", ".join(node.names))
     elif isinstance(node, compiler.ast.Print):
         #print "nodes:", node.nodes
         #self.source.line("print " + ",".join([expr(x) for x in node.nodes]))
