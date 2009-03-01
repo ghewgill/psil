@@ -767,7 +767,7 @@ def psilc(p):
     #print "ast:", ast
     source = SourceGenerator()
     gen_source(ast, source)
-    #print "source:", str(source)
+    #print "source:\n", str(source)
     return str(source)
 
 def external(x):
