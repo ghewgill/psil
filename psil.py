@@ -161,6 +161,7 @@ Symbol.unquote_splicing = Symbol.new("unquote-splicing")
 Symbol.define           = Symbol.new("define")
 Symbol.defmacro         = Symbol.new("defmacro")
 Symbol.if_              = Symbol.new("if")
+Symbol.import_          = Symbol.new("import")
 Symbol.lambda_          = Symbol.new("lambda")
 Symbol.set              = Symbol.new("set!")
 
@@ -270,6 +271,8 @@ class Scope(object):
                             return self.eval(s[3], tail)
                         else:
                             return None
+                    if f is Symbol.import_:
+                        return Globals.define(s[1].name, __import__(s[1].name))
                     if f is Symbol.lambda_:
                         return Function("lambda", s[1], s[2:], self)
                     if f is Symbol.quasiquote:
@@ -458,7 +461,6 @@ def _print(*a):
     print "".join(str(x) for x in a)
 Globals.symbols["print"]     = _print
 # TODO: raise
-Globals.symbols["import"] = lambda x: Globals.define(x.name, __import__(x.name))
 Globals.symbols["include"] = lambda x: include(x)
 
 Globals.symbols["list"]     = lambda *args: list(args)
