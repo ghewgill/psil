@@ -723,7 +723,7 @@ InlineFuncs = {
     "append": "(lambda *x: reduce(operator.add, x))",
     "cadr": "(lambda x: x[1])",
     "car": "(lambda x: x[0])",
-    "concat": "(lambda *x: ''.join(x))",
+    "concat": "(lambda *x: ''.join([str(y) for y in x]))",
     "make_list": "list",
     "reverse": "(lambda x: list(reversed(x)))",
 }
