@@ -602,6 +602,14 @@ def pydent(s):
     s = s.replace(">", "_")
     return s
 
+def compile_add(p):
+    if len(p) == 2:
+        return build_ast(p[1])
+    elif len(p) == 3:
+        return compiler.ast.Add((build_ast(p[1]), build_ast(p[2])))
+    else:
+        return compiler.ast.Add((compile_add(p[:-1]), build_ast(p[-1])))
+
 def compile_define(p):
     if isinstance(p[1], list):
         return compiler.ast.Function(None, pydent(p[1][0].name), [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt([build_ast(x) if x is not p[-1] else compiler.ast.Return(build_ast(x)) for x in p[2:]]))
@@ -639,7 +647,7 @@ def compile_subtract(p):
         return compiler.ast.Sub((compile_subtract(p[:-1]), build_ast(p[-1])))
 
 CompileFuncs = {
-    Symbol.new("+"): lambda p: compiler.ast.Add((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("+"): compile_add,
     Symbol.new("-"): compile_subtract,
     Symbol.new("*"): lambda p: compiler.ast.Mul((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new("/"): compile_divide,
