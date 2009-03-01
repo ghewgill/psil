@@ -612,7 +612,10 @@ def compile_add(p):
 
 def compile_define(p):
     if isinstance(p[1], list):
-        return compiler.ast.Function(None, pydent(p[1][0].name), [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt([build_ast(x) if x is not p[-1] else compiler.ast.Return(build_ast(x)) for x in p[2:]]))
+        stmt = [build_ast(x) for x in p[2:]]
+        if not is_statement(stmt[-1]):
+            stmt[-1] = compiler.ast.Return(stmt[-1])
+        return compiler.ast.Function(None, pydent(p[1][0].name), [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt(stmt))
     else:
         return compiler.ast.Assign([compiler.ast.AssName(pydent(p[1].name), None)], build_ast(p[2]))
 
