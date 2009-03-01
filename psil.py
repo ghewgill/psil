@@ -690,10 +690,10 @@ def build_ast(p, tail = False):
         return compiler.ast.Const(p)
 
 InlineFuncs = {
-    "+": "lambda *x: sum(x)",
-    "*": "lambda *x: reduce(operator.mul, x, 1)",
-    "append": "lambda *x: reduce(operator.add, x)",
-    "reverse": "reversed",
+    "+": "(lambda *x: sum(x))",
+    "*": "(lambda *x: reduce(operator.mul, x, 1))",
+    "append": "(lambda *x: reduce(operator.add, x))",
+    "reverse": "(lambda x: list(reversed(x)))",
 }
 
 def expr(node):
