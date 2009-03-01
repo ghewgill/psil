@@ -595,7 +595,10 @@ class SourceGenerator(object):
         return self.source
 
 def pydent(s):
-    return s.replace("-", "_")
+    if s == "try": s = "try_"
+    s = s.replace("-", "_")
+    s = s.replace("?", "_")
+    return s
 
 def compile_define(p):
     if isinstance(p[1], list):
