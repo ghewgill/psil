@@ -669,7 +669,7 @@ def build_ast(p, tail = False):
         return compiler.ast.Const(p)
 
 InlineFuncs = {
-    "+": "sum",
+    "+": "lambda *x: sum(x)",
     "append": "lambda x: reduce(operator.add, x)",
 }
 
