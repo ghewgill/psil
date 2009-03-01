@@ -544,7 +544,7 @@ Macros = """
              (or ,@(cdr orargs)))
         False))
 (defmacro cond condargs
-    (if (car condargs)
+    (if condargs
         (if (is (caar condargs) 'else)
             `(begin ,@(cdar condargs))
             `(if ,(caar condargs)
