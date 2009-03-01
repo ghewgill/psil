@@ -606,6 +606,12 @@ def compile_define(p):
     else:
         return compiler.ast.Assign([compiler.ast.AssName(p[1].name, None)], build_ast(p[2]))
 
+def compile_lambda(p):
+    if len(p) > 3:
+        return compiler.ast.Lambda([x.name for x in p[1]], [], 0, [build_ast(x) for x in p[2:]])
+    else:
+        return compiler.ast.Lambda([x.name for x in p[1]], [], 0, build_ast(p[2]))
+
 def compile_quote(p):
     def q(p):
         if isinstance(p, list):
@@ -622,7 +628,7 @@ CompileFuncs = {
     Symbol.new("=="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("define"): compile_define,
     Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3])),
-    Symbol.new("lambda"): lambda p: compiler.ast.Lambda([x.name for x in p[1]], [], 0, build_ast(p[2])),
+    Symbol.new("lambda"): compile_lambda,
     Symbol.new("list"): lambda p: compiler.ast.List([build_ast(x) for x in p[1:]]),
     Symbol.new("print"): lambda p: compiler.ast.Print(build_ast(p[1]), None),
     Symbol.new("quote"): compile_quote,
@@ -670,7 +676,10 @@ def expr(node):
     elif isinstance(node, compiler.ast.If):
         return "(" + expr(node.tests[0][1]) + ") if (" + expr(node.tests[0][0]) + ") else (" + expr(node.else_) + ")"
     elif isinstance(node, compiler.ast.Lambda):
-        return "lambda " + ", ".join(node.argnames) + ": " + expr(node.code)
+        if isinstance(node.code, list):
+            return node.name
+        else:
+            return "lambda " + ", ".join(node.argnames) + ": " + expr(node.code)
     elif isinstance(node, compiler.ast.List):
         return "[" + ", ".join([expr(x) for x in node.nodes]) + "]"
     elif isinstance(node, compiler.ast.Mod):
@@ -683,7 +692,21 @@ def expr(node):
         print >>sys.stderr, "expr:", node
         sys.exit(1)
 
+LambdaCounter = 0
+
 def gen_source(node, source):
+    class LiftLambda(object):
+        def visitLambda(self, p):
+            if isinstance(p.code, list):
+                global LambdaCounter
+                LambdaCounter += 1
+                p.name = "_lambda_" + str(LambdaCounter)
+                gen_source(compiler.ast.Function(None, p.name, p.argnames, p.defaults, p.flags, None, compiler.ast.Stmt(p.code)), source)
+            else:
+                compiler.walk(p.code, self)
+        def visitStmt(self, p):
+            pass
+    compiler.walk(node, LiftLambda())
     if isinstance(node, compiler.ast.Assign):
         source.line("".join([x.name+" = " for x in node.nodes]) + expr(node.expr))
     elif isinstance(node, compiler.ast.Function):
