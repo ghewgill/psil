@@ -636,7 +636,7 @@ CompileFuncs = {
     Symbol.new(">="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("=="): lambda p: compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))]),
     Symbol.new("define"): compile_define,
-    Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3])),
+    Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3]) if len(p) >= 4 else None),
     Symbol.new("import"): lambda p: compiler.ast.Import([p[1].name]),
     Symbol.new("lambda"): compile_lambda,
     Symbol.new("list"): lambda p: compiler.ast.List([build_ast(x) for x in p[1:]]),
@@ -692,7 +692,7 @@ def expr(node):
     elif isinstance(node, compiler.ast.Getattr):
         return expr(node.expr) + "." + node.attrname
     elif isinstance(node, compiler.ast.If):
-        return "(" + expr(node.tests[0][1]) + ") if (" + expr(node.tests[0][0]) + ") else (" + expr(node.else_) + ")"
+        return "(" + expr(node.tests[0][1]) + ") if (" + expr(node.tests[0][0]) + ") else (" + (expr(node.else_) if node.else_ else "None") + ")"
     elif isinstance(node, compiler.ast.Lambda):
         if isinstance(node.code, list):
             return node.name
