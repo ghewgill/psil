@@ -757,7 +757,7 @@ def gen_source(node, source):
                 global LambdaCounter
                 LambdaCounter += 1
                 p.name = "_lambda_" + str(LambdaCounter)
-                gen_source(compiler.ast.Function(None, p.name, p.argnames, p.defaults, p.flags, None, compiler.ast.Stmt(p.code)), source)
+                gen_source(compiler.ast.Function(None, p.name, p.argnames, p.defaults, p.flags, None, compiler.ast.Stmt(p.code[:-1] + [compiler.ast.Return(p.code[-1])])), source)
             else:
                 compiler.walk(p.code, self)
         def visitStmt(self, p):
