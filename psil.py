@@ -700,6 +700,8 @@ def expr(node):
     #print "node:", node
     if isinstance(node, compiler.ast.Add):
         return "(%s + %s)" % (expr(node.left), expr(node.right))
+    elif isinstance(node, compiler.ast.AssName):
+        return node.name
     elif isinstance(node, compiler.ast.Bitand):
         return "(" + " & ".join([expr(x) for x in node.nodes]) + ")"
     elif isinstance(node, compiler.ast.CallFunc):
@@ -762,7 +764,7 @@ def gen_source(node, source):
             pass
     compiler.walk(node, LiftLambda())
     if isinstance(node, compiler.ast.Assign):
-        source.line("".join([x.name+" = " for x in node.nodes]) + expr(node.expr))
+        source.line("".join([expr(x)+" = " for x in node.nodes]) + expr(node.expr))
     elif isinstance(node, compiler.ast.Function):
         source.line("def " + node.name + "(" + ", ".join(node.argnames) + "):")
         source.indent()
