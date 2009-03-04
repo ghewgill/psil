@@ -1,0 +1,15 @@
+- destructuring bind
+- compiler:
+    - include
+        - use import instead, include is evil
+    - bind free variables on lambda lift
+        - if vars themselves are parameters, then can't assign in outer scope
+        - use _env_fname mechanism for access to outer scopes
+        - still a problem assigning to outer function parameters
+    - tail recursion
+        - same exception mechanism, analyse call graph for potential tail recursion
+        - directly map some cases to loops
+    - use of nonlocal for assignments to enclosing variables
+        - encapsulate scope vars in _env_fname object, which we can assign to with impunity
+    - print multiple parameters
+        - use exec
