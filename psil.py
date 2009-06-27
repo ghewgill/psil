@@ -91,6 +91,10 @@ def tokenise(s):
     ['test']
     >>> [x[1] for x in tokenise('''(a 1 "test" 'c)''')]
     ['(', 'a', 1, 'test', "'", 'c', ')']
+    >>> [x[1] for x in tokenise("123 34.5 56e7")]
+    [123, 34.5, 560000000.0]
+    >>> [x[1] for x in tokenise("(a ,@b c)")]
+    ['(', 'a', ',@', 'b', 'c', ')']
     """
     i = 0
     while True:
