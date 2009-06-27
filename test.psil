@@ -1,12 +1,12 @@
 #!/opt/local/bin/python2.5 psil.py
 
-(import 'sys)
+(import sys)
 
 ((getattr (getattr sys "stdout") "write") "hello world\n") ; this is a comment
 (.write (getattr sys "stdout") "hello world\n")
 (print "hello world")
 
-(import 'hashlib)
+(import hashlib)
 (define h (.sha1 hashlib))
 (.update h "Hello world")
 (print (.hexdigest h))
