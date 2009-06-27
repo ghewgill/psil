@@ -173,6 +173,17 @@ Symbol.lambda_          = Symbol.new("lambda")
 Symbol.set              = Symbol.new("set!")
 
 def parse(tokens, next = None):
+    """
+    >>> parse(tokenise("(a b c)"))
+    [<a>, <b>, <c>]
+    >>> parse(tokenise("'()"))
+    [<quote>, []]
+    >>> parse(tokenise("("))
+    Traceback (most recent call last):
+        ...
+    SyntaxError: unclosed parenthesis
+    >>> parse(tokenise("())"))
+    """
     if next is None:
         try:
             next = tokens.next()
@@ -182,7 +193,10 @@ def parse(tokens, next = None):
     if t == Token.LPAREN:
         a = []
         while True:
-            next = tokens.next()
+            try:
+                next = tokens.next()
+            except StopIteration:
+                raise SyntaxError("unclosed parenthesis")
             if next[0] == Token.RPAREN:
                 break
             a.append(parse(tokens, next))
