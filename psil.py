@@ -94,7 +94,7 @@ def tokenise(s):
     """
     i = 0
     while True:
-        while i < len(s) and s[i] in " \t\n":
+        while i < len(s) and s[i].isspace():
             i += 1
         if i >= len(s):
             break
