@@ -17,7 +17,7 @@ import os
 import re
 import sys
 
-Compile = True
+Compile = False
 
 # adapted from http://code.activestate.com/recipes/475109/
 PY_STRING_LITERAL_RE = (r'''
@@ -933,8 +933,32 @@ def include(fn):
     psil(text)
 
 psil(Macros, compiled = False)
+
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
+    Interactive = True
+    a = 1
+    while a < len(sys.argv) and sys.argv[a].startswith("-"):
+        if sys.argv[a] == "-c":
+            Compile = True
+        elif sys.argv[a] == "-e":
+            a += 1
+            psil(sys.argv[a])
+            Interactive = False
+        elif sys.argv[a] == "--test":
+            import doctest
+            a += 1
+            if a < len(sys.argv):
+                doctest.testfile(sys.argv[a])
+            else:
+                doctest.testmod(optionflags=doctest.ELLIPSIS)
+                doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
+                doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
+            sys.exit(0)
+        a += 1
+    if a < len(sys.argv):
+        # TODO: command line args to script
+        include(sys.argv[1])
+    elif Interactive:
         Globals.symbols["quit"] = lambda: sys.exit(0)
         try:
             import readline
@@ -955,15 +979,3 @@ if __name__ == "__main__":
                 raise
             except:
                 traceback.print_exc()
-    elif sys.argv[1] == "--test":
-        import doctest
-        if len(sys.argv) >= 3:
-            doctest.testfile(sys.argv[2])
-        else:
-            doctest.testmod(optionflags=doctest.ELLIPSIS)
-            doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
-            doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
-    elif sys.argv[1] == "-e":
-        print external(psil(sys.argv[2]))
-    else:
-        include(sys.argv[1])
