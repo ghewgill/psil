@@ -169,7 +169,6 @@ Symbol.unquote_splicing = Symbol.new("unquote-splicing")
 Symbol.define           = Symbol.new("define")
 Symbol.defmacro         = Symbol.new("defmacro")
 Symbol.if_              = Symbol.new("if")
-Symbol.import_          = Symbol.new("import")
 Symbol.lambda_          = Symbol.new("lambda")
 Symbol.set              = Symbol.new("set!")
 
@@ -279,8 +278,6 @@ class Scope(object):
                             return self.eval(s[3], tail)
                         else:
                             return None
-                    if f is Symbol.import_:
-                        return Globals.define(s[1].name, __import__(s[1].name))
                     if f is Symbol.lambda_:
                         return Function("lambda", s[1], s[2:], self)
                     if f is Symbol.quasiquote:
@@ -556,6 +553,9 @@ Macros = """
                 (cond ,@(cdr condargs))))))
 (defmacro for-each args
     `(map ,@args))
+(defmacro import args
+    `(define ,(car args)
+      (__import__ ,(symbol->string (car args)))))
 """
 
 def macroexpand_r(p):
@@ -699,7 +699,6 @@ CompileFuncs = {
     Symbol.new("cdr"): lambda p: compiler.ast.Slice(build_ast(p[1]), 0, compiler.ast.Const(1), None),
     Symbol.new("cons"): lambda p: compiler.ast.Add((compiler.ast.List([build_ast(p[1])]), build_ast(p[2]))),
     Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3]) if len(p) >= 4 else None),
-    Symbol.new("import"): lambda p: compiler.ast.Import([p[1].name]),
     Symbol.new("in"): lambda p: compiler.ast.Compare(build_ast(p[1]), [("in", build_ast(p[2]))]),
     Symbol.new("index"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, build_ast(p[2])),
     Symbol.new("lambda"): compile_lambda,
@@ -849,8 +848,6 @@ def gen_source(node, source):
             source.indent()
             gen_source(node.else_, source)
             source.dedent()
-    elif isinstance(node, compiler.ast.Import):
-        source.line("import " + ", ".join(node.names))
     elif isinstance(node, compiler.ast.Print):
         #print "nodes:", node.nodes
         #self.source.line("print " + ",".join([expr(x) for x in node.nodes]))
