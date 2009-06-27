@@ -932,8 +932,8 @@ def include(fn):
         text = text[m.end(0):]
     psil(text)
 
+psil(Macros, compiled = False)
 if __name__ == "__main__":
-    psil(Macros, compiled = False)
     if len(sys.argv) == 1:
         Globals.symbols["quit"] = lambda: sys.exit(0)
         try:
