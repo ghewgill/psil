@@ -13,15 +13,15 @@
 >>> psil("(getattr os \"name\")")
 'posix'
 
->>> psil("""(define f (open "integ.test"))""")
+>>> psil("""(define f (open "integ.test"))""") #doctest: +ELLIPSIS
 <open file 'integ.test', mode 'r' at 0x...>
 >>> psil("(.readline f)")
 '>>> from psil import psil\n'
 >>> psil("(.close f)")
 
->>> psil("(import hashlib)")
+>>> psil("(import hashlib)") #doctest: +ELLIPSIS
 <module 'hashlib' from '...'>
->>> psil("(define h (.sha1 hashlib))")
+>>> psil("(define h (.sha1 hashlib))") #doctest: +ELLIPSIS
 <sha1 HASH object @ 0x...>
 >>> psil("""(.update h "Hello world")""")
 >>> psil("(.hexdigest h)")
