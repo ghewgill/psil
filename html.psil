@@ -1,6 +1,6 @@
 #!/opt/local/bin/python2.5 psil.py
 
-(import 'cgi)
+(import cgi)
 
 (define (render-html doc)
     (if (is 'comment (car doc))
