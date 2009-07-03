@@ -252,6 +252,9 @@ class Scope(object):
     def __init__(self, parent = None):
         self.parent = parent
         self.symbols = {}
+        self.globals = None
+    def setglobals(self, globals):
+        self.globals = globals
     def define(self, name, value):
         if name in self.symbols:
             print >>sys.stderr, "*** warning: redefining", name
@@ -271,6 +274,10 @@ class Scope(object):
             r = s.symbols.get(name, self.NotFound)
             if r is not self.NotFound:
                 return (True, r)
+            if s.globals is not None:
+                r = s.globals.get(name, self.NotFound)
+                if r is not self.NotFound:
+                    return (True, r)
             s = s.parent
         return (False, None)
     def eval(self, s, tail = False):
@@ -891,7 +898,7 @@ def external(x):
         return '"' + re.sub('"', r'\"', x) + '"'
     return str(x)
 
-def psil(s, compiled = True):
+def psil(s, compiled = True, globals = None):
     t = tokenise(s)
     r = None
     compiled &= Compile
@@ -907,7 +914,8 @@ def __print__(a): print a
             source += psilc(p)
         else:
             try:
-                r = eval(p)
+                Globals.setglobals(globals)
+                r = Globals.eval(p)
             except TailCall, x:
                 r = x.apply()
     if compiled:
