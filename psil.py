@@ -441,9 +441,56 @@ def eval(s):
     """
     return Globals.eval(s)
 
+def macroexpand(p, once = False):
+    while isinstance(p, list) and len(p) > 0 and isinstance(p[0], Symbol):
+        found, f = Globals.lookup(p[0].name)
+        if found and isinstance(f, Macro):
+            p = apply(f, p[1:])
+        else:
+            break
+        if once:
+            break
+    return p
+
+def macroexpand_r(p, depth=0, quoted=False):
+    """
+    >>> macroexpand_r(read("(foo bar)"))
+    [<foo>, <bar>]
+    >>> macroexpand_r(read("(and)"))
+    True
+    >>> macroexpand_r(read("(and a b)"))
+    [<if>, <a>, [<if>, <b>, True, <False>], <False>]
+    >>> macroexpand_r(read("(lambda (and) a)"))
+    [<lambda>, [<and>], <a>]
+    """
+    if isinstance(p, list):
+        if len(p) > 0 and isinstance(p[0], Symbol):
+            if p[0] is Symbol.lambda_:
+                return p[:2] + [macroexpand_r(x, depth, quoted) for x in p[2:]]
+            if p[0] is Symbol.quote:
+                return [p[0], macroexpand_r(p[1], depth, True)]
+            if p[0] is Symbol.quasiquote:
+                return [p[0], macroexpand_r(p[1], depth+1, quoted)]
+            if p[0] is Symbol.unquote or p[0] is Symbol.unquote_splicing:
+                if depth <= 0:
+                    raise "invalid unquote depth"
+                return [p[0], macroexpand_r(p[1], depth-1, False)]
+            if depth == 0 and not quoted:
+                p = macroexpand(p)
+                if not isinstance(p, list):
+                    return p
+        if not quoted:
+            return [macroexpand_r(x, depth, quoted) for x in p]
+        else:
+            return p
+    else:
+        return p
+
 Globals = Scope()
 
-Globals.symbols["macroexpand"] = lambda x: apply(Globals.lookup(x[0].name)[1], x[1:])
+Globals.symbols["macroexpand-1"] = lambda x: macroexpand(x, True)
+Globals.symbols["macroexpand"] = macroexpand
+Globals.symbols["macroexpand_r"] = macroexpand_r
 
 Globals.symbols["+"]         = lambda *args: sum(args)
 Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else reduce(operator.sub, args)
@@ -578,34 +625,6 @@ Macros = """
     `(define ,(car args)
       (__import__ ,(symbol->string (car args)))))
 """
-
-def macroexpand_r(p):
-    """
-    >>> macroexpand_r(read("(foo bar)"))
-    [<foo>, <bar>]
-    >>> macroexpand_r(read("(and)"))
-    True
-    >>> macroexpand_r(read("(and a b)"))
-    [<if>, <a>, [<if>, <b>, True, <False>], <False>]
-    >>> macroexpand_r(read("(lambda (and) a)"))
-    [<lambda>, [<and>], <a>]
-    """
-    if isinstance(p, list):
-        if p and isinstance(p[0], Symbol):
-            if p[0] is Symbol.lambda_:
-                return p[0:2] + map(macroexpand_r, p[2:])
-            elif p[0] is Symbol.quote:
-                return p
-            else:
-                m = Globals.lookup(p[0].name)
-                if isinstance(m[1], Macro):
-                    return macroexpand_r(apply(m[1], p[1:]))
-                else:
-                    return p[0:1] + map(macroexpand_r, p[1:])
-        else:
-            return map(macroexpand_r, p)
-    else:
-        return p
 
 class SourceGenerator(object):
     def __init__(self):
