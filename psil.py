@@ -984,7 +984,7 @@ if __name__ == "__main__":
         a += 1
     if a < len(sys.argv):
         # TODO: command line args to script
-        include(sys.argv[1])
+        include(sys.argv[a])
     elif Interactive:
         Globals.symbols["quit"] = lambda: sys.exit(0)
         try:
