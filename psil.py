@@ -348,16 +348,19 @@ class Scope(object):
                 else:
                     raise NotCallableError(fn)
             elif isinstance(s, Symbol):
-                found, r = self.lookup(s.name)
-                if not found:
-                    # doctest seems to make __builtins__ a dict instead of a module
-                    if isinstance(__builtins__, dict) and s.name in __builtins__:
-                        r = __builtins__[s.name]
-                    elif s.name in dir(__builtins__):
-                        r = getattr(__builtins__, s.name)
-                    else:
-                        raise UndefinedSymbolError(s.name)
-                return r
+                if s.name[0].startswith(":"):
+                    return s
+                else:
+                    found, r = self.lookup(s.name)
+                    if not found:
+                        # doctest seems to make __builtins__ a dict instead of a module
+                        if isinstance(__builtins__, dict) and s.name in __builtins__:
+                            r = __builtins__[s.name]
+                        elif s.name in dir(__builtins__):
+                            r = getattr(__builtins__, s.name)
+                        else:
+                            raise UndefinedSymbolError(s.name)
+                    return r
             else:
                 return s
         except TailCall, t:
