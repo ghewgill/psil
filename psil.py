@@ -910,6 +910,15 @@ def psilc(p):
 
 def external(x):
     if isinstance(x, list):
+        if len(x) > 0:
+            if x[0] is Symbol.quote:
+                return "'" + external(x[1])
+            if x[0] is Symbol.quasiquote:
+                return "`" + external(x[1])
+            if x[0] is Symbol.unquote:
+                return "," + external(x[1])
+            if x[0] is Symbol.unquote_splicing:
+                return ",@" + external(x[1])
         return "(" + " ".join(external(i) for i in x) + ")"
     if isinstance(x, Symbol):
         return x.name
