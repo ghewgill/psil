@@ -153,6 +153,7 @@ class Symbol(object):
     def __repr__(self):
         return "<%s>" % self.name
     names = {}
+    gensym_counter = 0
     @staticmethod
     def new(name):
         if name in Symbol.names:
@@ -160,6 +161,10 @@ class Symbol(object):
         s = Symbol(name)
         Symbol.names[name] = s
         return s
+    @staticmethod
+    def gensym():
+        Symbol.gensym_counter += 1
+        return Symbol.new("g:%d" % Symbol.gensym_counter)
 
 Symbol.quote            = Symbol.new("quote")
 Symbol.quasiquote       = Symbol.new("quasiquote")
@@ -580,6 +585,8 @@ Globals.symbols["slice"] = lambda x, y, z: x[y:z]
 def _set(x, y, z):
     x[y] = z
 Globals.symbols["dict-set"] = _set
+
+Globals.symbols["gensym"] = Symbol.gensym
 
 def call_with_current_continuation(f):
     import stackless
