@@ -164,7 +164,7 @@ class Symbol(object):
     @staticmethod
     def gensym():
         Symbol.gensym_counter += 1
-        return Symbol.new("g:%d" % Symbol.gensym_counter)
+        return Symbol.new("_g_%d" % Symbol.gensym_counter)
 
 Symbol.quote            = Symbol.new("quote")
 Symbol.quasiquote       = Symbol.new("quasiquote")
