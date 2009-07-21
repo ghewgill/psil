@@ -705,6 +705,8 @@ def compile_quote(p):
     def q(p):
         if isinstance(p, list):
             return compiler.ast.List([q(x) for x in p])
+        elif isinstance(p, Symbol):
+            return compiler.ast.CallFunc(compiler.ast.Name("sym"), [compiler.ast.Const(p.name)])
         else:
             return compiler.ast.Const(p)
     return q(p[1])
