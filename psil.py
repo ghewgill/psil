@@ -959,12 +959,7 @@ def __print__(a): print a
             except TailCall, x:
                 r = x.apply()
     if compiled:
-        exec source in globals()
-        #f = open("psil.tmp", "w")
-        #f.write(source)
-        #f.close()
-        #os.system(sys.executable+" psil.tmp")
-        #exec compiler.compile(source, "psil", "exec")
+        exec compiler.compile(source, "psil", "exec") in globals()
     return r
 
 def rep(s):
