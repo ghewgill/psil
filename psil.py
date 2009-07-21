@@ -950,7 +950,7 @@ def __print__(a): print a
         if p is None:
             break
         p = macroexpand_r(p)
-        if compiled:
+        if compiled and (not isinstance(p, list) or not isinstance(p[0], Symbol) or p[0] is not Symbol.defmacro):
             source += psilc(p)
         else:
             try:
