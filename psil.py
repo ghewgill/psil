@@ -296,7 +296,7 @@ class Scope(object):
                         else:
                             return self.define(s[1][0].name, Function(s[1][0].name, s[1][1:], s[2:], self))
                     if f is Symbol.defmacro:
-                        return self.define(s[1].name, Macro(s[1].name, s[2], [s[3]], self))
+                        return self.define(s[1].name, Macro(s[1].name, s[2], s[3:], self))
                     if f is Symbol.if_:
                         if self.eval(s[1]):
                             return self.eval(s[2], tail)
@@ -488,7 +488,7 @@ def macroexpand_r(p, depth=0, quoted=False):
                 if not isinstance(p, list):
                     return p
         if not quoted:
-            return [macroexpand_r(x, depth, quoted) for x in p]
+            return [x for x in [macroexpand_r(x, depth, quoted) for x in p] if x is not None]
         else:
             return p
     else:
@@ -634,6 +634,7 @@ Macros = """
 (defmacro import args
     `(define ,(car args)
       (__import__ ,(symbol->string (car args)))))
+(defmacro comment args)
 """
 
 class SourceGenerator(object):
@@ -950,6 +951,8 @@ def __print__(a): print a
         if p is None:
             break
         p = macroexpand_r(p)
+        if p is None:
+            continue
         if compiled and (not isinstance(p, list) or not isinstance(p[0], Symbol) or p[0] is not Symbol.defmacro):
             source += psilc(p)
         else:
