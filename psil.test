@@ -210,7 +210,7 @@ True
 >>> rep("`(a (,b c))")
 (a (2 c))
 >>> rep("`(a b ,c (',(+ a b c)) (+ a b) 'c '((,a ,b)))")
-(a b 3 ((quote 6)) (+ a b) (quote c) (quote ((1 2))))
+(a b 3 ('6) (+ a b) 'c '((1 2)))
 
 >>> rep("(defmacro one! (var) `(set! ,var 1))")
 <Macro one!>
@@ -237,6 +237,6 @@ True
 >>> rep("(defmacro foo (a . b) `(list ,a ',b))")
 <Macro foo>
 >>> rep("(macroexpand '(foo 1 2 3))")
-(list 1 (quote (2 3)))
+(list 1 '(2 3))
 >>> rep("(foo 1 2 3)")
 (1 (2 3))

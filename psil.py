@@ -192,6 +192,7 @@ def parse(tokens, next = None):
         ...
     SyntaxError: unclosed parenthesis
     >>> parse(tokenise("())"))
+    []
     """
     if next is None:
         try:
