@@ -1,4 +1,5 @@
 - destructuring bind
+- put macros in another namespace so they never hit eval
 - compiler:
     - include
         - use import instead, include is evil
