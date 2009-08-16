@@ -478,7 +478,7 @@ def macroexpand_r(p, depth=0, quoted=False):
     if isinstance(p, list):
         if len(p) > 0 and isinstance(p[0], Symbol):
             if p[0] is Symbol.lambda_:
-                return p[:2] + [macroexpand_r(x, depth, quoted) for x in p[2:]]
+                return p[:2] + [x for x in [macroexpand_r(x, depth, quoted) for x in p[2:]] if x is not None]
             if p[0] is Symbol.quote:
                 return [p[0], macroexpand_r(p[1], depth, True)]
             if p[0] is Symbol.quasiquote:
