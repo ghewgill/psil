@@ -32,7 +32,7 @@ PY_STRING_LITERAL_RE = (r'''
    )*"(?!")
 ''')
 
-RE_NUMBER = re.compile(r"[-+]?\d+(\.\d+)?(e[-+]?\d+)?", re.IGNORECASE)
+RE_NUMBER = re.compile(r"(?:[-+]?\d+(\.\d+)?(e[-+]?\d+)?|(0x[0-9a-f]+))(?!\w)", re.IGNORECASE)
 RE_SYMBOL = re.compile(r"[^ \t\n\)]+", re.IGNORECASE)
 RE_STRING = re.compile(PY_STRING_LITERAL_RE, re.VERBOSE)
 
@@ -81,6 +81,8 @@ def tokenise(s):
     """
     >>> [x[1] for x in tokenise("1")]
     [1]
+    >>> [x[1] for x in tokenise("0x42")]
+    [66]
     >>> [x[1] for x in tokenise("()")]
     ['(', ')']
     >>> [x[1] for x in tokenise("a")]
@@ -136,6 +138,8 @@ def tokenise(s):
                 if m.group(1) or m.group(2):
                     x = float(m.group(0))
                     yield (Token.NUMBER, x)
+                elif m.group(3):
+                    yield (Token.NUMBER, int(m.group(3), 16))
                 else:
                     yield (Token.NUMBER, int(m.group(0)))
                 i += m.end(0)
