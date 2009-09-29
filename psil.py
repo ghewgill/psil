@@ -639,6 +639,10 @@ Macros = """
 (defmacro import args
     `(define ,(car args)
       (__import__ ,(symbol->string (car args)))))
+(defmacro get args
+    `(getattr ,(car args) ,(symbol->string (cadr args))))
+(defmacro put! args
+    `(setattr ,(car args) ,(symbol->string (cadr args)) ,(caddr args)))
 (defmacro comment args)
 """
 

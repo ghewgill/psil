@@ -12,6 +12,8 @@
 <module 'os' ...>
 >>> psil("(getattr os \"name\")")
 'posix'
+>>> psil("(get os name)")
+'posix'
 
 >>> psil("""(define f (open "integ.test"))""") #doctest: +ELLIPSIS
 <open file 'integ.test', mode 'r' at 0x...>
