@@ -640,9 +640,14 @@ Macros = """
     `(define ,(car args)
       (__import__ ,(symbol->string (car args)))))
 (defmacro get args
-    `(getattr ,(car args) ,(symbol->string (cadr args))))
+    (define (rget obj names)
+      (if names
+          `(getattr ,(rget obj (cdr names)) ,(symbol->string (car names)))
+          obj))
+    (rget (car args) (reverse (cdr args))))
 (defmacro put! args
-    `(setattr ,(car args) ,(symbol->string (cadr args)) ,(caddr args)))
+    (let ((revargs (reverse (cdr args))))
+        `(setattr (get ,(car args) ,@(cddr revargs)) ,(symbol->string (cadr revargs)) ,(car revargs))))
 (defmacro comment args)
 """
 

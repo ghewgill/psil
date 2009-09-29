@@ -15,6 +15,17 @@
 >>> psil("(get os name)")
 'posix'
 
+>>> psil("(macroexpand_r '(get foo))")
+<foo>
+>>> psil("(macroexpand_r '(get foo bar))")
+[<getattr>, <foo>, 'bar']
+>>> psil("(macroexpand_r '(get foo bar baz))")
+[<getattr>, [<getattr>, <foo>, 'bar'], 'baz']
+>>> psil("(macroexpand_r '(put! foo bar baz))")
+[<setattr>, <foo>, 'bar', <baz>]
+>>> psil("(macroexpand_r '(put! foo bar baz quux))")
+[<setattr>, [<getattr>, <foo>, 'bar'], 'baz', <quux>]
+
 >>> psil("""(define f (open "integ.test"))""") #doctest: +ELLIPSIS
 <open file 'integ.test', mode 'r' at 0x...>
 >>> psil("(.readline f)")
