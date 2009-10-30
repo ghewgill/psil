@@ -1,3 +1,4 @@
+- #| |# nested reader comments
 - destructuring bind
 - put macros in another namespace so they never hit eval
 - compiler:
