@@ -33,7 +33,7 @@ PY_STRING_LITERAL_RE = (r'''
 ''')
 
 RE_NUMBER = re.compile(r"(?:[-+]?\d+(\.\d+)?(e[-+]?\d+)?|(0x[0-9a-f]+))(?!\w)", re.IGNORECASE)
-RE_SYMBOL = re.compile(r"[^ \t\n\)]+", re.IGNORECASE)
+RE_SYMBOL = re.compile(r"[^ \t\n\(\)]+", re.IGNORECASE)
 RE_STRING = re.compile(PY_STRING_LITERAL_RE, re.VERBOSE)
 
 peval = eval
@@ -97,6 +97,8 @@ def tokenise(s):
     [123, 34.5, 560000000.0]
     >>> [x[1] for x in tokenise("(a ,@b c)")]
     ['(', 'a', ',@', 'b', 'c', ')']
+    >>> [x[1] for x in tokenise("(a(b))")]
+    ['(', 'a', '(', 'b', ')', ')']
     """
     i = 0
     while True:
