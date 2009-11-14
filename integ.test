@@ -2,11 +2,11 @@
 
 >>> psil("(abs -5)")
 5
->>> psil("(range 5)")
+>>> psil("(make-list (range 5))")
 [0, 1, 2, 3, 4]
->>> psil("(map (lambda (x) (* x x)) '(1 2 3))")
+>>> psil("(make-list (map (lambda (x) (* x x)) '(1 2 3)))")
 [1, 4, 9]
->>> psil("(map (lambda (x y) (* x y)) '(1 2 3) '(4 5 6))")
+>>> psil("(make-list (map (lambda (x y) (* x y)) '(1 2 3) '(4 5 6)))")
 [4, 10, 18]
 >>> psil("(import os)") #doctest: +ELLIPSIS
 <module 'os' ...>
@@ -26,8 +26,8 @@
 >>> psil("(macroexpand_r '(put! foo bar baz quux))")
 [<setattr>, [<getattr>, <foo>, 'bar'], 'baz', <quux>]
 
->>> psil("""(define f (open "integ.test"))""") #doctest: +ELLIPSIS
-<open file 'integ.test', mode 'r' at 0x...>
+>>> psil("""(define f (open "integ.test"))""")
+<_io.TextIOWrapper name='integ.test' encoding='US-ASCII'>
 >>> psil("(.readline f)")
 '>>> from psil.interpreter import psil\n'
 >>> psil("(.close f)")
@@ -36,6 +36,6 @@
 <module 'hashlib' from '...'>
 >>> psil("(define h (.sha1 hashlib))") #doctest: +ELLIPSIS
 <sha1 HASH object @ 0x...>
->>> psil("""(.update h "Hello world")""")
+>>> psil("""(.update h (bytes "Hello world" "utf-8"))""")
 >>> psil("(.hexdigest h)")
 '7b502c3a1f48c8609ae212cdfb639dee39673f5e'

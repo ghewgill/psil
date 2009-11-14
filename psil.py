@@ -36,13 +36,13 @@ elif Interactive:
     except ImportError:
         pass
     import traceback
-    print "PSIL interactive mode"
-    print "Use (quit) to exit"
+    print("PSIL interactive mode")
+    print("Use (quit) to exit")
     while True:
         try:
-            s = raw_input("> ")
+            s = input("> ")
         except EOFError:
-            print
+            print()
             break
         try:
             rep(s)

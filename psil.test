@@ -27,7 +27,7 @@ False
 >>> rep("your-age")
 Traceback (most recent call last):
     ...
-UndefinedSymbolError: your-age
+psil.interpreter.UndefinedSymbolError: your-age
 
 >>> rep("(+ 2 13 45)")
 60
@@ -36,11 +36,11 @@ UndefinedSymbolError: your-age
 >>> rep("(+ your-age 1)")
 Traceback (most recent call last):
     ...
-UndefinedSymbolError: your-age
+psil.interpreter.UndefinedSymbolError: your-age
 >>> rep("(foo 1 3 4)")
 Traceback (most recent call last):
     ...
-UndefinedSymbolError: foo
+psil.interpreter.UndefinedSymbolError: foo
 
 >>> rep("(+ 1 2)")
 3

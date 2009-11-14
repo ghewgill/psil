@@ -4,21 +4,22 @@
 1
 >>> eval(read("'(1 2 3)"))
 [1, 2, 3]
->>> eval(read("(map (lambda (x) (* x x)) '(1 2 3))"))
+>>> eval(read("(make-list (map (lambda (x) (* x x)) '(1 2 3)))"))
 [1, 4, 9]
 >>> eval(read("(apply + '(1 2))"))
 3
 
 """
 
-import compiler
+#import compiler
+import functools
 import operator
 import os
 import re
 import sys
 
 from .symbol import Symbol
-from .psilc import psilc
+#from .psilc import psilc
 
 Compile = False
 
@@ -65,7 +66,7 @@ class TailCall(Exception):
         if isinstance(self.fn, Function):
             return self.fn.apply(self.args, tail=True)
         else:
-            return apply(self.fn, self.args)
+            return self.fn(*self.args)
     def __str__(self):
         return str(self.fn) + ":" + str(self.args)
 
@@ -167,7 +168,7 @@ Symbol.if_              = Symbol.new("if")
 Symbol.lambda_          = Symbol.new("lambda")
 Symbol.set              = Symbol.new("set!")
 
-def parse(tokens, next = None):
+def parse(tokens, nextoken = None):
     """
     >>> parse(tokenise("(a b c)"))
     [<a>, <b>, <c>]
@@ -176,26 +177,26 @@ def parse(tokens, next = None):
     >>> parse(tokenise("("))
     Traceback (most recent call last):
         ...
-    SyntaxError: unclosed parenthesis
+    psil.interpreter.SyntaxError: unclosed parenthesis
     >>> parse(tokenise("())"))
     []
     """
-    if next is None:
+    if nextoken is None:
         try:
-            next = tokens.next()
+            nextoken = next(tokens)
         except StopIteration:
             return None
-    t, v = next
+    t, v = nextoken
     if t == Token.LPAREN:
         a = []
         while True:
             try:
-                next = tokens.next()
+                nextoken = next(tokens)
             except StopIteration:
                 raise SyntaxError("unclosed parenthesis")
-            if next[0] == Token.RPAREN:
+            if nextoken[0] == Token.RPAREN:
                 break
-            a.append(parse(tokens, next))
+            a.append(parse(tokens, nextoken))
         return a
     elif t == Token.STRING:
         return v
@@ -212,7 +213,7 @@ def parse(tokens, next = None):
     elif t == Token.SYMBOL:
         return Symbol.new(v)
     else:
-        raise SyntaxError(next)
+        raise SyntaxError(nextoken)
 
 def read(s):
     r"""
@@ -253,7 +254,7 @@ class Scope(object):
         self.globals = globals
     def define(self, name, value):
         if name in self.symbols:
-            print >>sys.stderr, "*** warning: redefining", name
+            print("*** warning: redefining", name, file=sys.stderr)
         self.symbols[name] = value
         return value
     def set(self, name, value):
@@ -330,17 +331,17 @@ class Scope(object):
                         self.set(s[1].name, val)
                         return val
                     if f.name.startswith("."):
-                        return apply(getattr(self.eval(s[1]), f.name[1:]), [self.eval(x) for x in s[2:]])
+                        return getattr(self.eval(s[1]), f.name[1:])(*[self.eval(x) for x in s[2:]])
                 fn = self.eval(f)
                 if isinstance(fn, Macro):
                     assert False, "unexpected macro call: " + str(fn)
-                    return self.eval(apply(fn, s[1:]), tail)
+                    return self.eval(fn(*s[1:]), tail)
                 elif tail:
                     raise TailCall(fn, [self.eval(x) for x in s[1:]])
                 elif isinstance(fn, Function):
                     return fn.apply([self.eval(x) for x in s[1:]], tail=True)
-                elif callable(fn):
-                    return apply(fn, [self.eval(x) for x in s[1:]])
+                elif hasattr(fn, "__call__"):
+                    return fn(*[self.eval(x) for x in s[1:]])
                 else:
                     raise NotCallableError(fn)
             elif isinstance(s, Symbol):
@@ -359,17 +360,17 @@ class Scope(object):
                     return r
             else:
                 return s
-        except TailCall, t:
+        except TailCall as t:
             if tail:
                 raise
             a = t
             while True:
                 try:
                     return a.apply()
-                except TailCall, t:
+                except TailCall as t:
                     a = t
-        except Exception, x:
-            print "*", external(s)
+        except Exception as x:
+            print("*", external(s))
             raise
 
 class Function(object):
@@ -444,7 +445,7 @@ def macroexpand(p, once = False):
     while isinstance(p, list) and len(p) > 0 and isinstance(p[0], Symbol):
         found, f = Globals.lookup(p[0].name)
         if found and isinstance(f, Macro):
-            p = apply(f, p[1:])
+            p = f(*p[1:])
         else:
             break
         if once:
@@ -492,16 +493,16 @@ Globals.symbols["macroexpand"] = macroexpand
 Globals.symbols["macroexpand_r"] = macroexpand_r
 
 Globals.symbols["+"]         = lambda *args: sum(args)
-Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else reduce(operator.sub, args)
-Globals.symbols["*"]         = lambda *args: reduce(operator.mul, args, 1)
+Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else functools.reduce(operator.sub, args)
+Globals.symbols["*"]         = lambda *args: functools.reduce(operator.mul, args, 1)
 Globals.symbols["**"]        = operator.pow
-Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else reduce(operator.div, args)
-Globals.symbols["//"]        = lambda *args: reduce(operator.floordiv, args)
+Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else functools.reduce(operator.div, args)
+Globals.symbols["//"]        = lambda *args: functools.reduce(operator.floordiv, args)
 Globals.symbols["%"]         = lambda x, y: x % tuple(y) if isinstance(y, list) else x % y
 Globals.symbols["<<"]        = operator.lshift
 Globals.symbols[">>"]        = operator.rshift
-Globals.symbols["&"]         = lambda *args: reduce(operator.and_, args, -1)
-Globals.symbols["|"]         = lambda *args: reduce(operator.or_, args, 0)
+Globals.symbols["&"]         = lambda *args: functools.reduce(operator.and_, args, -1)
+Globals.symbols["|"]         = lambda *args: functools.reduce(operator.or_, args, 0)
 Globals.symbols["^"]         = operator.xor
 Globals.symbols["~"]         = operator.invert
 def _all(p, a):
@@ -529,9 +530,6 @@ Globals.symbols["not"]       = operator.not_
 def _del(x, y):
     del x[y]
 Globals.symbols["del"]       = _del
-def _print(*a):
-    print "".join(str(x) for x in a)
-Globals.symbols["print"]     = _print
 # TODO: raise
 Globals.symbols["include"] = lambda x: include(x)
 
@@ -560,7 +558,7 @@ Globals.symbols["cadddr"] = lambda x: x[3]
 Globals.symbols["caaaar"] = lambda x: x[0][0][0][0]
 #...
 Globals.symbols["null?"]  = lambda x: isinstance(x, list) and len(x) == 0
-Globals.symbols["append"] = lambda *args: reduce(operator.add, args)
+Globals.symbols["append"] = lambda *args: functools.reduce(operator.add, args)
 Globals.symbols["reverse"] = lambda x: list(reversed(x))
 Globals.symbols["list-tail"] = lambda x, y: x[y:]
 Globals.symbols["list-ref"] = lambda x, y: x[y]
@@ -569,6 +567,7 @@ Globals.symbols["symbol?"] = lambda x: isinstance(x, Symbol)
 Globals.symbols["symbol->string"] = lambda x: x.name
 Globals.symbols["string->symbol"] = lambda x: Symbol.new(x)
 
+Globals.symbols["apply"] = lambda *args: args[0](*args[1])
 Globals.symbols["concat"] = lambda *args: "".join(str(x) for x in args)
 Globals.symbols["format"] = lambda x, *y: x % y
 Globals.symbols["index"] = lambda x, y: x[y]
@@ -670,21 +669,21 @@ def __print__(a): print a
         if p is None:
             continue
         if compiled and (not isinstance(p, list) or not isinstance(p[0], Symbol) or p[0] is not Symbol.defmacro):
-            source += psilc(p)
+            pass #source += psilc(p)
         else:
             try:
                 Globals.setglobals(glob)
                 r = Globals.eval(p)
-            except TailCall, x:
+            except TailCall as x:
                 r = x.apply()
     if compiled:
-        exec compiler.compile(source, "psil", "exec") in globals()
+        pass #exec(compiler.compile(source, "psil", "exec"), globals())
     return r
 
 def rep(s):
     r = psil(s)
     if r is not None:
-        print external(r)
+        print(external(r))
 
 def include(fn):
     f = open(fn)
