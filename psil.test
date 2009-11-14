@@ -1,4 +1,4 @@
->>> from psil import rep
+>>> from psil.interpreter import rep
 
 >>> rep("(+ 1 2 3 4)")
 10

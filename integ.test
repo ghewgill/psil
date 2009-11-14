@@ -1,4 +1,4 @@
->>> from psil import psil
+>>> from psil.interpreter import psil
 
 >>> psil("(abs -5)")
 5
@@ -29,7 +29,7 @@
 >>> psil("""(define f (open "integ.test"))""") #doctest: +ELLIPSIS
 <open file 'integ.test', mode 'r' at 0x...>
 >>> psil("(.readline f)")
-'>>> from psil import psil\n'
+'>>> from psil.interpreter import psil\n'
 >>> psil("(.close f)")
 
 >>> psil("(import hashlib)") #doctest: +ELLIPSIS
