@@ -369,6 +369,7 @@ class Scope(object):
                     return a.apply()
                 except TailCall as t:
                     a = t
+                    a.__traceback__ = None
         except Exception as x:
             print("*", external(s))
             raise
