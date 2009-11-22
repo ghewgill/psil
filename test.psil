@@ -8,7 +8,7 @@
 
 (import hashlib)
 (define h (.sha1 hashlib))
-(.update h "Hello world")
+(.update h (bytes "Hello world" "utf-8"))
 (print (.hexdigest h))
 
 (define d (dict '(("a" "b") ("c" "d"))))
