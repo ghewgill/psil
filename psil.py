@@ -1,6 +1,5 @@
 import sys
 
-from psil.interpreter import psil
 import psil.interpreter
 
 Interactive = True
@@ -11,7 +10,7 @@ while a < len(sys.argv) and sys.argv[a].startswith("-"):
         psil.interpreter.Compile = True
     elif sys.argv[a] == "-e":
         a += 1
-        psil(sys.argv[a])
+        psil.interpreter.psil(sys.argv[a])
         Interactive = False
     elif sys.argv[a] == "--test":
         import doctest

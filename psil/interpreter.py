@@ -19,7 +19,7 @@ import re
 import sys
 
 from .symbol import Symbol
-#from .psilc import psilc
+from .psilc import psilc
 
 Compile = False
 
@@ -659,9 +659,7 @@ def psil(s, compiled = True, glob = None):
     t = tokenise(s)
     r = None
     compiled &= Compile
-    source = """import operator
-def __print__(a): print a
-"""
+    source = "import operator\n"
     while True:
         p = parse(t)
         if p is None:
@@ -670,7 +668,7 @@ def __print__(a): print a
         if p is None:
             continue
         if compiled and (not isinstance(p, list) or not isinstance(p[0], Symbol) or p[0] is not Symbol.defmacro):
-            pass #source += psilc(p)
+            source += psilc(p)
         else:
             try:
                 Globals.setglobals(glob)
@@ -678,7 +676,7 @@ def __print__(a): print a
             except TailCall as x:
                 r = x.apply()
     if compiled:
-        pass #exec(compiler.compile(source, "psil", "exec"), globals())
+        exec(compile(source, "psil", "exec"), globals())
     return r
 
 def rep(s):

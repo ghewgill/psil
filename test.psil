@@ -14,5 +14,5 @@
 (define d (dict '(("a" "b") ("c" "d"))))
 (print d)
 (print (len d))
-(print (.values d))
-(print (.items d))
+(print (make-list (.values d)))
+(print (make-list (.items d)))

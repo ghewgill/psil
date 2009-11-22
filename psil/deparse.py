@@ -1,3 +1,6 @@
+import ast
+import sys
+
 class SourceGenerator(object):
     def __init__(self):
         self.source = ""
@@ -25,66 +28,93 @@ InlineFuncs = {
     "reverse": "(lambda x: list(reversed(x)))",
 }
 
+def op(x):
+    if isinstance(x, ast.Add):
+        return "+"
+    else:
+        print("op:", node, file=sys.stderr)
+        sys.exit(1)
+
 def expr(node):
-    #print "node:", node
-    if isinstance(node, compiler.ast.Add):
-        return "(%s + %s)" % (expr(node.left), expr(node.right))
-    elif isinstance(node, compiler.ast.AssName):
-        return node.name
-    elif isinstance(node, compiler.ast.Bitand):
-        return "(" + " & ".join([expr(x) for x in node.nodes]) + ")"
-    elif isinstance(node, compiler.ast.Bitxor):
-        return "(" + " ^ ".join([expr(x) for x in node.nodes]) + ")"
-    elif isinstance(node, compiler.ast.CallFunc):
-        if isinstance(node.node, compiler.ast.Lambda):
-            return "(" + expr(node.node) + ")(" + ", ".join([expr(x) for x in node.args]) + ")"
+    #print("node:", node)
+    if isinstance(node, ast.Attribute):
+        return "{0}.{1}".format(expr(node.value), node.attr)
+    elif isinstance(node, ast.BinOp):
+        return "({0} {1} {2})".format(expr(node.left), op(node.op), expr(node.right))
+    elif isinstance(node, ast.Call):
+        if isinstance(node, ast.Lambda):
+            return "({0})({1})".format(expr(node.func), ", ".join(expr(x) for x in node.args))
         else:
-            return expr(node.node) + "(" + ", ".join([expr(x) for x in node.args]) + ")"
-    elif isinstance(node, compiler.ast.Compare):
-        return "(" + expr(node.expr) + "".join([" " + x[0] + " " + expr(x[1]) + ")" for x in node.ops])
-    elif isinstance(node, compiler.ast.Const):
-        return repr(node.value)
-    elif isinstance(node, compiler.ast.Div):
-        return "(%s / %s)" % (expr(node.left), expr(node.right))
-    elif isinstance(node, compiler.ast.Getattr):
-        return expr(node.expr) + "." + node.attrname
-    elif isinstance(node, compiler.ast.If):
-        return "(" + expr(node.tests[0][1]) + " if " + expr(node.tests[0][0]) + " else " + (expr(node.else_) if node.else_ else "None") + ")"
-    elif isinstance(node, compiler.ast.Lambda):
-        if hasattr(node, "name"):
-            return node.name
-        else:
-            return "lambda " + ", ".join(node.argnames) + ": " + expr(node.code)
-    elif isinstance(node, compiler.ast.LeftShift):
-        return "(%s << %s)" % (expr(node.left), expr(node.right))
-    elif isinstance(node, compiler.ast.List):
-        return "[" + ", ".join([expr(x) for x in node.nodes]) + "]"
-    elif isinstance(node, compiler.ast.Mod):
-        return "(%s %% %s)" % (expr(node.left), expr(node.right))
-    elif isinstance(node, compiler.ast.Mul):
-        return "(%s * %s)" % (expr(node.left), expr(node.right))
-    elif isinstance(node, compiler.ast.Name):
-        f = InlineFuncs.get(node.name)
+            return "{0}({1})".format(expr(node.func), ", ".join(expr(x) for x in node.args))
+    elif isinstance(node, ast.List):
+        return "[{0}]".format(", ".join(expr(x) for x in node.elts))
+    elif isinstance(node, ast.Num):
+        return repr(node.n)
+    elif isinstance(node, ast.Name):
+        f = InlineFuncs.get(node.id)
         if f:
             return f
         else:
-            return node.name
-    elif isinstance(node, compiler.ast.Not):
-        return "not %s" % expr(node.expr)
-    elif isinstance(node, compiler.ast.Power):
-        return "(%s ** %s)" % (expr(node.left), expr(node.right))
-    elif isinstance(node, compiler.ast.RightShift):
-        return "(%s >> %s)" % (expr(node.left), expr(node.right))
-    elif isinstance(node, compiler.ast.Slice):
-        return expr(node.expr) + "[" + (expr(node.lower) if node.lower else "") + ":" + (expr(node.upper) if node.upper else "") + "]"
-    elif isinstance(node, compiler.ast.Sub):
-        return "(%s - %s)" % (expr(node.left), expr(node.right))
-    elif isinstance(node, compiler.ast.Subscript):
-        return "%s[%s]" % (expr(node.expr), expr(node.subs))
-    elif isinstance(node, compiler.ast.UnarySub):
-        return "-(%s)" % expr(node.expr)
+            return node.id
+
+    #elif isinstance(node, compiler.ast.Add):
+    #    return "(%s + %s)" % (expr(node.left), expr(node.right))
+    #elif isinstance(node, compiler.ast.AssName):
+    #    return node.name
+    #elif isinstance(node, compiler.ast.Bitand):
+    #    return "(" + " & ".join([expr(x) for x in node.nodes]) + ")"
+    #elif isinstance(node, compiler.ast.Bitxor):
+    #    return "(" + " ^ ".join([expr(x) for x in node.nodes]) + ")"
+    #elif isinstance(node, compiler.ast.CallFunc):
+    #    if isinstance(node.node, compiler.ast.Lambda):
+    #        return "(" + expr(node.node) + ")(" + ", ".join([expr(x) for x in node.args]) + ")"
+    #    else:
+    #        return expr(node.node) + "(" + ", ".join([expr(x) for x in node.args]) + ")"
+    #elif isinstance(node, compiler.ast.Compare):
+    #    return "(" + expr(node.expr) + "".join([" " + x[0] + " " + expr(x[1]) + ")" for x in node.ops])
+    #elif isinstance(node, compiler.ast.Const):
+    #    return repr(node.value)
+    #elif isinstance(node, compiler.ast.Div):
+    #    return "(%s / %s)" % (expr(node.left), expr(node.right))
+    #elif isinstance(node, compiler.ast.Getattr):
+    #    return expr(node.expr) + "." + node.attrname
+    #elif isinstance(node, compiler.ast.If):
+    #    return "(" + expr(node.tests[0][1]) + " if " + expr(node.tests[0][0]) + " else " + (expr(node.else_) if node.else_ else "None") + ")"
+    #elif isinstance(node, compiler.ast.Lambda):
+    #    if hasattr(node, "name"):
+    #        return node.name
+    #    else:
+    #        return "lambda " + ", ".join(node.argnames) + ": " + expr(node.code)
+    #elif isinstance(node, compiler.ast.LeftShift):
+    #    return "(%s << %s)" % (expr(node.left), expr(node.right))
+    #elif isinstance(node, compiler.ast.List):
+    #    return "[" + ", ".join([expr(x) for x in node.nodes]) + "]"
+    #elif isinstance(node, compiler.ast.Mod):
+    #    return "(%s %% %s)" % (expr(node.left), expr(node.right))
+    #elif isinstance(node, compiler.ast.Mul):
+    #    return "(%s * %s)" % (expr(node.left), expr(node.right))
+    #elif isinstance(node, compiler.ast.Name):
+    #    f = InlineFuncs.get(node.name)
+    #    if f:
+    #        return f
+    #    else:
+    #        return node.name
+    #elif isinstance(node, compiler.ast.Not):
+    #    return "not %s" % expr(node.expr)
+    #elif isinstance(node, compiler.ast.Power):
+    #    return "(%s ** %s)" % (expr(node.left), expr(node.right))
+    #elif isinstance(node, compiler.ast.RightShift):
+    #    return "(%s >> %s)" % (expr(node.left), expr(node.right))
+    #elif isinstance(node, compiler.ast.Slice):
+    #    return expr(node.expr) + "[" + (expr(node.lower) if node.lower else "") + ":" + (expr(node.upper) if node.upper else "") + "]"
+    #elif isinstance(node, compiler.ast.Sub):
+    #    return "(%s - %s)" % (expr(node.left), expr(node.right))
+    #elif isinstance(node, compiler.ast.Subscript):
+    #    return "%s[%s]" % (expr(node.expr), expr(node.subs))
+    #elif isinstance(node, compiler.ast.UnarySub):
+    #    return "-(%s)" % expr(node.expr)
     else:
-        print >>sys.stderr, "expr:", node
+        print("expr:", node, file=sys.stderr)
         sys.exit(1)
 
 def is_statement(p):
@@ -108,15 +138,15 @@ def gen_source(node, source):
                 compiler.walk(p.code, self)
         def visitStmt(self, p):
             pass
-    compiler.walk(node, LiftLambda())
-    if isinstance(node, compiler.ast.Assign):
-        source.line("".join([expr(x)+" = " for x in node.nodes]) + expr(node.expr))
-    elif isinstance(node, compiler.ast.Function):
+    #compiler.walk(node, LiftLambda())
+    if isinstance(node, ast.Assign):
+        source.line("".join([expr(x)+" = " for x in node.targets]) + expr(node.value))
+    elif isinstance(node, ast.FunctionDef):
         source.line("def " + node.name + "(" + ", ".join(node.argnames) + "):")
         source.indent()
         gen_source(node.code, source)
         source.dedent()
-    elif isinstance(node, compiler.ast.If):
+    elif isinstance(node, ast.If):
         source.line("if " + expr(node.tests[0][0]) + ":")
         source.indent()
         gen_source(node.tests[0][1], source)
@@ -126,13 +156,9 @@ def gen_source(node, source):
             source.indent()
             gen_source(node.else_, source)
             source.dedent()
-    elif isinstance(node, compiler.ast.Print):
-        #print "nodes:", node.nodes
-        #self.source.line("print " + ",".join([expr(x) for x in node.nodes]))
-        source.line("print " + expr(node.nodes))
-    elif isinstance(node, compiler.ast.Return):
+    elif isinstance(node, ast.Return):
         source.line("return " + expr(node.value))
-    elif isinstance(node, compiler.ast.Stmt):
+    elif isinstance(node, ast.Suite):
         for x in node.nodes:
             gen_source(x, source)
     else:
