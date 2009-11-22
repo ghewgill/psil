@@ -21,9 +21,9 @@ def compile_add(p):
 def compile_define(p):
     if isinstance(p[1], list):
         stmt = [build_ast(x) for x in p[2:]]
-        if not is_statement(stmt[-1]):
-            stmt[-1] = compiler.ast.Return(stmt[-1])
-        return compiler.ast.Function(None, pydent(p[1][0].name), [x.name for x in p[1][1:]], [], 0, None, compiler.ast.Stmt(stmt))
+        if not isinstance(stmt[-1], ast.Assign):
+            stmt[-1] = ast.Return(stmt[-1])
+        return ast.FunctionDef(pydent(p[1][0].name), [x.name for x in p[1][1:]], ast.Suite(stmt), None, None)
     else:
         return ast.Assign([ast.Name(pydent(p[1].name), ast.Store)], build_ast(p[2]))
 
@@ -36,16 +36,13 @@ def compile_divide(p):
         return compiler.ast.Div((compile_divide(p[:-1]), build_ast(p[-1])))
 
 def compile_equals(p):
-    if len(p) == 3:
-        return compiler.ast.Compare(build_ast(p[1]), [(p[0].name, build_ast(p[2]))])
-    else:
-        return compiler.ast.CallFunc(compiler.ast.Name("=="), [build_ast(x) for x in p[1:]])
+    return ast.Compare(build_ast(p[1]), (ast.Eq() for x in p[1::2]), (build_ast(x) for x in p[2::2]))
 
 def compile_lambda(p):
     if len(p) > 3:
         return compiler.ast.Lambda([pydent(x.name) for x in p[1]], [], 0, [build_ast(x) for x in p[2:]])
     else:
-        return compiler.ast.Lambda([pydent(x.name) for x in p[1]], [], 0, build_ast(p[2]))
+        return ast.Lambda([pydent(x.name) for x in p[1]], build_ast(p[2]))
 
 def compile_multiply(p):
     if len(p) == 2:
@@ -78,7 +75,7 @@ CompileFuncs = {
     Symbol.new("-"): compile_subtract,
     Symbol.new("*"): compile_multiply,
     Symbol.new("/"): compile_divide,
-    Symbol.new("%"): lambda p: compiler.ast.Mod((build_ast(p[1]), build_ast(p[2]))),
+    Symbol.new("%"): lambda p: ast.BinOp(build_ast(p[1]), ast.Mod(), build_ast(p[2])),
     Symbol.new("&"): lambda p: compiler.ast.Bitand([build_ast(p[1]), build_ast(p[2])]),
     Symbol.new("**"): lambda p: compiler.ast.Power((build_ast(p[1]), build_ast(p[2]))),
     Symbol.new(">>"): lambda p: compiler.ast.RightShift((build_ast(p[1]), build_ast(p[2]))),
@@ -104,7 +101,8 @@ CompileFuncs = {
     Symbol.new("cddr"): lambda p: compiler.ast.Slice(build_ast(p[1]), 0, compiler.ast.Const(2), None),
     Symbol.new("cdr"): lambda p: compiler.ast.Slice(build_ast(p[1]), 0, compiler.ast.Const(1), None),
     Symbol.new("cons"): lambda p: compiler.ast.Add((compiler.ast.List([build_ast(p[1])]), build_ast(p[2]))),
-    Symbol.new("if"): lambda p: compiler.ast.If([(build_ast(p[1]), build_ast(p[2]))], build_ast(p[3]) if len(p) >= 4 else None),
+    Symbol.new("apply"): lambda p: ast.Call(build_ast(p[1]), None, None, [build_ast(x) for x in p[2:]], None),
+    Symbol.new("if"): lambda p: ast.IfExp(build_ast(p[1]), build_ast(p[2]), build_ast(p[3]) if len(p) >= 4 else None),
     Symbol.new("in"): lambda p: compiler.ast.Compare(build_ast(p[1]), [("in", build_ast(p[2]))]),
     Symbol.new("index"): lambda p: compiler.ast.Subscript(build_ast(p[1]), 0, build_ast(p[2])),
     Symbol.new("lambda"): compile_lambda,
@@ -139,10 +137,15 @@ def build_ast(p, tail = False):
         return ast.Num(p)
 
 def psilc(p):
-    ast = build_ast(p)
-    #print("ast:", ast)
+    tree = build_ast(p)
+    def dump(node, depth):
+        print("  "*depth, node, sep="")
+        for x in ast.iter_child_nodes(node):
+            dump(x, depth+1)
+    print("ast:")
+    dump(tree, 0)
     source = deparse.SourceGenerator()
-    deparse.gen_source(ast, source)
+    deparse.gen_source(tree, source)
     print("source:")
     print(str(source))
     return str(source)

@@ -28,11 +28,15 @@ InlineFuncs = {
     "reverse": "(lambda x: list(reversed(x)))",
 }
 
-def op(x):
-    if isinstance(x, ast.Add):
+def operator(op):
+    if isinstance(op, ast.Add):
         return "+"
+    elif isinstance(op, ast.Eq):
+        return "=="
+    elif isinstance(op, ast.Mod):
+        return "%"
     else:
-        print("op:", node, file=sys.stderr)
+        print("unhandled operator:", op, file=sys.stderr)
         sys.exit(1)
 
 def expr(node):
@@ -40,12 +44,24 @@ def expr(node):
     if isinstance(node, ast.Attribute):
         return "{0}.{1}".format(expr(node.value), node.attr)
     elif isinstance(node, ast.BinOp):
-        return "({0} {1} {2})".format(expr(node.left), op(node.op), expr(node.right))
+        return "({0} {1} {2})".format(expr(node.left), operator(node.op), expr(node.right))
     elif isinstance(node, ast.Call):
-        if isinstance(node, ast.Lambda):
-            return "({0})({1})".format(expr(node.func), ", ".join(expr(x) for x in node.args))
-        else:
-            return "{0}({1})".format(expr(node.func), ", ".join(expr(x) for x in node.args))
+        func = ("({0})" if isinstance(node, ast.Lambda) else "{0}").format(expr(node.func))
+        args = None
+        if node.args is not None:
+            args = ", ".join(expr(x) for x in node.args)
+        elif node.starargs is not None:
+            if isinstance(node.starargs, list):
+                args = ", ".join(expr(x) for x in node.starargs)
+            else:
+                args = "*" + expr(node.starargs)
+        return "{0}({1})".format(func, args)
+    elif isinstance(node, ast.Compare):
+        return "({0} {1})".format(expr(node.left), " ".join("{0} {1}".format(operator(op), expr(comp)) for op, comp in zip(node.ops, node.comparators)))
+    elif isinstance(node, ast.IfExp):
+        return "({1} if {0} else {2})".format(expr(node.test), expr(node.body), expr(node.orelse) if node.orelse else "None")
+    elif isinstance(node, ast.Lambda):
+        return "lambda " + ", ".join(node.args) + ": " + expr(node.body)
     elif isinstance(node, ast.List):
         return "[{0}]".format(", ".join(expr(x) for x in node.elts))
     elif isinstance(node, ast.Num):
@@ -114,7 +130,7 @@ def expr(node):
     #elif isinstance(node, compiler.ast.UnarySub):
     #    return "-(%s)" % expr(node.expr)
     else:
-        print("expr:", node, file=sys.stderr)
+        print("unhandled expr:", node, file=sys.stderr)
         sys.exit(1)
 
 def is_statement(p):
@@ -142,9 +158,9 @@ def gen_source(node, source):
     if isinstance(node, ast.Assign):
         source.line("".join([expr(x)+" = " for x in node.targets]) + expr(node.value))
     elif isinstance(node, ast.FunctionDef):
-        source.line("def " + node.name + "(" + ", ".join(node.argnames) + "):")
+        source.line("def " + node.name + "(" + ", ".join(node.args) + "):")
         source.indent()
-        gen_source(node.code, source)
+        gen_source(node.body, source)
         source.dedent()
     elif isinstance(node, ast.If):
         source.line("if " + expr(node.tests[0][0]) + ":")
@@ -159,7 +175,7 @@ def gen_source(node, source):
     elif isinstance(node, ast.Return):
         source.line("return " + expr(node.value))
     elif isinstance(node, ast.Suite):
-        for x in node.nodes:
+        for x in node.body:
             gen_source(x, source)
     else:
         source.line(expr(node))
