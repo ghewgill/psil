@@ -497,7 +497,7 @@ Globals.symbols["+"]         = lambda *args: sum(args)
 Globals.symbols["-"]         = lambda *args: -args[0] if len(args) == 1 else functools.reduce(operator.sub, args)
 Globals.symbols["*"]         = lambda *args: functools.reduce(operator.mul, args, 1)
 Globals.symbols["**"]        = operator.pow
-Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else functools.reduce(operator.div, args)
+Globals.symbols["/"]         = lambda *args: 1.0/args[0] if len(args) == 1 else functools.reduce(operator.truediv, args)
 Globals.symbols["//"]        = lambda *args: functools.reduce(operator.floordiv, args)
 Globals.symbols["%"]         = lambda x, y: x % tuple(y) if isinstance(y, list) else x % y
 Globals.symbols["<<"]        = operator.lshift
@@ -659,7 +659,7 @@ def psil(s, compiled = True, glob = None):
     t = tokenise(s)
     r = None
     compiled &= Compile
-    source = "import operator\n"
+    source = "import functools, operator\n"
     while True:
         p = parse(t)
         if p is None:
@@ -676,7 +676,7 @@ def psil(s, compiled = True, glob = None):
             except TailCall as x:
                 r = x.apply()
     if compiled:
-        exec(compile(source, "psil", "exec"), globals())
+        exec(compile(source, "<psil>", "exec"), globals())
     return r
 
 def rep(s):
