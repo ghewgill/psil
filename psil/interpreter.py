@@ -11,7 +11,7 @@
 
 """
 
-#import compiler
+import ast
 import functools
 import operator
 import os
@@ -668,7 +668,13 @@ def psil(s, compiled = True, glob = None):
         if p is None:
             continue
         if compiled and (not isinstance(p, list) or not isinstance(p[0], Symbol) or p[0] is not Symbol.defmacro):
-            source += psilc(p)
+            #source += psilc(p)
+            tree = psilc(p)
+            tree = ast.Expr(tree)
+            ast.fix_missing_locations(tree)
+            tree = ast.Interactive([tree])
+            print(ast.dump(tree))
+            exec(compile(tree, "<psil>", "single"), globals())
         else:
             try:
                 Globals.setglobals(glob)

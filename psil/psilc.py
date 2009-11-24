@@ -138,7 +138,7 @@ def build_ast(p, tail = False):
             elif p[0].name.startswith("."):
                 return ast.Call(ast.Attribute(build_ast(p[1]), p[0].name[1:], ast.Load()), [build_ast(x) for x in p[2:]], None, None, None)
             else:
-                return ast.Call(ast.Name(pydent(p[0].name), ast.Load()), [build_ast(x) for x in p[1:]], None, None, None)
+                return ast.Call(ast.Name(pydent(p[0].name), ast.Load()), [build_ast(x) for x in p[1:]], [], None, None)
         else:
             return ast.Call(build_ast(p[0]), [build_ast(x) for x in p[1:]], None, None, None)
     elif isinstance(p, Symbol):
@@ -154,8 +154,9 @@ def psilc(p):
             dump(x, depth+1)
     #print("ast:")
     #dump(tree, 0)
+    return tree
     source = deparse.SourceGenerator()
     deparse.gen_source(tree, source)
-    #print("source:")
-    #print(str(source))
+    print("source:")
+    print(str(source))
     return str(source)
