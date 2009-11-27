@@ -18,6 +18,7 @@ import os
 import re
 import sys
 
+from . import deparse
 from .symbol import Symbol
 from .psilc import psilc
 
@@ -670,9 +671,16 @@ def psil(s, compiled = True, glob = None):
         if compiled and (not isinstance(p, list) or not isinstance(p[0], Symbol) or p[0] is not Symbol.defmacro):
             #source += psilc(p)
             tree = psilc(p)
-            tree = ast.Expr(tree)
-            ast.fix_missing_locations(tree)
+
+            src = deparse.SourceGenerator()
+            deparse.gen_source(tree, src)
+            print("source:")
+            print(str(source))
+
+            if not isinstance(tree, ast.FunctionDef):
+                tree = ast.Expr(tree)
             tree = ast.Interactive([tree])
+            ast.fix_missing_locations(tree)
             print(ast.dump(tree))
             exec(compile(tree, "<psil>", "single"), globals())
         else:

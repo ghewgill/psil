@@ -1,6 +1,5 @@
 import ast
 
-from . import deparse
 from .symbol import Symbol
 
 def pydent(s):
@@ -155,8 +154,3 @@ def psilc(p):
     #print("ast:")
     #dump(tree, 0)
     return tree
-    source = deparse.SourceGenerator()
-    deparse.gen_source(tree, source)
-    print("source:")
-    print(str(source))
-    return str(source)

@@ -151,7 +151,7 @@ def gen_source(node, source):
     if isinstance(node, ast.Assign):
         source.line("".join([expr(x)+" = " for x in node.targets]) + expr(node.value))
     elif isinstance(node, ast.FunctionDef):
-        source.line("def " + node.name + "(" + ", ".join(node.args) + "):")
+        source.line("def " + node.name + "(" + ", ".join([x.arg for x in node.args.args]) + "):")
         source.indent()
         gen_source(node.body, source)
         source.dedent()
