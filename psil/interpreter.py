@@ -656,6 +656,31 @@ def external(x):
         return '"' + re.sub('"', r'\"', x) + '"'
     return str(x)
 
+AstStatements = (
+    ast.FunctionDef,
+    ast.ClassDef,
+    ast.Return,
+    ast.Delete,
+    ast.Assign,
+    ast.AugAssign,
+    ast.For,
+    ast.While,
+    ast.If,
+    ast.With,
+    ast.Raise,
+    ast.TryExcept,
+    ast.TryFinally,
+    ast.Assert,
+    ast.Import,
+    ast.ImportFrom,
+    ast.Global,
+    ast.Nonlocal,
+    ast.Expr,
+    ast.Pass,
+    ast.Break,
+    ast.Continue,
+)
+
 def psil(s, compiled = True, glob = None):
     t = tokenise(s)
     r = None
@@ -663,28 +688,29 @@ def psil(s, compiled = True, glob = None):
     source = "import functools, operator\n"
     while True:
         p = parse(t)
+        #print(external(p))
         if p is None:
             break
         p = macroexpand_r(p)
         if p is None:
             continue
+        #print(external(p))
         if compiled and (not isinstance(p, list) or not isinstance(p[0], Symbol) or p[0] is not Symbol.defmacro):
             #source += psilc(p)
             tree = psilc(p)
 
-            if not isinstance(tree, ast.FunctionDef):
+            if not isinstance(tree, AstStatements):
                 tree = ast.Expr(tree)
-            tree = ast.Interactive([tree])
+            tree = ast.Module([tree])
             ast.fix_missing_locations(tree)
 
-            print(ast.dump(tree))
+            #print(ast.dump(tree))
 
             src = deparse.SourceGenerator()
             deparse.gen_source(tree, src)
-            print("source:")
-            print(str(src))
+            #print("source:", str(src))
 
-            exec(compile(tree, "<psil>", "single"), globals())
+            exec(compile(tree, "<psil>", "exec"), globals())
         else:
             try:
                 Globals.setglobals(glob)

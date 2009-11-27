@@ -116,6 +116,7 @@ CompileFuncs = {
     Symbol.new("index"): lambda p: ast.Subscript(build_ast(p[1]), ast.Index(build_ast(p[2])), ast.Load()),
     Symbol.new("lambda"): compile_lambda,
     Symbol.new("list"): lambda p: ast.List([build_ast(x) for x in p[1:]], ast.Load()),
+    Symbol.new("make-list"): lambda p: ast.Call(ast.Name("list", ast.Load()), [build_ast(x) for x in p[1:]], [], None, None),
     Symbol.new("not"): lambda p: ast.UnaryOp(ast.Not(), build_ast(p[1])),
     Symbol.new("not-in"): lambda p: ast.BinOp(build_ast(p[1]), ast.NotIn(), build_ast(p[2])),
     Symbol.new("quote"): compile_quote,
@@ -135,15 +136,20 @@ def build_ast(p, tail = False):
             if f:
                 return f(p)
             elif p[0].name.startswith("."):
-                return ast.Call(ast.Attribute(build_ast(p[1]), p[0].name[1:], ast.Load()), [build_ast(x) for x in p[2:]], None, None, None)
+                return ast.Call(ast.Attribute(build_ast(p[1]), p[0].name[1:], ast.Load()), [build_ast(x) for x in p[2:]], [], None, None)
             else:
                 return ast.Call(ast.Name(pydent(p[0].name), ast.Load()), [build_ast(x) for x in p[1:]], [], None, None)
         else:
-            return ast.Call(build_ast(p[0]), [build_ast(x) for x in p[1:]], None, None, None)
+            return ast.Call(build_ast(p[0]), [build_ast(x) for x in p[1:]], [], None, None)
     elif isinstance(p, Symbol):
         return ast.Name(pydent(p.name), ast.Load())
-    else:
+    elif isinstance(p, str):
+        return ast.Str(p)
+    elif isinstance(p, (int, float)):
         return ast.Num(p)
+    else:
+        print("unexpected object:", p, file=sys.stderr)
+        sys.exit(1)
 
 def psilc(p):
     tree = build_ast(p)

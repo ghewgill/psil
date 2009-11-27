@@ -3,6 +3,7 @@
 (import sys)
 
 ((getattr (getattr sys "stdout") "write") "hello world\n") ; this is a comment
+((get sys stdout write) "hello world\n")
 (.write (getattr sys "stdout") "hello world\n")
 (print "hello world")
 
