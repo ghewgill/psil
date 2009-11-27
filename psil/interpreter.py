@@ -656,31 +656,6 @@ def external(x):
         return '"' + re.sub('"', r'\"', x) + '"'
     return str(x)
 
-AstStatements = (
-    ast.FunctionDef,
-    ast.ClassDef,
-    ast.Return,
-    ast.Delete,
-    ast.Assign,
-    ast.AugAssign,
-    ast.For,
-    ast.While,
-    ast.If,
-    ast.With,
-    ast.Raise,
-    ast.TryExcept,
-    ast.TryFinally,
-    ast.Assert,
-    ast.Import,
-    ast.ImportFrom,
-    ast.Global,
-    ast.Nonlocal,
-    ast.Expr,
-    ast.Pass,
-    ast.Break,
-    ast.Continue,
-)
-
 def psil(s, compiled = True, glob = None):
     t = tokenise(s)
     r = None
@@ -699,8 +674,6 @@ def psil(s, compiled = True, glob = None):
             #source += psilc(p)
             tree = psilc(p)
 
-            if not isinstance(tree, AstStatements):
-                tree = ast.Expr(tree)
             tree = ast.Module([tree])
             ast.fix_missing_locations(tree)
 

@@ -2,6 +2,31 @@ import ast
 
 from .symbol import Symbol
 
+AstStatements = (
+    ast.FunctionDef,
+    ast.ClassDef,
+    ast.Return,
+    ast.Delete,
+    ast.Assign,
+    ast.AugAssign,
+    ast.For,
+    ast.While,
+    ast.If,
+    ast.With,
+    ast.Raise,
+    ast.TryExcept,
+    ast.TryFinally,
+    ast.Assert,
+    ast.Import,
+    ast.ImportFrom,
+    ast.Global,
+    ast.Nonlocal,
+    ast.Expr,
+    ast.Pass,
+    ast.Break,
+    ast.Continue,
+)
+
 def pydent(s):
     if s == "try": s = "try_"
     s = s.replace("-", "_")
@@ -9,6 +34,11 @@ def pydent(s):
     s = s.replace(">", "_")
     s = s.replace("?", "_")
     return s
+
+def make_stmt(node):
+    if not isinstance(node, AstStatements):
+        return ast.Expr(node)
+    return node
 
 def compile_add(p):
     if len(p) == 2:
@@ -20,10 +50,10 @@ def compile_add(p):
 
 def compile_define(p):
     if isinstance(p[1], list):
-        stmt = [build_ast(x) for x in p[2:]]
-        if not isinstance(stmt[-1], ast.Assign):
-            stmt[-1] = ast.Return(stmt[-1])
-        return ast.FunctionDef(pydent(p[1][0].name), ast.arguments(args=[ast.arg(arg=x.name) for x in p[1][1:]], kwonlyargs=[], defaults=[], kw_defaults=[]), stmt, [], None)
+        body = [make_stmt(build_ast(x)) for x in p[2:]]
+        if isinstance(body[-1], ast.Expr):
+            body[-1] = ast.Return(body[-1].value)
+        return ast.FunctionDef(pydent(p[1][0].name), ast.arguments(args=[ast.arg(arg=x.name) for x in p[1][1:]], kwonlyargs=[], defaults=[], kw_defaults=[]), body, [], None)
     else:
         return ast.Assign([ast.Name(pydent(p[1].name), ast.Store())], build_ast(p[2]))
 
@@ -159,4 +189,4 @@ def psilc(p):
             dump(x, depth+1)
     #print("ast:")
     #dump(tree, 0)
-    return tree
+    return make_stmt(tree)
