@@ -44,7 +44,7 @@ def compile_floordivide(p):
         return ast.BinOp(compile_divide(p[:-1]), ast.FloorDiv(), build_ast(p[-1]))
 
 def compile_equals(p):
-    return ast.Compare(build_ast(p[1]), (ast.Eq() for x in p[1::2]), (build_ast(x) for x in p[2::2]))
+    return ast.Compare(build_ast(p[1]), [ast.Eq() for x in p[1::2]], [build_ast(x) for x in p[2::2]])
 
 def compile_lambda(p):
     if len(p) > 3:
@@ -90,10 +90,10 @@ CompileFuncs = {
     Symbol.new(">>"): lambda p: ast.BinOp(build_ast(p[1]), ast.RShift(), build_ast(p[2])),
     Symbol.new("<<"): lambda p: ast.BinOp(build_ast(p[1]), ast.LShift(), build_ast(p[2])),
     Symbol.new("^"): lambda p: ast.BinOp(build_ast(p[1]), ast.BitXor(), build_ast(p[2])),
-    Symbol.new("<"): lambda p: ast.Compare(build_ast(p[1]), (ast.Lt() for x in p[1::2]), (build_ast(x) for x in p[2::2])),
-    Symbol.new(">"): lambda p: ast.Compare(build_ast(p[1]), (ast.Gt() for x in p[1::2]), (build_ast(x) for x in p[2::2])),
-    Symbol.new("<="): lambda p: ast.Compare(build_ast(p[1]), (ast.LtE() for x in p[1::2]), (build_ast(x) for x in p[2::2])),
-    Symbol.new(">="): lambda p: ast.Compare(build_ast(p[1]), (ast.GtE() for x in p[1::2]), (build_ast(x) for x in p[2::2])),
+    Symbol.new("<"): lambda p: ast.Compare(build_ast(p[1]), [ast.Lt() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
+    Symbol.new(">"): lambda p: ast.Compare(build_ast(p[1]), [ast.Gt() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
+    Symbol.new("<="): lambda p: ast.Compare(build_ast(p[1]), [ast.LtE() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
+    Symbol.new(">="): lambda p: ast.Compare(build_ast(p[1]), [ast.GtE() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
     Symbol.new("=="): compile_equals,
     Symbol.new("!="): lambda p: ast.BinOp(build_ast(p[1]), ast.NotEq(), build_ast(p[2])),
     Symbol.new("is"): lambda p: ast.BinOp(build_ast(p[1]), ast.Is(), build_ast(p[2])),
