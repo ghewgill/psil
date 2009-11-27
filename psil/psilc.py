@@ -24,7 +24,7 @@ def compile_define(p):
         stmt = [build_ast(x) for x in p[2:]]
         if not isinstance(stmt[-1], ast.Assign):
             stmt[-1] = ast.Return(stmt[-1])
-        return ast.FunctionDef(pydent(p[1][0].name), [x.name for x in p[1][1:]], ast.Suite(stmt), None, None)
+        return ast.FunctionDef(pydent(p[1][0].name), ast.arguments(args=[ast.arg(arg=x.name) for x in p[1][1:]], kwonlyargs=[], defaults=[], kw_defaults=[]), stmt, [], None)
     else:
         return ast.Assign([ast.Name(pydent(p[1].name), ast.Store())], build_ast(p[2]))
 
