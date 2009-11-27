@@ -126,6 +126,35 @@ def expr(node):
         print("unhandled expr:", node, file=sys.stderr)
         sys.exit(1)
 
+def stmt(node, source):
+    if isinstance(node, list):
+        for x in node:
+            stmt(x, source)
+    elif isinstance(node, ast.Assign):
+        source.line("".join([expr(x)+" = " for x in node.targets]) + expr(node.value))
+    elif isinstance(node, ast.Expr):
+        source.line(expr(node.value))
+    elif isinstance(node, ast.FunctionDef):
+        source.line("def " + node.name + "(" + ", ".join([x.arg for x in node.args.args]) + "):")
+        source.indent()
+        stmt(node.body, source)
+        source.dedent()
+    elif isinstance(node, ast.If):
+        source.line("if " + expr(node.tests[0][0]) + ":")
+        source.indent()
+        stmt(node.tests[0][1], source)
+        source.dedent()
+        if node.else_:
+            source.line("else:")
+            source.indent()
+            stmt(node.else_, source)
+            source.dedent()
+    elif isinstance(node, ast.Return):
+        source.line("return " + expr(node.value))
+    else:
+        print("unhandled stmt:", node, file=sys.stderr)
+        sys.exit(1)
+
 def is_statement(p):
     return isinstance(p, compiler.ast.Assign)
 
@@ -148,27 +177,10 @@ def gen_source(node, source):
         def visitStmt(self, p):
             pass
     ast.walk(node)
-    if isinstance(node, ast.Assign):
-        source.line("".join([expr(x)+" = " for x in node.targets]) + expr(node.value))
-    elif isinstance(node, ast.FunctionDef):
-        source.line("def " + node.name + "(" + ", ".join([x.arg for x in node.args.args]) + "):")
-        source.indent()
-        gen_source(node.body, source)
-        source.dedent()
-    elif isinstance(node, ast.If):
-        source.line("if " + expr(node.tests[0][0]) + ":")
-        source.indent()
-        gen_source(node.tests[0][1], source)
-        source.dedent()
-        if node.else_:
-            source.line("else:")
-            source.indent()
-            gen_source(node.else_, source)
-            source.dedent()
-    elif isinstance(node, ast.Return):
-        source.line("return " + expr(node.value))
-    elif isinstance(node, ast.Suite):
-        for x in node.body:
-            gen_source(x, source)
+    if isinstance(node, (ast.Module, ast.Interactive)):
+        stmt(node.body, source)
+    elif isinstance(node, ast.Expression):
+        source.line(expr(node.body))
     else:
-        source.line(expr(node))
+        print("unhandled mod:", node, file=sys.stderr)
+        sys.exit(1)

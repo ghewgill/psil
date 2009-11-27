@@ -672,16 +672,18 @@ def psil(s, compiled = True, glob = None):
             #source += psilc(p)
             tree = psilc(p)
 
-            src = deparse.SourceGenerator()
-            deparse.gen_source(tree, src)
-            print("source:")
-            print(str(source))
-
             if not isinstance(tree, ast.FunctionDef):
                 tree = ast.Expr(tree)
             tree = ast.Interactive([tree])
             ast.fix_missing_locations(tree)
+
             print(ast.dump(tree))
+
+            src = deparse.SourceGenerator()
+            deparse.gen_source(tree, src)
+            print("source:")
+            print(str(src))
+
             exec(compile(tree, "<psil>", "single"), globals())
         else:
             try:
