@@ -101,7 +101,7 @@ def expr(node):
     elif isinstance(node, ast.IfExp):
         return "({1} if {0} else {2})".format(expr(node.test), expr(node.body), expr(node.orelse) if node.orelse else "None")
     elif isinstance(node, ast.Lambda):
-        return "lambda " + ", ".join(node.args) + ": " + expr(node.body)
+        return "lambda " + ", ".join(x.arg for x in node.args.args) + ": " + expr(node.body)
     elif isinstance(node, ast.List):
         return "[{0}]".format(", ".join(expr(x) for x in node.elts))
     elif isinstance(node, ast.Num):
@@ -137,7 +137,7 @@ def stmt(node, source):
     elif isinstance(node, ast.Expr):
         source.line(expr(node.value))
     elif isinstance(node, ast.FunctionDef):
-        source.line("def " + node.name + "(" + ", ".join([x.arg for x in node.args.args]) + "):")
+        source.line("def " + node.name + "(" + ", ".join(x.arg for x in node.args.args) + "):")
         source.indent()
         stmt(node.body, source)
         source.dedent()

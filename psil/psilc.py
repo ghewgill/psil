@@ -78,9 +78,9 @@ def compile_equals(p):
 
 def compile_lambda(p):
     if len(p) > 3:
-        return ast.Lambda([pydent(x.name) for x in p[1]], [build_ast(x) for x in p[2:]])
+        return ast.Lambda(ast.arguments(args=[ast.arg(arg=x.name) for x in p[1]], kwonlyargs=[], defaults=[], kw_defaults=[]), [build_ast(x) for x in p[2:]])
     else:
-        return ast.Lambda([pydent(x.name) for x in p[1]], build_ast(p[2]))
+        return ast.Lambda(ast.arguments(args=[ast.arg(arg=x.name) for x in p[1]], kwonlyargs=[], defaults=[], kw_defaults=[]), build_ast(p[2]))
 
 def compile_multiply(p):
     if len(p) == 2:
