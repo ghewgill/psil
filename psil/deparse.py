@@ -87,14 +87,16 @@ def expr(node):
         return "({0} {1} {2})".format(expr(node.left), operator(node.op), expr(node.right))
     elif isinstance(node, ast.Call):
         func = ("({0})" if isinstance(node.func, ast.Lambda) else "{0}").format(expr(node.func))
-        args = None
-        if node.args is not None:
-            args = ", ".join(expr(x) for x in node.args)
-        elif node.starargs is not None:
+        args = ""
+        if node.args:
+            args += ", ".join(expr(x) for x in node.args)
+        if node.starargs is not None:
+            if len(args) > 0:
+                args += ", "
             if isinstance(node.starargs, list):
-                args = ", ".join(expr(x) for x in node.starargs)
+                args += ", ".join(expr(x) for x in node.starargs)
             else:
-                args = "*" + expr(node.starargs)
+                args += "*" + expr(node.starargs)
         return "{0}({1})".format(func, args)
     elif isinstance(node, ast.Compare):
         return "({0} {1})".format(expr(node.left), " ".join("{0} {1}".format(operator(op), expr(comp)) for op, comp in zip(node.ops, node.comparators)))
