@@ -14,19 +14,19 @@ class SourceGenerator(object):
     def __str__(self):
         return self.source
 
-InlineFuncs = {
-    "+": "(lambda *x: sum(x))",
-    "*": "(lambda *x: functools.reduce(operator.mul, x, 1))",
-    "==": "(lambda *x: all(map(lambda i: x[i] == x[i+1], range(len(x)-1))))",
-    "and": "(lambda *x: functools.reduce(operator.and_, x))",
-    "append": "(lambda *x: functools.reduce(operator.concat, x))",
-    "cadr": "(lambda x: x[1])",
-    "car": "(lambda x: x[0])",
-    "concat": "(lambda *x: ''.join([str(y) for y in x]))",
-    "make_list": "list",
-    "not": "(lambda x: not x)",
-    "reverse": "(lambda x: list(reversed(x)))",
-}
+#InlineFuncs = {
+#    "+": "(lambda *x: sum(x))",
+#    "*": "(lambda *x: functools.reduce(operator.mul, x, 1))",
+#    "==": "(lambda *x: all(map(lambda i: x[i] == x[i+1], range(len(x)-1))))",
+#    "and": "(lambda *x: functools.reduce(operator.and_, x))",
+#    "append": "(lambda *x: functools.reduce(operator.concat, x))",
+#    "cadr": "(lambda x: x[1])",
+#    "car": "(lambda x: x[0])",
+#    "concat": "(lambda *x: ''.join([str(y) for y in x]))",
+#    "make_list": "list",
+#    "not": "(lambda x: not x)",
+#    "reverse": "(lambda x: list(reversed(x)))",
+#}
 
 def operator(op):
     if isinstance(op, ast.Add):
@@ -101,13 +101,13 @@ def expr(node):
     elif isinstance(node, ast.IfExp):
         return "({1} if {0} else {2})".format(expr(node.test), expr(node.body), expr(node.orelse) if node.orelse else "None")
     elif isinstance(node, ast.Lambda):
-        return "lambda " + ", ".join(x.arg for x in node.args.args) + ": " + expr(node.body)
+        return "lambda {0}: {1}".format(", ".join(x.arg for x in node.args.args), expr(node.body))
     elif isinstance(node, ast.List):
         return "[{0}]".format(", ".join(expr(x) for x in node.elts))
     elif isinstance(node, ast.Num):
         return repr(node.n)
     elif isinstance(node, ast.Name):
-        f = InlineFuncs.get(node.id)
+        f = None #InlineFuncs.get(node.id)
         if f:
             return f
         else:
