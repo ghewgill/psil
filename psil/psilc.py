@@ -1,4 +1,5 @@
 import ast
+import sys
 
 from .symbol import Symbol
 
@@ -28,11 +29,11 @@ AstStatements = (
 )
 
 def pydent(s):
-    if s == "try": s = "try_"
-    s = s.replace("-", "_")
-    s = s.replace(".", "_")
-    s = s.replace(">", "_")
-    s = s.replace("?", "_")
+    #if s == "try": s = "try_"
+    #s = s.replace("-", "_")
+    #s = s.replace(".", "_")
+    #s = s.replace(">", "_")
+    #s = s.replace("?", "_")
     return s
 
 def make_stmt(node):
@@ -74,7 +75,7 @@ def compile_floordivide(p):
         return ast.BinOp(compile_divide(p[:-1]), ast.FloorDiv(), build_ast(p[-1]))
 
 def compile_equals(p):
-    return ast.Compare(build_ast(p[1]), [ast.Eq() for x in p[1::2]], [build_ast(x) for x in p[2::2]])
+    return ast.Compare(build_ast(p[1]), [ast.Eq() for x in p[2:]], [build_ast(x) for x in p[2:]])
 
 def compile_lambda(p):
     if len(p) > 3:
@@ -125,9 +126,9 @@ CompileFuncs = {
     Symbol.new("<="): lambda p: ast.Compare(build_ast(p[1]), [ast.LtE() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
     Symbol.new(">="): lambda p: ast.Compare(build_ast(p[1]), [ast.GtE() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
     Symbol.new("=="): compile_equals,
-    Symbol.new("!="): lambda p: ast.BinOp(build_ast(p[1]), ast.NotEq(), build_ast(p[2])),
-    Symbol.new("is"): lambda p: ast.BinOp(build_ast(p[1]), ast.Is(), build_ast(p[2])),
-    Symbol.new("is-not"): lambda p: ast.BinOp(build_ast(p[1]), ast.IsNot(), build_ast(p[2])),
+    Symbol.new("!="): lambda p: ast.Compare(build_ast(p[1]), [ast.NotEq() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
+    Symbol.new("is"): lambda p: ast.Compare(build_ast(p[1]), [ast.Is() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
+    Symbol.new("is-not"): lambda p: ast.Compare(build_ast(p[1]), [ast.IsNot() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
     Symbol.new("define"): compile_define,
     Symbol.new("dict-set"): lambda p: ast.Assign([ast.Subscript(build_ast(p[1]), ast.Index(build_ast(p[2])), ast.Store())], build_ast(p[3])),
     #Symbol.new("caadr"): lambda p: compiler.ast.Subscript(compiler.ast.Subscript(build_ast(p[1]), 0, compiler.ast.Const(1)), 0, compiler.ast.Const(0)),
@@ -140,16 +141,18 @@ CompileFuncs = {
     #Symbol.new("cddr"): lambda p: compiler.ast.Slice(build_ast(p[1]), 0, compiler.ast.Const(2), None),
     Symbol.new("cdr"): lambda p: ast.Subscript(build_ast(p[1]), ast.Slice(ast.Num(1), None, None), ast.Load()),
     Symbol.new("cons"): lambda p: ast.BinOp(ast.List([build_ast(p[1])], ast.Load()), ast.Add(), build_ast(p[2])),
-    Symbol.new("apply"): lambda p: ast.Call(build_ast(p[1]), None, None, build_ast(p[2]), None),
-    Symbol.new("if"): lambda p: ast.IfExp(build_ast(p[1]), build_ast(p[2]), build_ast(p[3]) if len(p) >= 4 else None),
-    Symbol.new("in"): lambda p: ast.BinOp(build_ast(p[1]), ast.In(), build_ast(p[2])),
+    #Symbol.new("append"): lambda p: ast.Call(ast.Attribute(ast.Name("functools", ast.Load()), "reduce", ast.Load()), [ast.Attribute(ast.Name("operator", ast.Load()), "add", ast.Load()), build_ast(p[1])], [], None, None),
+    #Symbol.new("apply"): lambda p: ast.Call(build_ast(p[1]), [build_ast(p[2])], [], None, None),
+    Symbol.new("if"): lambda p: ast.IfExp(build_ast(p[1]), build_ast(p[2]), build_ast(p[3]) if len(p) >= 4 else ast.Name("None", ast.Load())),
+    Symbol.new("in"): lambda p: ast.Compare(build_ast(p[1]), [ast.In() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
     Symbol.new("index"): lambda p: ast.Subscript(build_ast(p[1]), ast.Index(build_ast(p[2])), ast.Load()),
     Symbol.new("lambda"): compile_lambda,
     Symbol.new("list"): lambda p: ast.List([build_ast(x) for x in p[1:]], ast.Load()),
-    Symbol.new("make-list"): lambda p: ast.Call(ast.Name("list", ast.Load()), [build_ast(x) for x in p[1:]], [], None, None),
+    #Symbol.new("make-list"): lambda p: ast.Call(ast.Name("list", ast.Load()), [build_ast(x) for x in p[1:]], [], None, None),
     Symbol.new("not"): lambda p: ast.UnaryOp(ast.Not(), build_ast(p[1])),
-    Symbol.new("not-in"): lambda p: ast.BinOp(build_ast(p[1]), ast.NotIn(), build_ast(p[2])),
+    Symbol.new("not-in"): lambda p: ast.Compare(build_ast(p[1]), [ast.NotIn() for x in p[1::2]], [build_ast(x) for x in p[2::2]]),
     Symbol.new("quote"): compile_quote,
+    Symbol.new("reverse"): lambda p: ast.Call(ast.Name("reversed", ast.Load()), [build_ast(p[1])], [], None, None),
     Symbol.new("set!"): lambda p: ast.Assign([ast.Name(p[1].name, ast.Store())], build_ast(p[2])),
     Symbol.new("slice"): lambda p: ast.Subscript(build_ast(p[1]), ast.Slice(build_ast(p[2]), build_ast(p[3]), None), ast.Load()),
     Symbol.new("string->symbol"): lambda p: ast.Call(ast.Name("intern"), [build_ast(p[1])], None, None, None),
