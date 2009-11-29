@@ -661,6 +661,9 @@ def psil(s, compiled = True, glob = None):
     r = None
     compiled &= Compile
     source = "import functools, operator\n"
+    g = dict(globals())
+    for k, v in Globals.symbols.items():
+        g[k] = v
     while True:
         p = parse(t)
         #print(external(p))
@@ -683,7 +686,7 @@ def psil(s, compiled = True, glob = None):
             deparse.gen_source(tree, src)
             #print("source:", str(src))
 
-            exec(compile(tree, "<psil>", "exec"), globals())
+            exec(compile(tree, "<psil>", "exec"), g)
         else:
             try:
                 Globals.setglobals(glob)
