@@ -122,6 +122,8 @@ def expr(node):
         else:
             print("unhandled slice:", node.slice, file=sys.stderr)
             sys.exit(1)
+    elif isinstance(node, ast.Pass):
+        return "pass"
     elif isinstance(node, ast.Str):
         return repr(node.s)
     elif isinstance(node, ast.UnaryOp):
