@@ -110,36 +110,54 @@ def tokenise(s):
     ['(', 'a', ',@', 'b', 'c', ')']
     >>> [x[1] for x in tokenise("(a(b))")]
     ['(', 'a', '(', 'b', ')', ')']
+    >>> list(tokenise("foo bar baz"))
+    [(SYMBOL, 'foo', (1, 0)), (SYMBOL, 'bar', (1, 4)), (SYMBOL, 'baz', (1, 8))]
+    >>> list(tokenise("( ) ' `\\n, ,@ \\"a\\" ; comment\\n1.234 symbol"))
+    [(LPAREN, '(', (1, 0)), (RPAREN, ')', (1, 2)), (QUOTE, "'", (1, 4)), (QQUOTE, '`', (1, 6)), (COMMA, ',', (2, 0)), (SPLICE, ',@', (2, 2)), (STRING, 'a', (2, 5)), (NUMBER, 1.234, (3, 0)), (SYMBOL, 'symbol', (3, 6))]
     """
+    lineno = 1
+    col_offset = 0
     i = 0
     while True:
         while i < len(s) and s[i].isspace():
+            if s[i] == "\n":
+                lineno += 1
+                col_offset = 0
+            else:
+                col_offset += 1
             i += 1
         if i >= len(s):
             break
         if   s[i] == "(":
-            yield (Token.LPAREN, s[i])
+            yield (Token.LPAREN, s[i], (lineno, col_offset))
+            col_offset += 1
             i += 1
         elif s[i] == ")":
-            yield (Token.RPAREN, s[i])
+            yield (Token.RPAREN, s[i], (lineno, col_offset))
+            col_offset += 1
             i += 1
         elif s[i] == "'":
-            yield (Token.QUOTE, s[i])
+            yield (Token.QUOTE, s[i], (lineno, col_offset))
+            col_offset += 1
             i += 1
         elif s[i] == "`":
-            yield (Token.QQUOTE, s[i])
+            yield (Token.QQUOTE, s[i], (lineno, col_offset))
+            col_offset += 1
             i += 1
         elif s[i] == ",":
             if s[i+1] == "@":
-                yield (Token.SPLICE, s[i:i+2])
+                yield (Token.SPLICE, s[i:i+2], (lineno, col_offset))
+                col_offset += 2
                 i += 2
             else:
-                yield (Token.COMMA, s[i])
+                yield (Token.COMMA, s[i], (lineno, col_offset))
+                col_offset += 1
                 i += 1
         elif s[i] == '"':
             m = RE_STRING.match(s[i:])
             if m:
-                yield (Token.STRING, peval(m.group(0)))
+                yield (Token.STRING, peval(m.group(0)), (lineno, col_offset))
+                col_offset += m.end(0)
                 i += m.end(0)
             else:
                 raise SyntaxError(s[i:])
@@ -150,16 +168,18 @@ def tokenise(s):
             if m:
                 if m.group(1) or m.group(2):
                     x = float(m.group(0))
-                    yield (Token.NUMBER, x)
+                    yield (Token.NUMBER, x, (lineno, col_offset))
                 elif m.group(3):
-                    yield (Token.NUMBER, int(m.group(3), 16))
+                    yield (Token.NUMBER, int(m.group(3), 16), (lineno, col_offset))
                 else:
-                    yield (Token.NUMBER, int(m.group(0)))
+                    yield (Token.NUMBER, int(m.group(0)), (lineno, col_offset))
+                col_offset += m.end(0)
                 i += m.end(0)
             else:
                 m = RE_SYMBOL.match(s[i:])
                 if m:
-                    yield (Token.SYMBOL, m.group(0))
+                    yield (Token.SYMBOL, m.group(0), (lineno, col_offset))
+                    col_offset += m.end(0)
                     i += m.end(0)
                 else:
                     raise SyntaxError(s[i:])
@@ -193,7 +213,7 @@ def parse(tokens, nextoken = None):
             nextoken = next(tokens)
         except StopIteration:
             return None
-    t, v = nextoken
+    t, v, pos = nextoken
     if t == Token.LPAREN:
         a = []
         while True:
