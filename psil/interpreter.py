@@ -71,16 +71,22 @@ class TailCall(Exception):
     def __str__(self):
         return str(self.fn) + ":" + str(self.args)
 
+class Singleton(object):
+    def __init__(self, name):
+        self.name = name
+    def __repr__(self):
+        return self.name
+
 class Token(object):
-    LPAREN = object()
-    RPAREN = object()
-    QUOTE  = object()
-    QQUOTE = object()
-    COMMA  = object()
-    SPLICE = object()
-    SYMBOL = object()
-    NUMBER = object()
-    STRING = object()
+    LPAREN = Singleton("LPAREN")
+    RPAREN = Singleton("RPAREN")
+    QUOTE  = Singleton("QUOTE")
+    QQUOTE = Singleton("QQUOTE")
+    COMMA  = Singleton("COMMA")
+    SPLICE = Singleton("SPLICE")
+    SYMBOL = Singleton("SYMBOL")
+    NUMBER = Singleton("NUMBER")
+    STRING = Singleton("STRING")
 
 def tokenise(s):
     """
