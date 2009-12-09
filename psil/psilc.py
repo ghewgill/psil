@@ -96,7 +96,7 @@ def compile_quote(p):
         if isinstance(p, list):
             return ast.List([q(x) for x in p], ast.Load())
         elif isinstance(p, Symbol):
-            return compiler.ast.CallFunc(compiler.ast.Name("sym"), [compiler.ast.Const(p.name)])
+            return ast.Call(ast.Attribute(ast.Name("sys", ast.Load()), "intern", ast.Load()), [ast.Str(p.name)], [], None, None)
         else:
             return ast.Num(p)
     return q(p[1])
