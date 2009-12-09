@@ -30,13 +30,14 @@ if a < len(sys.argv):
 elif Interactive:
     from psil.interpreter import Globals, rep
     Globals.symbols["quit"] = lambda: sys.exit(0)
-    try:
-        import readline
-    except ImportError:
-        pass
     import traceback
     print("PSIL interactive mode")
     print("Use (quit) to exit")
+    try:
+        import readline
+    except ImportError:
+        print("NOTE: readline module not available, line editing disabled")
+        pass
     while True:
         try:
             s = input("> ")
