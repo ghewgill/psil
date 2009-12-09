@@ -304,7 +304,7 @@ class Scope(object):
                     return (True, r)
             s = s.parent
         return (False, None)
-    def eval(self, s, tail = False):
+    def eval(self, s, tail=False):
         try:
             if isinstance(s, list) and len(s) > 0:
                 f = s[0]
@@ -366,7 +366,7 @@ class Scope(object):
                 elif tail:
                     raise TailCall(fn, [self.eval(x) for x in s[1:]])
                 elif isinstance(fn, Function):
-                    return fn.apply([self.eval(x) for x in s[1:]], tail=True)
+                    return fn.apply([self.eval(x) for x in s[1:]], tail=tail)
                 elif hasattr(fn, "__call__"):
                     return fn(*[self.eval(x) for x in s[1:]])
                 else:
