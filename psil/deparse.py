@@ -161,28 +161,7 @@ def stmt(node, source):
         print("unhandled stmt:", node, file=sys.stderr)
         sys.exit(1)
 
-def is_statement(p):
-    return isinstance(p, compiler.ast.Assign)
-
-LambdaCounter = 0
-
 def gen_source(node, source):
-    class LiftLambda(object):
-        def visitLambda(self, p):
-            global LambdaCounter
-            if isinstance(p.code, list):
-                LambdaCounter += 1
-                p.name = "_lambda_" + str(LambdaCounter)
-                gen_source(compiler.ast.Function(None, p.name, p.argnames, p.defaults, p.flags, None, compiler.ast.Stmt(p.code[:-1] + [p.code[-1] if is_statement(p.code[-1]) else compiler.ast.Return(p.code[-1])])), source)
-            elif is_statement(p.code):
-                LambdaCounter += 1
-                p.name = "_lambda_" + str(LambdaCounter)
-                gen_source(compiler.ast.Function(None, p.name, p.argnames, p.defaults, p.flags, None, compiler.ast.Stmt([p.code])), source)
-            else:
-                compiler.walk(p.code, self)
-        def visitStmt(self, p):
-            pass
-    ast.walk(node)
     if isinstance(node, (ast.Module, ast.Interactive)):
         stmt(node.body, source)
     elif isinstance(node, ast.Expression):

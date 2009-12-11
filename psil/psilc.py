@@ -184,6 +184,33 @@ def build_ast(p, tail = False):
         print("unexpected object:", p, file=sys.stderr)
         sys.exit(1)
 
+class LiftLambda(ast.NodeTransformer):
+    def __init__(self):
+        self.counter = 0
+        self.lifted = []
+    def visit_FunctionDef(self, node):
+        body = []
+        for s in node.body:
+            r = self.generic_visit(s)
+            if self.lifted:
+                body.extend(self.lifted)
+                self.lifted = []
+            body.append(r)
+        return ast.FunctionDef(node.name, node.args, body, node.decorator_list, node.returns)
+    def visit_Lambda(self, node):
+        if isinstance(node.body, list):
+            self.counter += 1
+            name = "_lambda_{0}".format(self.counter)
+            self.lifted.append(ast.FunctionDef(name, node.args, [make_stmt(x) for x in node.body[:-1] + [node.body[-1] if isinstance(node.body[-1], AstStatements) else ast.Return(node.body[-1])]], [], None))
+            return ast.Name(name, ast.Load())
+        elif isinstance(node.body, AstStatements):
+            self.counter += 1
+            name = "_lambda_{0}".format(self.counter)
+            self.lifted.append(ast.FunctionDef(name, node.args, [node.body], [], None))
+            return ast.Name(name, ast.Load())
+        else:
+            return self.generic_visit(node)
+
 def psilc(p):
     tree = build_ast(p)
     def dump(node, depth):
@@ -192,4 +219,5 @@ def psilc(p):
             dump(x, depth+1)
     #print("ast:")
     #dump(tree, 0)
+    tree = LiftLambda().visit(tree)
     return make_stmt(tree)
