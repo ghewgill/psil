@@ -1,0 +1,48 @@
+(defmacro begin forms
+    `((lambda ()
+        ,@forms)))
+(defmacro when whenargs
+    `(if ,(car whenargs)
+        (begin ,@(cdr whenargs))))
+(defmacro let letargs
+    `((lambda (,@(map car (car letargs)))
+        ,@(cdr letargs)) ,@(map cadr (car letargs))))
+(defmacro let* letargs ; this is probably broken
+    (if (car letargs)
+        `((lambda (,(caaar letargs))
+            (let* ,(cdar letargs) ,@(cdr letargs))) ,(cadr (caar letargs)))
+        `(begin ,@(cdr letargs))))
+(defmacro and andargs
+    (if andargs
+        `(if ,(car andargs)
+             (and ,@(cdr andargs))
+             False)
+        True))
+(defmacro or orargs
+    (if orargs
+        `(if ,(car orargs)
+             ,(car orargs)
+             (or ,@(cdr orargs)))
+        False))
+(defmacro cond condargs
+    (if condargs
+        (if (is (caar condargs) 'else)
+            `(begin ,@(cdar condargs))
+            `(if ,(caar condargs)
+                ,@(cdar condargs)
+                (cond ,@(cdr condargs))))))
+(defmacro for-each args
+    `(make-list (map ,@args)))
+(defmacro import args
+    `(define ,(car args)
+      (__import__ ,(symbol->string (car args)))))
+(defmacro get args
+    (define (rget obj names)
+      (if names
+          `(getattr ,(rget obj (cdr names)) ,(symbol->string (car names)))
+          obj))
+    (rget (car args) (reverse (cdr args))))
+(defmacro put! args
+    (let ((revargs (reverse (cdr args))))
+        `(setattr (get ,(car args) ,@(cddr revargs)) ,(symbol->string (cadr revargs)) ,(car revargs))))
+(defmacro comment args)
