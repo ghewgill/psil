@@ -20,7 +20,7 @@ import sys
 
 from . import deparse
 from .symbol import Symbol
-from .psilc import psilc
+from .compiler import psilc
 
 Compile = False
 
