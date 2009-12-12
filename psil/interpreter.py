@@ -648,7 +648,7 @@ Macros = """
                 ,@(cdar condargs)
                 (cond ,@(cdr condargs))))))
 (defmacro for-each args
-    `(map ,@args))
+    `(make-list (map ,@args)))
 (defmacro import args
     `(define ,(car args)
       (__import__ ,(symbol->string (car args)))))
