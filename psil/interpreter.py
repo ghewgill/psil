@@ -635,7 +635,6 @@ def psil(s, compiled = True, glob = None):
     t = tokenise(s)
     r = None
     compiled &= Compile
-    source = "import functools, operator\n"
     g = dict(globals())
     for k, v in Globals.symbols.items():
         g[k] = v
@@ -649,7 +648,6 @@ def psil(s, compiled = True, glob = None):
             continue
         #print(external(p))
         if compiled and (not isinstance(p, list) or not isinstance(p[0], Symbol) or p[0] is not Symbol.defmacro):
-            #source += psilc(p)
             tree = psilc(p)
 
             tree = ast.Module([tree])
@@ -668,8 +666,6 @@ def psil(s, compiled = True, glob = None):
                 r = Globals.eval(p)
             except TailCall as x:
                 r = x.apply()
-    if compiled:
-        exec(compile(source, "<psil>", "exec"), globals())
     return r
 
 def rep(s):
