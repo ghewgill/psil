@@ -586,7 +586,7 @@ Globals.symbols["cadddr"] = lambda x: x[3]
 Globals.symbols["caaaar"] = lambda x: x[0][0][0][0]
 #...
 Globals.symbols["null?"]  = lambda x: isinstance(x, list) and len(x) == 0
-Globals.symbols["append"] = lambda *args: functools.reduce(operator.concat, map(list, args))
+Globals.symbols["append"] = lambda *args: functools.reduce(operator.concat, map(list, args), [])
 Globals.symbols["reverse"] = lambda x: list(reversed(x))
 Globals.symbols["list-tail"] = lambda x, y: x[y:]
 Globals.symbols["list-ref"] = lambda x, y: x[y]
