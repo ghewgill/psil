@@ -191,7 +191,7 @@ class LiftLambda(ast.NodeTransformer):
     def visit_FunctionDef(self, node):
         body = []
         for s in node.body:
-            r = self.generic_visit(s)
+            r = self.visit(s)
             if self.lifted:
                 body.extend(self.lifted)
                 self.lifted = []
@@ -201,12 +201,12 @@ class LiftLambda(ast.NodeTransformer):
         if isinstance(node.body, list):
             self.counter += 1
             name = "_lambda_{0}".format(self.counter)
-            self.lifted.append(ast.FunctionDef(name, node.args, [make_stmt(x) for x in node.body[:-1] + [node.body[-1] if isinstance(node.body[-1], AstStatements) else ast.Return(node.body[-1])]], [], None))
+            self.lifted.append(ast.FunctionDef(name, node.args, [make_stmt(self.visit(x)) for x in node.body[:-1] + [node.body[-1] if isinstance(node.body[-1], AstStatements) else ast.Return(node.body[-1])]], [], None))
             return ast.Name(name, ast.Load())
         elif isinstance(node.body, AstStatements):
             self.counter += 1
             name = "_lambda_{0}".format(self.counter)
-            self.lifted.append(ast.FunctionDef(name, node.args, [node.body], [], None))
+            self.lifted.append(ast.FunctionDef(name, node.args, [self.visit(node.body)], [], None))
             return ast.Name(name, ast.Load())
         else:
             return self.generic_visit(node)
@@ -219,5 +219,9 @@ def psilc(p):
             dump(x, depth+1)
     #print("ast:")
     #dump(tree, 0)
-    tree = LiftLambda().visit(tree)
-    return make_stmt(tree)
+    lift = LiftLambda()
+    tree = lift.visit(tree)
+    if lift.lifted:
+        return ast.TryFinally(lift.lifted + [make_stmt(tree)], [])
+    else:
+        return make_stmt(tree)

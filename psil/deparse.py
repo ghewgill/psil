@@ -157,6 +157,15 @@ def stmt(node, source):
             source.dedent()
     elif isinstance(node, ast.Return):
         source.line("return " + expr(node.value))
+    elif isinstance(node, ast.TryFinally):
+        source.line("try:")
+        source.indent()
+        stmt(node.body, source)
+        source.dedent()
+        source.line("finally:")
+        source.indent()
+        stmt(node.finalbody, source)
+        source.dedent()
     else:
         print("unhandled stmt:", node, file=sys.stderr)
         sys.exit(1)
