@@ -663,9 +663,15 @@ def psil(s, compiled = True, glob = None):
         else:
             try:
                 Globals.setglobals(glob)
-                r = Globals.eval(p)
-            except TailCall as x:
-                r = x.apply()
+                r = Globals.eval(p, tail=True)
+            except TailCall as t:
+                a = t
+                while True:
+                    try:
+                        return a.apply()
+                    except TailCall as t:
+                        a = t
+                        a.__traceback__ = None
     return r
 
 def rep(s):
