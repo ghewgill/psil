@@ -35,7 +35,8 @@
     `(make-list (map ,@args)))
 (defmacro import args
     `(define ,(car args)
-      (__import__ ,(symbol->string (car args)))))
+      ;(__import__ ,(symbol->string (car args)))))
+      (_import ,(symbol->string (car args)) (globals))))
 (defmacro get args
     (define (rget obj names)
       (if names

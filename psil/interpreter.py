@@ -606,6 +606,9 @@ Globals.symbols["dict-set"] = _set
 
 Globals.symbols["gensym"] = Symbol.gensym
 
+#Globals.symbols["rt"] = __import__("psil", fromlist=["rt"], level=0)
+Globals.symbols["_import"] = lambda x, g: __import__("psil", fromlist=["rt"], level=0).rt._import(x, g)
+
 def call_with_current_continuation(f):
     import stackless
     channel = stackless.channel()
