@@ -635,14 +635,14 @@ def external(x):
     return str(x)
 
 def psil(s, compiled = True, glob = None):
-    t = tokenise(s)
+    tokens = tokenise(s)
     r = None
     compiled &= Compile
     g = dict(globals())
     for k, v in Globals.symbols.items():
         g[k] = v
     while True:
-        p = parse(t)
+        p = parse(tokens)
         #print(external(p))
         if p is None:
             break
@@ -662,7 +662,7 @@ def psil(s, compiled = True, glob = None):
             deparse.gen_source(tree, src)
             #print("source:", str(src))
 
-            exec(compile(tree, "<psil>", "exec"), g)
+            r = exec(compile(tree, "<psil>", "exec"), g)
         else:
             try:
                 Globals.setglobals(glob)
@@ -671,7 +671,8 @@ def psil(s, compiled = True, glob = None):
                 a = t
                 while True:
                     try:
-                        return a.apply()
+                        r = a.apply()
+                        break
                     except TailCall as t:
                         a = t
                         a.__traceback__ = None
