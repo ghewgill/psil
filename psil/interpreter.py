@@ -617,6 +617,19 @@ def call_with_current_continuation(f):
 Globals.symbols["call-with-current-continuation"] = call_with_current_continuation
 
 def external(x):
+    """
+    >>> print(external(123))
+    123
+    >>> print(external("abc"))
+    "abc"
+    >>> print(external([123, "abc"]))
+    (123 "abc")
+    >>> print(external(r'a\"b'))
+    "a\\\"b"
+
+    #>>> print([ord(x) for x in external(r'a\"b')])
+    #[34, 97, 92, 92, 92, 34, 98, 34]
+    """
     if isinstance(x, list):
         if len(x) > 0:
             if x[0] is Symbol.quote:
@@ -631,6 +644,7 @@ def external(x):
     if isinstance(x, Symbol):
         return x.name
     if isinstance(x, str):
+        # todo: escape escapes
         return '"' + re.sub('"', r'\"', x) + '"'
     return str(x)
 
