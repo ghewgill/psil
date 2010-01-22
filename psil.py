@@ -18,7 +18,12 @@ while a < len(sys.argv) and sys.argv[a].startswith("-"):
         if a < len(sys.argv):
             doctest.testfile(sys.argv[a])
         else:
+            import psil.rt
+            doctest.testmod(psil.compiler, optionflags=doctest.ELLIPSIS)
+            doctest.testmod(psil.deparse, optionflags=doctest.ELLIPSIS)
             doctest.testmod(psil.interpreter, optionflags=doctest.ELLIPSIS)
+            doctest.testmod(psil.rt, optionflags=doctest.ELLIPSIS)
+            doctest.testmod(psil.symbol, optionflags=doctest.ELLIPSIS)
             doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
             doctest.testfile("integ.test", optionflags=doctest.ELLIPSIS)
         sys.exit(0)

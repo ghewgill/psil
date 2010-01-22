@@ -160,8 +160,8 @@ CompileFuncs = {
 
 def build_ast(p, tail = False):
     """
-    >>> build_ast(parse(tokenise("(+ 2 3)")))
-    Add((Const(2), Const(3)))
+    #>>> build_ast(parse(tokenise("(+ 2 3)")))
+    #Add((Const(2), Const(3)))
     """
     if isinstance(p, list):
         if isinstance(p[0], Symbol):
