@@ -22,6 +22,7 @@ while a < len(sys.argv) and sys.argv[a].startswith("-"):
             doctest.testmod(psil.compiler, optionflags=doctest.ELLIPSIS)
             doctest.testmod(psil.deparse, optionflags=doctest.ELLIPSIS)
             doctest.testmod(psil.interpreter, optionflags=doctest.ELLIPSIS)
+            doctest.testmod(psil.reader, optionflags=doctest.ELLIPSIS)
             doctest.testmod(psil.rt, optionflags=doctest.ELLIPSIS)
             doctest.testmod(psil.symbol, optionflags=doctest.ELLIPSIS)
             doctest.testfile("psil.test", optionflags=doctest.ELLIPSIS)
