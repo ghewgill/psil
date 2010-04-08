@@ -1,4 +1,4 @@
-from psil import psil
+from psil.interpreter import psil
 
 fact = psil("""
     (lambda (x)
